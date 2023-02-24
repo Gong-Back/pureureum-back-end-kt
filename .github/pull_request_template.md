@@ -8,6 +8,6 @@
 
 ## ❗ CheckList
 
-[ ] PR Convention 확인
-[ ] Label 설정
-[ ] Jira 작업 상태 변경
+- [ ] PR Convention 확인
+- [ ] Label 설정
+- [ ] Jira 작업 상태 변경
