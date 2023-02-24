@@ -1,1 +1,1 @@
-rootProject.name = "weeda-back-end-kt"
+rootProject.name = "pureureum"
