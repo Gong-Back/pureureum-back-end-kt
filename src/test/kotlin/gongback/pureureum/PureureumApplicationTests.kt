@@ -1,10 +1,10 @@
-package gongback.weedabackendkt
+package gongback.pureureum
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class WeedaBackEndKtApplicationTests {
+class PureureumApplicationTests {
 
 	@Test
 	fun contextLoads() {
