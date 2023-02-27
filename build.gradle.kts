@@ -38,6 +38,12 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
+	// log
+	implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
+
+	// jackson
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
 	// DB Dependency
 	runtimeOnly("com.h2database:h2")
 	runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
