@@ -1,6 +1,10 @@
 package gongback.pureureum.domain.user
 
-import jakarta.persistence.*
+import jakarta.persistence.Embedded
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
 
 @Entity
 class User(
@@ -9,7 +13,7 @@ class User(
     val id: Long = 0L,
 
     @Embedded
-    var information: UserInformation,
+    var information: UserInformation
 ) {
     val name: String
         get() = information.name
@@ -22,6 +26,7 @@ class User(
         email: String,
         id: Long = 0L
     ) : this(
-        id, UserInformation(name, email)
+        id,
+        UserInformation(name, email)
     )
 }
