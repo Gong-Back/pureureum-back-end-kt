@@ -10,7 +10,7 @@ env:
   SECRET_YML_FILE_NAME: secret.yml
 
 jobs:
-  build:
+  pr-check:
     runs-on: ubuntu-latest
 
     steps:
@@ -42,7 +42,7 @@ jobs:
             {
               attachments: [{
                 color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
-                text: `SUCCESS PULL REQUEST CHECK!✔\n ${{github.base_ref}} from ${{github.head_ref}} \n${process.env.AS_JOB} (${process.env.AS_COMMIT}) by ${process.env.AS_AUTHOR}`,
+                text: `[Back] SUCCESS PULL REQUEST CHECK!✔\n ${{github.base_ref}} from ${{github.head_ref}} \n${process.env.AS_JOB} (${process.env.AS_COMMIT}) by ${process.env.AS_AUTHOR}`,
               }]
             }
         env:
