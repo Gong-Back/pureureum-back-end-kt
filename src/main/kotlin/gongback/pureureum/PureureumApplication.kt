@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class PureureumApplication
 
 fun main(args: Array<String>) {
-	runApplication<PureureumApplication>(*args)
+    runApplication<PureureumApplication>(*args)
 }
