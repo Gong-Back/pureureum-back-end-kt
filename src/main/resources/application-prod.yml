@@ -1,0 +1,6 @@
+spring:
+  config:
+    import: secret.yml
+
+  jpa:
+    open-in-view: false

@@ -17,7 +17,7 @@ class SecurityConfig(
     private val customAuthenticationEntryPoint: CustomAuthenticationEntryPoint,
     private val customAccessDeniedHandler: CustomAccessDeniedHandler
 ) {
-    private val permitPattern = "/api/v1/auth/**"
+    private val permitPatterns: List<String> = listOf("/api/v1/auth/**", "/api/docs", "/favicon.ico")
 
     @Bean
     fun springSecurity(http: HttpSecurity): SecurityFilterChain = http
@@ -28,7 +28,7 @@ class SecurityConfig(
         .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
         .authorizeHttpRequests {
             it
-                .requestMatchers(permitPattern).permitAll()
+                .requestMatchers(*permitPatterns.toTypedArray()).permitAll()
                 .anyRequest().authenticated()
         }
         .exceptionHandling {
