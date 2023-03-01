@@ -23,7 +23,8 @@ jobs:
       - name: Set Up JDK 17
         uses: actions/setup-java@v3
         with:
-          java-version: 17
+          distribution: 'corretto'
+          java-version: '17'
 
       - name: Copy secret.yml
         run: echo $SECRET_YML | base64 --decode > $SECRET_YML_DIR/$SECRET_YML_FILE_NAME
