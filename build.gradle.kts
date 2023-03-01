@@ -45,6 +45,7 @@ dependencies {
 
     // log
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
+    implementation("com.github.maricn:logback-slack-appender:1.3.0")
 
     // jackson
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
