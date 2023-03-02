@@ -29,7 +29,7 @@ else
 fi
 
 DEPLOY_JAR=$DEPLOY_PATH/build/libs/$JAR_NAME
-nohup java -jar -Dspring.profiles.active=prod $DEPLOY_JAR --server.port=8080 2> $DEPLOY_ERR_LOG_PATH & # & -> background exec
+nohup java -jar -Dspring.profiles.active=prod $DEPLOY_JAR --server.port=8080 >> /dev/null 2> $DEPLOY_ERR_LOG_PATH &
 
 sleep 3
 
