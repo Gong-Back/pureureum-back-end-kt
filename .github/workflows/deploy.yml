@@ -1,0 +1,84 @@
+name: CI-CD
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+  CODE_DEPLOYMENT_APPLICATION_NAME: ${{ secrets.CODE_DEPLOYMENT_APPLICATION_NAME }}
+  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: ${{ secrets.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }}
+  SECRET_YML: ${{ secrets.SECRET_YML }}
+  LOGBACK_VARIABLES: ${{ secrets.LOGBACK_VARIABLES }}
+  SECRET_YML_DIR: src/main/resources
+  SECRET_YML_FILE_NAME: secret.yml
+  LOGBACK_VARIABLES_DIR: src/main/resources
+  LOGBACK_VARIABLES_FILE_NAME: logback-variables.properties
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set Up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: '17'
+
+      - name: Copy secret.yml
+        run: echo $SECRET_YML | base64 --decode > $SECRET_YML_DIR/$SECRET_YML_FILE_NAME
+
+      - name: Copy logback-variables
+        run: echo $LOGBACK_VARIABLES | base64 --decode > $LOGBACK_VARIABLES_DIR/$LOGBACK_VARIABLES_FILE_NAME
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+        shell: bash
+
+      - name: Build with Gradle
+        run: ./gradlew clean build
+        shell: bash
+
+      - name: Make zip file
+        run: zip -r ./$GITHUB_SHA .
+        shell: bash
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_ID }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Upload to S3
+        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip
+
+      - name: Code Deploy
+        run: |
+          aws deploy create-deployment \
+          --deployment-config-name CodeDeployDefault.AllAtOnce \
+          --application-name ${{ env.CODE_DEPLOYMENT_APPLICATION_NAME }} \
+          --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
+          --s3-location bucket=$S3_BUCKET_NAME,bundleType=zip,key=$GITHUB_SHA.zip
+
+      - name: start-notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: workflow,job,commit,repo,ref,author,took
+          custom_payload: |
+            {
+              attachments: [{
+                color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
+                text: '${{ job.status }}' === 'success' ? `[Back] SUCCESS WORK!✔\n ${{github.base_ref}} from ${{github.head_ref}} \n${process.env.AS_JOB} (${process.env.AS_COMMIT}) by ${process.env.AS_AUTHOR}` 
+            : `[Back] FAIL WORK!❌\n ${{github.base_ref}} from ${{github.head_ref}} \n${process.env.AS_JOB} (${process.env.AS_COMMIT}) by ${process.env.AS_AUTHOR}`,
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOY_WEBHOOK_URL }}
+        if: always()

@@ -1,0 +1,58 @@
+name: pull-request-check
+
+on:
+  pull_request:
+    branches: [ develop, main ]
+
+env:
+  SECRET_YML: ${{ secrets.SECRET_YML }}
+  LOGBACK_VARIABLES: ${{ secrets.LOGBACK_VARIABLES }}
+  SECRET_YML_DIR: src/main/resources
+  SECRET_YML_FILE_NAME: secret.yml
+  LOGBACK_VARIABLES_DIR: src/main/resources
+  LOGBACK_VARIABLES_FILE_NAME: logback-variables.properties
+
+jobs:
+  pr-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Repository
+        uses: actions/checkout@v3
+
+      - name: Set Up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: '17'
+
+      - name: Copy secret.yml
+        run: echo $SECRET_YML | base64 --decode > $SECRET_YML_DIR/$SECRET_YML_FILE_NAME
+
+      - name: Copy logback-variables
+        run: echo $LOGBACK_VARIABLES | base64 --decode > $LOGBACK_VARIABLES_DIR/$LOGBACK_VARIABLES_FILE_NAME
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+        shell: bash
+
+      - name: Build with Gradle
+        run: ./gradlew clean build
+        shell: bash
+
+      - name: start-notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: workflow,job,commit,repo,ref,author,took
+          custom_payload: |
+            {
+              attachments: [{
+                color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
+                text: '${{ job.status }}' === 'success' ? `[Back] SUCCESS PULL REQUEST CHECK!✔\n ${{github.base_ref}} from ${{github.head_ref}} \n${process.env.AS_JOB} (${process.env.AS_COMMIT}) by ${process.env.AS_AUTHOR}` 
+            : `[Back] FAIL PULL REQUEST CHECK!❌\n ${{github.base_ref}} from ${{github.head_ref}} \n${process.env.AS_JOB} (${process.env.AS_COMMIT}) by ${process.env.AS_AUTHOR}`,
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: always()
