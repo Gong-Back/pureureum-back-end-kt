@@ -8,7 +8,7 @@ DEPLOY_ERR_LOG_PATH="/home/ec2-user/$PROJECT_NAME/logs/deploy_err.log" # Deploy 
 BUILD_JAR=$(ls $JAR_PATH)
 JAR_NAME=$(basename $BUILD_JAR)
 
-mkdir $DEPLOY_PATH/log
+cd $DEPLOY_PATH
 
 echo "===== 배포 시작 : $(date +%c) =====" >> $DEPLOY_LOG_PATH
 
@@ -28,8 +28,7 @@ else
   kill -9 $CURRENT_PID
 fi
 
-DEPLOY_JAR=$BUILD_LIBS_PATH$JAR_NAME
-echo "> $DEPLOY_JAR 배포" >> $DEPLOY_LOG_PATH
+DEPLOY_JAR=$DEPLOY_PATH/build/libs/$JAR_NAME
 nohup java -jar -Dspring.profiles.active=prod $DEPLOY_JAR --server.port=8080 2> $DEPLOY_ERR_LOG_PATH & # & -> background exec
 
 sleep 3
