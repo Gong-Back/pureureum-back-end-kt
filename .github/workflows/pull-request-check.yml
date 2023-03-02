@@ -6,8 +6,11 @@ on:
 
 env:
   SECRET_YML: ${{ secrets.SECRET_YML }}
+  LOGBACK_VARIABLES: ${{ secrets.LOGBACK_VARIABLES }}
   SECRET_YML_DIR: src/main/resources
   SECRET_YML_FILE_NAME: secret.yml
+  LOGBACK_VARIABLES_DIR: src/main/resources
+  LOGBACK_VARIABLES_FILE_NAME: logback-variables.properties
 
 jobs:
   pr-check:
@@ -20,10 +23,14 @@ jobs:
       - name: Set Up JDK 17
         uses: actions/setup-java@v3
         with:
-          java-version: 17
+          distribution: 'corretto'
+          java-version: '17'
 
       - name: Copy secret.yml
         run: echo $SECRET_YML | base64 --decode > $SECRET_YML_DIR/$SECRET_YML_FILE_NAME
+
+      - name: Copy logback-variables
+        run: echo $LOGBACK_VARIABLES | base64 --decode > $LOGBACK_VARIABLES_DIR/$LOGBACK_VARIABLES_FILE_NAME
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
