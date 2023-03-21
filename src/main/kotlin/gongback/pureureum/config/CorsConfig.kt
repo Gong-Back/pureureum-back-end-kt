@@ -7,10 +7,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration
 class CorsConfig : WebMvcConfigurer {
-    private val permitOrigins: List<String> = listOf(
-        "http://localhost:3000"
-        // TODO: Front 서버 도메인 추가
-    )
+//    private val permitOrigins: List<String> = listOf(
+//        "http://localhost:3000",
+//        // TODO: Front 서버 도메인 추가
+//    )
 
     private val permitHttpMethods: List<HttpMethod> = listOf(
         HttpMethod.GET,
@@ -24,8 +24,8 @@ class CorsConfig : WebMvcConfigurer {
 
     override fun addCorsMappings(registry: CorsRegistry) {
         registry
-            .addMapping("/**")
-            .allowedOrigins(*permitOrigins.toTypedArray())
+            .addMapping("/api/**")
+            .allowedOrigins("*")
             .allowedMethods(*permitHttpMethods.map(HttpMethod::name).toTypedArray())
             .allowedHeaders("*")
     }
