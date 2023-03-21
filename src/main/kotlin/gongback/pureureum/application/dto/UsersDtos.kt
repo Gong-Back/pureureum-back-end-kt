@@ -1,6 +1,7 @@
 package gongback.pureureum.application.dto
 
 import gongback.pureureum.domain.user.Gender
+import gongback.pureureum.domain.user.Role
 import gongback.pureureum.domain.user.User
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.Past
@@ -14,7 +15,7 @@ data class LoginReq(
     val password: String
 )
 
-data class RegisterReq(
+data class RegisterUserReq(
     @field:Length(min = 8, max = 15)
     val email: String,
 
@@ -42,7 +43,8 @@ data class RegisterReq(
             name = name,
             gender = gender,
             birthday = birthday,
-            password = encodedPassword
+            password = encodedPassword,
+            role = Role.ROLE_USER
         )
     }
 }

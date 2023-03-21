@@ -35,6 +35,9 @@ class User(
     val birthday: LocalDate
         get() = information.birthday
 
+    val role: Role
+        get() = information.role
+
     constructor(
         email: String,
         phoneNumber: String,
@@ -42,10 +45,11 @@ class User(
         gender: Gender,
         birthday: LocalDate,
         password: String,
+        role: Role,
         id: Long = 0L
     ) : this(
         id,
-        UserInformation(name, email, phoneNumber, gender, birthday),
+        UserInformation(name, email, phoneNumber, gender, birthday, role = role),
         password
     )
 }

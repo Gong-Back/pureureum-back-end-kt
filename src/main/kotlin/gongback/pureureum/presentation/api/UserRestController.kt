@@ -3,7 +3,7 @@ package gongback.pureureum.presentation.api
 import gongback.pureureum.application.UserService
 import gongback.pureureum.application.dto.EmailReq
 import gongback.pureureum.application.dto.LoginReq
-import gongback.pureureum.application.dto.RegisterReq
+import gongback.pureureum.application.dto.RegisterUserReq
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -25,9 +25,9 @@ class UserRestController(
 
     @PostMapping("/register")
     fun register(
-        @RequestBody @Valid registerReq: RegisterReq
+        @RequestBody @Valid registerUserReq: RegisterUserReq
     ): ResponseEntity<ApiResponse<String>> {
-        userService.register(registerReq)
+        userService.register(registerUserReq)
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 

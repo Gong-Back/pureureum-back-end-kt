@@ -25,5 +25,8 @@ data class UserInformation(
     val birthday: LocalDate,
 
     @Column(nullable = false)
-    val createdDate: LocalDate = LocalDate.now()
+    val createdDate: LocalDate = LocalDate.now(),
+
+    @Enumerated(EnumType.STRING)
+    val role: Role
 )
