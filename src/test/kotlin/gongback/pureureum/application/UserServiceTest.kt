@@ -2,6 +2,7 @@ package gongback.pureureum.application
 
 import gongback.pureureum.domain.user.UserRepository
 import gongback.pureureum.domain.user.existsByEmail
+import gongback.pureureum.domain.user.existsByPhoneNumber
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.mockk.every
@@ -26,6 +27,15 @@ class UserServiceTest : BehaviorSpec({
             }
         }
 
+        When("이미 존재하는 전화번호이면") {
+            every { userRepository.existsByPhoneNumber(registerReq.phoneNumber) } returns true
+            Then("예외가 발생한다.") {
+                shouldThrow<IllegalStateException> {
+                    userService.register(registerReq)
+                }
+            }
+        }
+
         When("인증 받지 않은 전화번호일 경우") {
             every { userRepository.existsByEmail(registerReq.email) } returns false
             every { smsLogService.isCertification(registerReq.phoneNumber) } returns false
@@ -37,8 +47,9 @@ class UserServiceTest : BehaviorSpec({
             }
         }
 
-        When("존재하지 않는 아이디이면서 본인 인증한 전화번호인 경우") {
+        When("존재하지 않는 아이디, 전화번호이면서, 본인 인증한 전화번호인 경우") {
             every { userRepository.existsByEmail(registerReq.email) } returns false
+            every { userRepository.existsByPhoneNumber(registerReq.phoneNumber) } returns false
             every { smsLogService.isCertification(registerReq.phoneNumber) } returns true
             every { bCryptPasswordEncoder.encode(registerReq.password) } returns "encodedPassword"
             every { userRepository.save(any()) } returns createUser()

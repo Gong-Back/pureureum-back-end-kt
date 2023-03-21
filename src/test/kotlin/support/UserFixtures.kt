@@ -1,7 +1,8 @@
 package gongback.pureureum.application
 
-import gongback.pureureum.application.dto.RegisterReq
+import gongback.pureureum.application.dto.RegisterUserReq
 import gongback.pureureum.domain.user.Gender
+import gongback.pureureum.domain.user.Role
 import gongback.pureureum.domain.user.User
 import support.createLocalDate
 import java.time.LocalDate
@@ -22,7 +23,7 @@ fun createUser(
     password: String = PASSWORD,
     id: Long = 0L
 ): User {
-    return User(name, email, phoneNumber, gender, birthday, password, id)
+    return User(name, email, phoneNumber, gender, birthday, password, Role.ROLE_USER, id)
 }
 
 fun createRegisterReq(
@@ -32,6 +33,6 @@ fun createRegisterReq(
     gender: Gender = GENDER,
     phoneNumber: String = PHONE_NUMBER,
     birthday: LocalDate = BIRTHDAY
-): RegisterReq {
-    return RegisterReq(email, password, name, gender, phoneNumber, birthday)
+): RegisterUserReq {
+    return RegisterUserReq(email, password, name, gender, phoneNumber, birthday)
 }
