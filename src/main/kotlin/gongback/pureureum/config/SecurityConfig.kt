@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 
 @Configuration
@@ -17,7 +18,12 @@ class SecurityConfig(
     private val customAuthenticationEntryPoint: CustomAuthenticationEntryPoint,
     private val customAccessDeniedHandler: CustomAccessDeniedHandler
 ) {
-    private val permitPatterns: List<String> = listOf("/api/v1/auth/**", "/api/docs", "/favicon.ico")
+    private val authenticationPatterns: List<String> = listOf("/admin/**")
+
+    @Bean
+    fun bCryptPasswordEncoder(): BCryptPasswordEncoder {
+        return BCryptPasswordEncoder()
+    }
 
     @Bean
     fun springSecurity(http: HttpSecurity): SecurityFilterChain = http
@@ -28,8 +34,8 @@ class SecurityConfig(
         .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
         .authorizeHttpRequests {
             it
-                .requestMatchers(*permitPatterns.toTypedArray()).permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers(*authenticationPatterns.toTypedArray()).authenticated()
+                .anyRequest().permitAll()
         }
         .exceptionHandling {
             it
