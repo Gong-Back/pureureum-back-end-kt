@@ -1,4 +1,4 @@
-package gongback.pureureum.api.properties
+package gongback.pureureum.application.properties
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 
