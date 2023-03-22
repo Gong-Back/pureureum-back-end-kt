@@ -1,11 +1,9 @@
 package gongback.pureureum.application
 
-import gongback.pureureum.application.dto.ErrorCode
 import gongback.pureureum.application.dto.MessageDto
 import gongback.pureureum.application.dto.NaverSendMessageDto
 import gongback.pureureum.application.dto.PhoneNumberReq
 import gongback.pureureum.application.dto.SmsSendResponse
-import gongback.pureureum.application.exception.SmsSendException
 import gongback.pureureum.application.properties.NaverSmsProperties
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
@@ -29,7 +27,7 @@ class NaverSmsService(
 
     override fun sendSmsCertification(phoneNumberReq: PhoneNumberReq): SmsSendResponse {
         if (smsLogService.getTotalSize() > SENDING_LIMIT) {
-            throw SmsSendException(errorCode = ErrorCode.SMS_SENDING_OVER_REQUEST)
+            throw SmsOverRequestException()
         }
 
         val certificationNumber = getCertificationNumber()
@@ -66,11 +64,11 @@ class NaverSmsService(
             .retrieve()
             .onStatus({ httpStatusCode -> httpStatusCode.is4xxClientError }) { clientResponse ->
                 clientResponse.bodyToMono(String::class.java)
-                    .map { _ -> SmsSendException(errorCode = ErrorCode.SMS_SEND_FAILED) }
+                    .map { _ -> SmsSendException() }
             }
             .onStatus({ httpStatusCode -> httpStatusCode.is5xxServerError }) { clientResponse ->
                 clientResponse.bodyToMono(String::class.java)
-                    .map { _ -> SmsSendException(errorCode = ErrorCode.SMS_SEND_FAILED) }
+                    .map { _ -> SmsSendException() }
             }
             .bodyToMono(String::class.java)
             .block()

@@ -1,6 +1,7 @@
 package gongback.pureureum.presentation.api
 
-import gongback.pureureum.application.exception.PureureumException
+import gongback.pureureum.application.PureureumException
+import gongback.pureureum.security.JwtException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
@@ -56,10 +57,14 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
 
     @ExceptionHandler(PureureumException::class)
     fun handlePureureumException(ex: PureureumException): ResponseEntity<ApiResponse<Unit>> {
-        logger.error("[PureureumException] ${ex.errorCode?.toString() ?: ex.message}")
-        return ResponseEntity
-            .status(ex.errorCode?.httpStatus ?: HttpStatus.BAD_REQUEST)
-            .body(ApiResponse.error(ex.errorCode?.message ?: ex.message))
+        logger.error("[PureureumException] ${ex.message}")
+        return ResponseEntity.status(ex.errorCode.httpStatus).body(ApiResponse.error(ex.message))
+    }
+
+    @ExceptionHandler(JwtException::class)
+    fun handleJwtException(ex: JwtException): ResponseEntity<ApiResponse<Unit>> {
+        logger.error("[Exception] ", ex)
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(ex.message))
     }
 
     @ExceptionHandler(Exception::class)
