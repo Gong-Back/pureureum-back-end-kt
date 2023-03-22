@@ -1,10 +1,10 @@
 package gongback.pureureum.presentation.api
 
 import com.ninjasquad.springmockk.MockkBean
+import gongback.pureureum.application.SmsSendException
 import gongback.pureureum.application.SmsService
 import gongback.pureureum.application.dto.ErrorCode
 import gongback.pureureum.application.dto.SmsSendResponse
-import gongback.pureureum.application.exception.SmsSendException
 import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
@@ -41,7 +41,7 @@ class SmsRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `전화번호 인증 전송 실패 - 서버 오류`() {
-        every { smsService.sendSmsCertification(any()) } throws SmsSendException(errorCode = ErrorCode.SMS_SEND_FAILED)
+        every { smsService.sendSmsCertification(any()) } throws SmsSendException()
 
         mockMvc.post("/api/v1/sms/send/certification") {
             jsonContent(createPhoneNumber())
@@ -55,7 +55,7 @@ class SmsRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `전화번호 인증 전송 실패 - 50건 초과`() {
-        every { smsService.sendSmsCertification(any()) } throws SmsSendException(errorCode = ErrorCode.SMS_SENDING_OVER_REQUEST)
+        every { smsService.sendSmsCertification(any()) } throws SmsSendException()
 
         mockMvc.post("/api/v1/sms/send/certification") {
             jsonContent(createPhoneNumber())
@@ -84,7 +84,7 @@ class SmsRestControllerTest : ControllerTestHelper() {
     fun `전화번호 인증 실패 - 기록이 없을 때`() {
         val req = createPhoneNumber()
 
-        val errorMessage: String = ErrorCode.NOT_FOUND.message + " receiver: ${req.get("phoneNumber")}"
+        val errorMessage: String = " receiver: ${req.get("phoneNumber")}"
         every { smsService.completeCertification(any()) } throws IllegalArgumentException(errorMessage)
 
         mockMvc.post("/api/v1/sms/complete/certification") {

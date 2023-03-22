@@ -1,10 +1,20 @@
 package support.test
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ninjasquad.springmockk.MockkBean
+import gongback.pureureum.security.JwtNotExistsException
+import gongback.pureureum.security.LoginUser
+import gongback.pureureum.security.LoginUserResolver
+import gongback.pureureum.security.RefreshToken
+import gongback.pureureum.security.RefreshTokenResolver
+import io.mockk.every
+import io.mockk.slot
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs
+import org.springframework.core.MethodParameter
+import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.restdocs.RestDocumentationContextProvider
 import org.springframework.restdocs.RestDocumentationExtension
@@ -18,7 +28,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
+import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.filter.CharacterEncodingFilter
+import support.REFRESH_HEADER_NAME
+import support.createAccessToken
+import support.createUser
 import support.test.BaseTests.TestEnvironment
 
 @TestEnvironment
@@ -26,6 +40,12 @@ import support.test.BaseTests.TestEnvironment
 @ExtendWith(RestDocumentationExtension::class)
 abstract class ControllerTestHelper {
     lateinit var mockMvc: MockMvc
+
+    @MockkBean
+    private lateinit var loginUserResolver: LoginUserResolver
+
+    @MockkBean
+    private lateinit var refreshTokenResolver: RefreshTokenResolver
 
     @Autowired
     lateinit var objectMapper: ObjectMapper
@@ -45,6 +65,40 @@ abstract class ControllerTestHelper {
                     .withResponseDefaults(Preprocessors.prettyPrint())
             )
             .build()
+
+        loginUserResolver.also {
+            slot<MethodParameter>().also { slot ->
+                every { it.supportsParameter(capture(slot)) } answers {
+                    slot.captured.hasParameterAnnotation(LoginUser::class.java)
+                }
+            }
+            slot<NativeWebRequest>().also { slot ->
+                every { it.resolveArgument(any(), any(), capture(slot), any()) } answers {
+                    val hasToken = slot.captured.getHeader(HttpHeaders.AUTHORIZATION)?.startsWith("Bearer", true)
+                    if (hasToken != true) {
+                        throw JwtNotExistsException()
+                    }
+                    createUser()
+                }
+            }
+        }
+
+        refreshTokenResolver.also {
+            slot<MethodParameter>().also { slot ->
+                every { it.supportsParameter(capture(slot)) } answers {
+                    slot.captured.hasParameterAnnotation(RefreshToken::class.java)
+                }
+            }
+            slot<NativeWebRequest>().also { slot ->
+                every { it.resolveArgument(any(), any(), capture(slot), any()) } answers {
+                    val hasToken = slot.captured.getHeader(REFRESH_HEADER_NAME)?.startsWith("Bearer", true)
+                    if (hasToken != true) {
+                        throw JwtNotExistsException()
+                    }
+                    createAccessToken()
+                }
+            }
+        }
     }
 
     fun MockHttpServletRequestDsl.jsonContent(value: Any) {

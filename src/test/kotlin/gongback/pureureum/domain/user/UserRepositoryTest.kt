@@ -1,10 +1,11 @@
 package gongback.pureureum.domain.user
 
-import gongback.pureureum.application.createUser
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.ExpectSpec
 import io.kotest.extensions.spring.SpringTestExtension
 import io.kotest.extensions.spring.SpringTestLifecycleMode
 import io.kotest.matchers.shouldBe
+import support.createUser
 import support.test.BaseTests.RepositoryTest
 
 @RepositoryTest
@@ -40,6 +41,20 @@ class UserRepositoryTest(
         expect("중복되지 않는다.") {
             val result = userRepository.existsByPhoneNumber("010-1234-5678")
             result shouldBe false
+        }
+    }
+
+    context("회원 조회") {
+        val user = createUser()
+        userRepository.save(user)
+
+        expect("조회 성공") {
+            val result = userRepository.getUserByEmail(user.email)
+            result.email shouldBe user.email
+        }
+
+        expect("조회 실패") {
+            shouldThrow<IllegalArgumentException> { userRepository.getUserByEmail("otherEmail") }
         }
     }
 })
