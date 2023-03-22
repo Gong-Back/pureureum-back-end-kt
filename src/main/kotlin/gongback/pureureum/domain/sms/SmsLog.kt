@@ -14,7 +14,7 @@ class SmsLog(
 
     val receiver: String,
 
-    isSuccess: Boolean,
+    isSuccess: Boolean = false,
 
     val createDate: LocalDateTime = LocalDateTime.now()
 ) {

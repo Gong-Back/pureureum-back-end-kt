@@ -19,7 +19,7 @@ class SmsLogServiceTest : BehaviorSpec({
             val smsLog = createSmsLog(receiver, false)
             every { smsLogRepository.save(any()) } returns smsLog
 
-            Then("성공한다.") {
+            Then("sms 정보를 저장한다.") {
                 smsLogService.save(receiver)
             }
         }
@@ -28,8 +28,8 @@ class SmsLogServiceTest : BehaviorSpec({
             val smsLog = createSmsLog(receiver, true)
             every { smsLogRepository.getLastSmsLog(any()) } returns smsLog
 
-            Then("Ture를 반환한다.") {
-                smsLogService.isCertification(receiver) shouldBe true
+            Then("True를 반환한다.") {
+                smsLogService.isCertificated(receiver) shouldBe true
             }
         }
 
@@ -37,8 +37,8 @@ class SmsLogServiceTest : BehaviorSpec({
             val smsLog = createSmsLog(receiver, false)
             every { smsLogRepository.getLastSmsLog(any()) } returns smsLog
 
-            Then("Ture를 반환한다.") {
-                smsLogService.isCertification(receiver) shouldBe false
+            Then("False를 반환한다.") {
+                smsLogService.isCertificated(receiver) shouldBe false
             }
         }
     }

@@ -60,7 +60,7 @@ class SmsRestControllerTest : ControllerTestHelper() {
         mockMvc.post("/api/v1/sms/send/certification") {
             jsonContent(createPhoneNumber())
         }.andExpect {
-            status { isBadRequest() }
+            status { is5xxServerError() }
             content { ApiResponse.error(ErrorCode.SMS_SENDING_OVER_REQUEST.message) }
         }.andDo {
             createDocument("sms-send-fail-client")

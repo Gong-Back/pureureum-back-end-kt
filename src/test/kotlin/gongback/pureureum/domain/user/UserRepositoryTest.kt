@@ -17,12 +17,12 @@ class UserRepositoryTest(
         val user = createUser()
         userRepository.save(user)
 
-        expect("중복된다") {
+        expect("존재한다.") {
             val result = userRepository.existsByEmail(user.email)
             result shouldBe true
         }
 
-        expect("중복되지 않는다.") {
+        expect("존재하지 않는다.") {
             val result = userRepository.existsByEmail("otherEmail")
             result shouldBe false
         }

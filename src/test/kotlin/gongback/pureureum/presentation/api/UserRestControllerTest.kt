@@ -86,7 +86,7 @@ class UserRestControllerTest : ControllerTestHelper() {
     fun `이메일 중복 확인 성공`() {
         every { userService.checkDuplicatedEmail(any()) } just Runs
 
-        mockMvc.post("/api/v1/users/check-email") {
+        mockMvc.post("/api/v1/users/validate/email") {
             jsonContent(mapOf("email" to "testEmail123"))
         }.andExpect {
             status { isOk() }
@@ -97,7 +97,7 @@ class UserRestControllerTest : ControllerTestHelper() {
     fun `이메일 중복 확인 실패`() {
         every { userService.checkDuplicatedEmail(any()) } throws IllegalStateException("이미 가입된 이메일입니다.")
 
-        mockMvc.post("/api/v1/users/check-email") {
+        mockMvc.post("/api/v1/users/validate/email") {
             jsonContent(mapOf("email" to "testEmail123"))
         }.andExpect {
             status { isBadRequest() }

@@ -35,6 +35,6 @@ class UserService(
     }
 
     private fun existsSuccessPhoneNumber(phoneNumber: String) {
-        check(smsLogService.isCertification(phoneNumber)) { "본인 인증되지 않은 정보입니다." }
+        check(smsLogService.isCertificated(phoneNumber)) { "본인 인증되지 않은 정보입니다." }
     }
 }

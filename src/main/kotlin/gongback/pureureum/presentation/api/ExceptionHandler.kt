@@ -30,7 +30,7 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         status: HttpStatusCode,
         request: WebRequest
     ): ResponseEntity<Any>? {
-        logger.error("[MethodArgumentNotValidException] ${ex.messages()}")
+        logger.error("[HttpRequestMethodNotSupportedException] ${ex.messages()}")
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(ApiResponse.error(ex.messages()))
     }
 
@@ -65,6 +65,6 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(Exception::class)
     fun handleException(ex: Exception): ResponseEntity<ApiResponse<Unit>> {
         logger.error("[Exception] ", ex)
-        return ResponseEntity.badRequest().body(ApiResponse.error(ex.message))
+        return ResponseEntity.internalServerError().body(ApiResponse.error(ex.message))
     }
 }

@@ -31,7 +31,7 @@ class UserRestController(
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
-    @PostMapping("/check-email")
+    @PostMapping("/validate/email")
     fun checkDuplicatedEmail(
         @RequestBody @Valid emailReq: EmailReq
     ): ResponseEntity<Unit> {

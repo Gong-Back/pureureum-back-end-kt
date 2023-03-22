@@ -13,14 +13,14 @@ class SmsLogService(
 ) {
     @Transactional
     fun save(receiver: String) {
-        smsLogRepository.save(SmsLog(receiver = receiver, isSuccess = false))
+        smsLogRepository.save(SmsLog(receiver = receiver))
     }
 
-    fun getTotalSize(): Int {
+    fun getTotalSize(): Long {
         return smsLogRepository.getTotalSize()
     }
 
-    fun isCertification(phoneNumber: String): Boolean {
+    fun isCertificated(phoneNumber: String): Boolean {
         return smsLogRepository.getLastSmsLog(phoneNumber).isSuccess
     }
 

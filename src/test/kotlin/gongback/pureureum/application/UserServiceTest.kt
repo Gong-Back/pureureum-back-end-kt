@@ -18,7 +18,7 @@ class UserServiceTest : BehaviorSpec({
 
     Given("회원가입 정보") {
         val registerReq = createRegisterReq()
-        When("이미 존재하는 아이디이면") {
+        When("이미 존재하는 이메일이면") {
             every { userRepository.existsByEmail(registerReq.email) } returns true
             Then("예외가 발생한다.") {
                 shouldThrow<IllegalStateException> {
@@ -36,9 +36,9 @@ class UserServiceTest : BehaviorSpec({
             }
         }
 
-        When("인증 받지 않은 전화번호일 경우") {
+        When("존재하지 않는 이메일이면서, 인증하지 않은 전화번호일 경우") {
             every { userRepository.existsByEmail(registerReq.email) } returns false
-            every { smsLogService.isCertification(registerReq.phoneNumber) } returns false
+            every { smsLogService.isCertificated(registerReq.phoneNumber) } returns false
 
             Then("예외가 발생한다.") {
                 shouldThrow<IllegalStateException> {
@@ -47,10 +47,10 @@ class UserServiceTest : BehaviorSpec({
             }
         }
 
-        When("존재하지 않는 아이디, 전화번호이면서, 본인 인증한 전화번호인 경우") {
+        When("존재하지 않는 이메일, 전화번호이면서, 본인 인증한 전화번호인 경우") {
             every { userRepository.existsByEmail(registerReq.email) } returns false
             every { userRepository.existsByPhoneNumber(registerReq.phoneNumber) } returns false
-            every { smsLogService.isCertification(registerReq.phoneNumber) } returns true
+            every { smsLogService.isCertificated(registerReq.phoneNumber) } returns true
             every { bCryptPasswordEncoder.encode(registerReq.password) } returns "encodedPassword"
             every { userRepository.save(any()) } returns createUser()
 

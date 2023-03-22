@@ -32,12 +32,12 @@ class NaverSmsService(
             throw SmsSendException(errorCode = ErrorCode.SMS_SENDING_OVER_REQUEST)
         }
 
-        val randomNumber = getRandomNumber()
+        val certificationNumber = getCertificationNumber()
         smsLogService.save(phoneNumberReq.phoneNumber)
 
-        sendMessage(phoneNumberReq.receiver, randomNumber)
+        sendMessage(phoneNumberReq.receiver, certificationNumber)
 
-        return SmsSendResponse(certificationNumber = randomNumber)
+        return SmsSendResponse(certificationNumber = certificationNumber)
     }
 
     override fun completeCertification(phoneNumberReq: PhoneNumberReq) {
@@ -76,7 +76,7 @@ class NaverSmsService(
             .block()
     }
 
-    private fun getRandomNumber(): String {
+    private fun getCertificationNumber(): String {
         val randomCertificationNumber = StringBuilder()
         var size = naverSmsProperties.size
         while (size-- > 0) {
@@ -89,11 +89,10 @@ class NaverSmsService(
         currentTimeMillis: Long
     ): String? {
         val newLine = "\n"
-        val url = SEND_URI
         val message = StringBuilder()
             .append("POST")
             .append(" ")
-            .append(url)
+            .append(SEND_URI)
             .append(newLine)
             .append(currentTimeMillis)
             .append(newLine)
