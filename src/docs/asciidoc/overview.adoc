@@ -47,11 +47,11 @@
 
 | code
 | int
-| Http Status Code(코드 번호)
+| 응답 값
 
-| message
-| String
-| Http Status Code(메시지)
+| messages
+| List
+| 응답 메시지
 
 | data
 | Object
@@ -67,11 +67,11 @@
 
 | code
 | int
-| Http Status Code(코드 번호)
+| 응답 값
 
-| msg
-| String
-| Http Status Code(메시지)
+| messages
+| List
+| 에러 메시지
 
 | errors
 | Object
