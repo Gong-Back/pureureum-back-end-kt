@@ -1,0 +1,103 @@
+[[Overview]]
+= *Overview*
+
+[[overview-http-status-codes]]
+=== HTTP status codes
+
+|===
+| ResponseCode | Message
+
+| `200 OK`
+| Success
+
+| `201 CREATED`
+| Success Created
+
+| `400 BAD_REQUEST`
+| Bad request
+
+| `401 UNAUTHORIZED`
+| Token is invalid / Request is invalid
+
+| `403 FORBIDDEN`
+| Permission is invalid
+
+| `410 REQUEST_RESOURCE_NOT_VALID`
+| Requested resources are invalid
+
+| `420 JwtExpiredException`
+| Jwt is expired
+
+| `500 INTERNAL_SERVER_ERROR`
+| Internal server error
+
+| `510 SMS_SEND_FAILED`
+| SMS sending error
+
+| `511 SMS_SENDING_OVER_REQUEST`
+| SMS over sending error
+
+|===
+
+[[overview-error-response]]
+=== *Success Response Data*
+
+|===
+| Field Name | Type | Description
+
+| code
+| int
+| Http Status Code(코드 번호)
+
+| message
+| String
+| Http Status Code(메시지)
+
+| data
+| Object
+| 응답 데이터
+
+|===
+
+[[overview-error-response]]
+=== *Error Response Data*
+
+|===
+| Field Name | Type | Description
+
+| code
+| int
+| Http Status Code(코드 번호)
+
+| msg
+| String
+| Http Status Code(메시지)
+
+| errors
+| Object
+| 오류 데이터
+
+|===
+
+[[Token-Response]]
+=== *Token-Response*
+
+|===
+| 상황 | Status | Response
+
+| 로그인 성공 시
+| 200
+| accessToken, refreshToken 발급
+
+| accessToken이 없을 경우
+| 401
+| 401
+
+| accessToken이 만료되었을 경우
+| 401
+| 401
+
+| accessToken이 유효하지 않을 경우
+| 401
+| 420 / *Access Token 재발급 요청 필수*
+|===
