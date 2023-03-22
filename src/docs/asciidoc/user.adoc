@@ -4,28 +4,69 @@
 [[로그인-API]]
 == *1. 로그인 API*
 
+|===
+| 상황 | Status | Response
+
+| 로그인 성공 시
+| 200
+| accessToken, refreshToken 발급
+
+| accessToken이 없을 경우
+| 401
+| Jwt가 존재하지 않습니다
+
+| accessToken이 만료되었을 경우
+| 401
+| Jwt가 만료되었습니다
+
+| accessToken이 유효하지 않을 경우
+| 401
+| Jwt가 유효하지 않습니다
+|===
+
 === *1-1* 성공
 
 operation::user-rest-controller-test/user-login-success[snippets='http-request,request-body,http-response']
 
-[[회원가입-API]]
-== *2. 회원가입 API*
+=== *1-2* 실패 - 이메일이 유효하지 않음
+
+operation::user-rest-controller-test/user-login-fail-not-valid-email[snippets='http-request,request-body,http-response']
+
+=== *1-3* 실패 - 비밀번호가 일치하지 않음
+
+operation::user-rest-controller-test/user-login-fail-not-valid-password[snippets='http-request,request-body,http-response']
+
+[[Access-토큰-재발급-API]]
+== *2. Access 토큰 재발급 API
+
+===== *"Jwt가 만료되었습니다"* 응답이 왔을 때 요청
 
 === *2-1* 성공
 
-operation::user-rest-controller-test/user-register-success[snippets='http-request,request-body,http-response']
+operation::user-rest-controller-test/reissue-access-token-success[snippets='http-request,request-body,http-response']
 
 === *2-2* 실패
+
+operation::user-rest-controller-test/reissue-access-token-fail[snippets='http-request,request-body,http-response']
+
+[[회원가입-API]]
+== *3. 회원가입 API*
+
+=== *3-1* 성공
+
+operation::user-rest-controller-test/user-register-success[snippets='http-request,request-body,http-response']
+
+=== *3-2* 실패
 
 operation::user-rest-controller-test/user-register-fail[snippets='http-request,request-body,http-response']
 
 [[이메일-확인-API]]
-== *3. 이메일 확인 API*
+== *4. 이메일 확인 API*
 
-=== *3-1* 성공
+=== *4-1* 성공
 
 operation::user-rest-controller-test/user-checkEmail-success[snippets='http-request,request-body,http-response']
 
-=== *3-2* 실패
+=== *4-2* 실패
 
 operation::user-rest-controller-test/user-checkEmail-fail[snippets='http-request,request-body,http-response']
