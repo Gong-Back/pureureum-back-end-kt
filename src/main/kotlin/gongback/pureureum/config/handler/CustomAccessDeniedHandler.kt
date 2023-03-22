@@ -1,8 +1,8 @@
 package gongback.pureureum.config.handler
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import gongback.pureureum.api.dto.ApiResponse
-import gongback.pureureum.api.dto.ErrorCode.FORBIDDEN
+import gongback.pureureum.application.dto.ErrorCode.FORBIDDEN
+import gongback.pureureum.presentation.api.ApiResponse
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import mu.KLogger
@@ -21,7 +21,7 @@ class CustomAccessDeniedHandler(
         response: HttpServletResponse?,
         accessDeniedException: AccessDeniedException?
     ) {
-        logger.error { "[AccessDeniedHandler] = ${request?.requestURI}" }
+        logger.error { "[AccessDeniedHandler] ${request?.requestURI}" }
 
         response?.status = FORBIDDEN.httpStatus.value()
         response?.contentType = MediaType.APPLICATION_JSON_VALUE
