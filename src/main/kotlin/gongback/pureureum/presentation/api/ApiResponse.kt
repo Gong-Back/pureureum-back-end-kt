@@ -1,4 +1,4 @@
-package gongback.pureureum.api.dto
+package gongback.pureureum.presentation.api
 
 data class ApiResponse<T>(
     val message: String? = "",

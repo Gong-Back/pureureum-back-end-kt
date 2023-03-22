@@ -1,6 +1,6 @@
-package gongback.pureureum.api
+package gongback.pureureum.presentation.api
 
-import gongback.pureureum.api.properties.DocsProperties
+import gongback.pureureum.application.properties.DocsProperties
 import org.springframework.context.annotation.Profile
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader

@@ -1,8 +1,8 @@
 package gongback.pureureum.config.handler
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import gongback.pureureum.api.dto.ApiResponse
-import gongback.pureureum.api.dto.ErrorCode.UNAUTHORIZED
+import gongback.pureureum.application.dto.ErrorCode.UNAUTHORIZED
+import gongback.pureureum.presentation.api.ApiResponse
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import mu.KLogger
@@ -21,7 +21,7 @@ class CustomAuthenticationEntryPoint(
         response: HttpServletResponse?,
         authException: AuthenticationException?
     ) {
-        logger.error { "[AuthenticationEntryPoint] = ${request?.requestURI}" }
+        logger.error { "[AuthenticationEntryPoint] ${request?.requestURI}" }
 
         response?.status = UNAUTHORIZED.httpStatus.value()
         response?.contentType = MediaType.APPLICATION_JSON_VALUE

@@ -1,0 +1,31 @@
+[[User-API]]
+= *User API*
+
+[[로그인-API]]
+== *1. 로그인 API*
+
+=== *1-1* 성공
+
+operation::user-rest-controller-test/user-login-success[snippets='http-request,request-body,http-response']
+
+[[회원가입-API]]
+== *2. 회원가입 API*
+
+=== *2-1* 성공
+
+operation::user-rest-controller-test/user-register-success[snippets='http-request,request-body,http-response']
+
+=== *2-2* 실패
+
+operation::user-rest-controller-test/user-register-fail[snippets='http-request,request-body,http-response']
+
+[[이메일-확인-API]]
+== *3. 이메일 확인 API*
+
+=== *3-1* 성공
+
+operation::user-rest-controller-test/user-checkEmail-success[snippets='http-request,request-body,http-response']
+
+=== *3-2* 실패
+
+operation::user-rest-controller-test/user-checkEmail-fail[snippets='http-request,request-body,http-response']

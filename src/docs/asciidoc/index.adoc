@@ -12,4 +12,5 @@ ifndef::page[]
 :page: src/docs/asciidoc
 endif::[]
 
-include::auth.adoc[]
+include::user.adoc[]
+include::sms.adoc[]
