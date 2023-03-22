@@ -47,7 +47,7 @@
 
 | code
 | int
-| 응답 값
+| 응답 코드
 
 | messages
 | List
@@ -67,7 +67,7 @@
 
 | code
 | int
-| 응답 값
+| 에러 코드
 
 | messages
 | List
@@ -75,7 +75,7 @@
 
 | errors
 | Object
-| 오류 데이터
+| 에러 데이터
 
 |===
 
