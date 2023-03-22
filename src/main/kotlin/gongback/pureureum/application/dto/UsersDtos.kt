@@ -1,29 +1,26 @@
 package gongback.pureureum.application.dto
 
 import gongback.pureureum.domain.user.Gender
+import gongback.pureureum.domain.user.Password
 import gongback.pureureum.domain.user.Role
 import gongback.pureureum.domain.user.User
-import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.Past
 import jakarta.validation.constraints.Pattern
 import org.hibernate.validator.constraints.Length
 import java.time.LocalDate
 
 data class LoginReq(
-    @field:Email
+    @field:Length(min = 8, max = 15)
     val email: String,
-    val password: String
+
+    val password: Password
 )
 
 data class RegisterUserReq(
     @field:Length(min = 8, max = 15)
     val email: String,
 
-    @field:Pattern(
-        regexp = "^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,15}$",
-        message = "올바른 형식의 비밀번호여야 합니다"
-    )
-    val password: String,
+    val password: Password,
 
     @field:Length(max = 20)
     val name: String,
@@ -36,14 +33,14 @@ data class RegisterUserReq(
     @field:Past
     val birthday: LocalDate
 ) {
-    fun toEntityByEncodedPassword(encodedPassword: String): User {
+    fun toEntity(): User {
         return User(
             email = email,
             phoneNumber = phoneNumber,
             name = name,
             gender = gender,
             birthday = birthday,
-            password = encodedPassword,
+            password = password,
             role = Role.ROLE_USER
         )
     }
