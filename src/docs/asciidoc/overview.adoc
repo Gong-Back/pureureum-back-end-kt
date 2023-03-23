@@ -14,10 +14,10 @@
 | Success Created
 
 | `400 BAD_REQUEST`
-| Bad request
+| Bad request / Request is invalid
 
 | `401 UNAUTHORIZED`
-| Token is invalid / Request is invalid
+| Token is invalid / Unauthenticated Access
 
 | `403 FORBIDDEN`
 | Permission is invalid
