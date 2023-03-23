@@ -44,14 +44,14 @@ class UserAuthenticationService(
     }
 
     fun checkDuplicatedEmail(email: String) {
-        require(!userRepository.existsByEmail(email)) { "이미 가입된 이메일입니다." }
+        require(!userRepository.existsByEmail(email)) { "이미 가입된 이메일입니다" }
     }
 
     fun checkDuplicatedPhoneNumber(phoneNumber: String) {
-        require(!userRepository.existsByPhoneNumber(phoneNumber)) { "이미 가입된 전화번호입니다." }
+        require(!userRepository.existsByPhoneNumber(phoneNumber)) { "이미 가입된 전화번호입니다" }
     }
 
     private fun existsSuccessPhoneNumber(phoneNumber: String) {
-        require(smsLogService.isCertificated(phoneNumber)) { "본인 인증되지 않은 정보입니다." }
+        require(smsLogService.isCertificated(phoneNumber)) { "본인 인증되지 않은 정보입니다" }
     }
 }

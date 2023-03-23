@@ -20,7 +20,7 @@ class SmsRestController(
         @RequestBody @Valid phoneNumberReq: PhoneNumberReq
     ): ResponseEntity<ApiResponse<SmsSendResponse>> {
         val smsSendResponse = smsService.sendSmsCertification(phoneNumberReq)
-        return ResponseEntity.ok().body(ApiResponse.success(smsSendResponse))
+        return ResponseEntity.ok().body(ApiResponse.ok(smsSendResponse))
     }
 
     @PostMapping("/complete/certification")

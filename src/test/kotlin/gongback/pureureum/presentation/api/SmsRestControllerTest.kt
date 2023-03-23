@@ -33,7 +33,7 @@ class SmsRestControllerTest : ControllerTestHelper() {
             jsonContent(createPhoneNumber())
         }.andExpect {
             status { isOk() }
-            content { ApiResponse.success(smsSendResponse) }
+            content { ApiResponse.ok(smsSendResponse) }
         }.andDo {
             createDocument("sms-send-success")
         }
@@ -47,7 +47,7 @@ class SmsRestControllerTest : ControllerTestHelper() {
             jsonContent(createPhoneNumber())
         }.andExpect {
             status { is5xxServerError() }
-            content { ApiResponse.error(ErrorCode.SMS_SEND_FAILED.message) }
+            content { ApiResponse.error(ErrorCode.SMS_SEND_FAILED.code, ErrorCode.SMS_SEND_FAILED.message) }
         }.andDo {
             createDocument("sms-send-fail-server")
         }
@@ -61,7 +61,12 @@ class SmsRestControllerTest : ControllerTestHelper() {
             jsonContent(createPhoneNumber())
         }.andExpect {
             status { is5xxServerError() }
-            content { ApiResponse.error(ErrorCode.SMS_SENDING_OVER_REQUEST.message) }
+            content {
+                ApiResponse.error(
+                    ErrorCode.SMS_OVER_SENDING_REQUEST.code,
+                    ErrorCode.SMS_OVER_SENDING_REQUEST.message
+                )
+            }
         }.andDo {
             createDocument("sms-send-fail-client")
         }
@@ -91,7 +96,7 @@ class SmsRestControllerTest : ControllerTestHelper() {
             jsonContent(req)
         }.andExpect {
             status { isBadRequest() }
-            content { ApiResponse.error(errorMessage) }
+            content { ApiResponse.error(ErrorCode.REQUEST_RESOURCE_NOT_VALID.code, errorMessage) }
         }.andDo {
             createDocument("sms-complete-fail")
         }

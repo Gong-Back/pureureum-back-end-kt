@@ -9,4 +9,4 @@ class SmsSendException(cause: Throwable? = null) :
     PureureumException(cause = cause, errorCode = ErrorCode.SMS_SEND_FAILED)
 
 class SmsOverRequestException(cause: Throwable? = null) :
-    PureureumException(cause = cause, errorCode = ErrorCode.SMS_SENDING_OVER_REQUEST)
+    PureureumException(cause = cause, errorCode = ErrorCode.SMS_OVER_SENDING_REQUEST)
