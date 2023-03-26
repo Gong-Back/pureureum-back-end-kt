@@ -22,8 +22,20 @@
 | `403 FORBIDDEN`
 | Permission is invalid
 
+| `405 METHOD_NOT_ALLOWED`
+| Http Method is invalid
+
 | `410 REQUEST_RESOURCE_NOT_VALID`
 | Requested resources are invalid
+
+| `411 REQUEST_RESOURCE_ALREADY_EXISTS`
+| Requested resources are already exists
+
+| `412 REQUEST_RESOURCE_NOT_ENOUGH`
+| Requested resources are not enough
+
+| `415 OAUTH_AUTHENTICATION_FAIL`
+| OAuth Authentication is failed
 
 | `420 JwtExpiredException`
 | Jwt is expired
