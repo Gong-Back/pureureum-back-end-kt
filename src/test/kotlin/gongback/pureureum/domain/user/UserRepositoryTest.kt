@@ -19,12 +19,12 @@ class UserRepositoryTest(
         userRepository.save(user)
 
         expect("존재한다.") {
-            val result = userRepository.existsByEmail(user.email)
+            val result = userRepository.existsEmailOrNickname(user.email)
             result shouldBe true
         }
 
         expect("존재하지 않는다.") {
-            val result = userRepository.existsByEmail("otherEmail")
+            val result = userRepository.existsEmailOrNickname("otherEmail")
             result shouldBe false
         }
     }
@@ -48,13 +48,22 @@ class UserRepositoryTest(
         val user = createUser()
         userRepository.save(user)
 
-        expect("조회 성공") {
+        expect("이메일 조회 성공") {
             val result = userRepository.getUserByEmail(user.email)
             result.email shouldBe user.email
         }
 
-        expect("조회 실패") {
+        expect("이메일 조회 실패") {
             shouldThrow<IllegalArgumentException> { userRepository.getUserByEmail("otherEmail") }
+        }
+
+        expect("전화번호 조회 성공") {
+            val result = userRepository.getUserByPhoneNumber(user.phoneNumber)
+            result.phoneNumber shouldBe user.phoneNumber
+        }
+
+        expect("이메일 조회 실패") {
+            shouldThrow<IllegalArgumentException> { userRepository.getUserByPhoneNumber("otherEmail") }
         }
     }
 })
