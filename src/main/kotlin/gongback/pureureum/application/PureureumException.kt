@@ -10,3 +10,6 @@ class SmsSendException(cause: Throwable? = null) :
 
 class SmsOverRequestException(cause: Throwable? = null) :
     PureureumException(cause = cause, errorCode = ErrorCode.SMS_OVER_SENDING_REQUEST)
+
+class OAuthAuthenticationException(cause: Throwable? = null) :
+    PureureumException(cause = cause, errorCode = ErrorCode.OAUTH_AUTHENTICATION_FAIL)
