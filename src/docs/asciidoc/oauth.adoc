@@ -4,7 +4,7 @@
 [[OAuth-로그인-API]]
 == *1. OAuth 로그인 API*
 
-===== */oauth/login/* + (kakao, naver, google)
+*/oauth/login/* + (kakao, naver, google)
 
 === *1-1* OAuth 로그인 성공
 

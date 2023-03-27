@@ -19,7 +19,7 @@ operation::user-rest-controller-test/user-login-fail-not-valid-password[snippets
 [[Access-토큰-재발급-API]]
 == *2. Access 토큰 재발급 API*
 
-===== *"Jwt가 만료되었습니다"* 응답이 왔을 때 요청
+*"Jwt가 만료되었습니다"* 응답이 왔을 때 요청
 
 === *2-1* 성공
 
