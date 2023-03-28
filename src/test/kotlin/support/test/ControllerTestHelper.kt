@@ -18,9 +18,16 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.restdocs.RestDocumentationContextProvider
 import org.springframework.restdocs.RestDocumentationExtension
+import org.springframework.restdocs.headers.RequestHeadersSnippet
+import org.springframework.restdocs.headers.ResponseHeadersSnippet
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
+import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler
 import org.springframework.restdocs.operation.preprocess.Preprocessors
+import org.springframework.restdocs.payload.RequestFieldsSnippet
+import org.springframework.restdocs.payload.ResponseFieldsSnippet
+import org.springframework.restdocs.request.PathParametersSnippet
+import org.springframework.restdocs.snippet.Attributes.Attribute
 import org.springframework.test.web.servlet.MockHttpServletRequestDsl
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.MockMvcResultHandlersDsl
@@ -49,6 +56,8 @@ abstract class ControllerTestHelper {
 
     @Autowired
     lateinit var objectMapper: ObjectMapper
+
+    protected val LENGTH = "length"
 
     @BeforeEach
     internal fun setUp(
@@ -108,5 +117,63 @@ abstract class ControllerTestHelper {
 
     fun MockMvcResultHandlersDsl.createDocument(value: Any) {
         return handle(document("{class-name}/$value"))
+    }
+
+    fun MockMvcResultHandlersDsl.createDocument(value: Any, requestHeadersSnippet: RequestHeadersSnippet) {
+        return handle(document("{class-name}/$value", requestHeadersSnippet))
+    }
+
+    fun MockMvcResultHandlersDsl.createDocument(
+        value: Any,
+        requestHeadersSnippet: RequestHeadersSnippet,
+        responseHeadersSnippet: ResponseHeadersSnippet
+    ) {
+        return handle(document("{class-name}/$value", requestHeadersSnippet, responseHeadersSnippet))
+    }
+
+    fun MockMvcResultHandlersDsl.createDocument(value: Any, responseFieldsSnippet: ResponseFieldsSnippet) {
+        return handle(document("{class-name}/$value", responseFieldsSnippet))
+    }
+
+    fun MockMvcResultHandlersDsl.createDocument(value: Any, requestFieldsSnippet: RequestFieldsSnippet) {
+        return handle(document("{class-name}/$value", requestFieldsSnippet))
+    }
+
+    fun MockMvcResultHandlersDsl.createDocument(
+        value: Any,
+        requestFieldsSnippet: RequestFieldsSnippet,
+        responseHeadersSnippet: ResponseHeadersSnippet
+    ) {
+        return handle(document("{class-name}/$value", requestFieldsSnippet, responseHeadersSnippet))
+    }
+
+    fun MockMvcResultHandlersDsl.createDocument(
+        value: Any,
+        requestFieldsSnippet: RequestFieldsSnippet,
+        responseFieldsSnippet: ResponseFieldsSnippet
+    ) {
+        return handle(document("{class-name}/$value", requestFieldsSnippet, responseFieldsSnippet))
+    }
+
+    fun MockMvcResultHandlersDsl.createDocument(
+        value: Any,
+        pathParametersSnippet: PathParametersSnippet,
+        responseFieldsSnippet: ResponseFieldsSnippet
+    ) {
+        return handle(document("{class-name}/$value", pathParametersSnippet, responseFieldsSnippet))
+    }
+
+    fun createPathDocument(
+        value: Any,
+        pathParametersSnippet: PathParametersSnippet,
+        responseFieldsSnippet: ResponseFieldsSnippet
+    ): RestDocumentationResultHandler {
+        return document("{class-name}/$value", pathParametersSnippet, responseFieldsSnippet)
+    }
+
+    companion object {
+        fun field(key: String, value: String): Attribute {
+            return Attribute(key, value)
+        }
     }
 }

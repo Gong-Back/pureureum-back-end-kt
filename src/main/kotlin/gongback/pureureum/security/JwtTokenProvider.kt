@@ -1,5 +1,6 @@
 package gongback.pureureum.security
 
+import gongback.pureureum.support.security.Tokens.Companion.REFRESH_TOKEN_HEADER
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.JwtException
@@ -12,7 +13,6 @@ import java.util.*
 import javax.crypto.SecretKey
 
 private const val BEARER = "Bearer"
-private const val REFRESH_TOKEN = "RefreshToken"
 
 @Component
 class JwtTokenProvider(
@@ -72,7 +72,7 @@ class JwtTokenProvider(
     }
 
     fun extractRefreshToken(request: WebRequest): String {
-        val refreshToken = request.getHeader(REFRESH_TOKEN) ?: throw JwtNotExistsException()
+        val refreshToken = request.getHeader(REFRESH_TOKEN_HEADER) ?: throw JwtNotExistsException()
         return extractToken(refreshToken)
     }
 
