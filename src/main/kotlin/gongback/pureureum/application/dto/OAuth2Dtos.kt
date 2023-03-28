@@ -7,11 +7,19 @@ import gongback.pureureum.domain.user.Role
 import gongback.pureureum.domain.user.SocialType
 import gongback.pureureum.domain.user.TempSocialAuth
 import gongback.pureureum.domain.user.User
+import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.Past
 import jakarta.validation.constraints.Pattern
 import org.hibernate.validator.constraints.Length
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+
+data class AuthenticationInfo(
+    @field:NotEmpty
+    val code: String,
+    @field:NotEmpty
+    val redirectUrl: String
+)
 
 data class OAuthToken(
     @JsonProperty("token_type")
@@ -29,7 +37,7 @@ open class OAuthUserInfo {
     open val socialType: SocialType? = null
 
     fun isValid(): Boolean =
-        name.isNotEmpty() && clientEmail.isNotEmpty() && birthday.isNotEmpty() && phoneNumber.isNotEmpty() && gender != null
+        name.isNotBlank() && clientEmail.isNotBlank() && birthday.isNotBlank() && phoneNumber.isNotBlank() && gender != null
 
     fun toUser(): User {
         require(isValid()) { "정보가 올바르지 않습니다" }

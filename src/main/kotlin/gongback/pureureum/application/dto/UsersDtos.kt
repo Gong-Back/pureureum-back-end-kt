@@ -5,18 +5,10 @@ import gongback.pureureum.domain.user.Password
 import gongback.pureureum.domain.user.Role
 import gongback.pureureum.domain.user.SocialType
 import gongback.pureureum.domain.user.User
-import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.Past
 import jakarta.validation.constraints.Pattern
 import org.hibernate.validator.constraints.Length
 import java.time.LocalDate
-
-data class AuthenticationInfo(
-    @field:NotEmpty
-    val code: String,
-    @field:NotEmpty
-    val redirectUrl: String
-)
 
 data class LoginReq(
     @field:Length(min = 8, max = 15)

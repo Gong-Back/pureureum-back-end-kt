@@ -24,6 +24,8 @@ class SmsRestController(
     ): ResponseEntity<ApiResponse<Any>> {
         try {
             userAuthenticationService.checkDuplicatedPhoneNumber(phoneNumberReq.phoneNumber)
+            val smsSendResponse = smsService.sendSmsCertification(phoneNumberReq)
+            return ResponseEntity.ok().body(ApiResponse.ok(smsSendResponse))
         } catch (e: IllegalArgumentException) {
             return ResponseEntity.badRequest().body(
                 ApiResponse.error(
@@ -33,9 +35,6 @@ class SmsRestController(
                 )
             )
         }
-
-        val smsSendResponse = smsService.sendSmsCertification(phoneNumberReq)
-        return ResponseEntity.ok().body(ApiResponse.ok(smsSendResponse))
     }
 
     @PostMapping("/complete/certification")

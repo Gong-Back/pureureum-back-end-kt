@@ -12,7 +12,6 @@ import io.mockk.slot
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs
 import org.springframework.core.MethodParameter
 import org.springframework.http.HttpHeaders
@@ -60,15 +59,6 @@ abstract class ControllerTestHelper {
 
     protected val LENGTH = "length"
 
-    @Value("\${pureureum.scheme}")
-    lateinit var scheme: String
-
-    @Value("\${pureureum.host}")
-    lateinit var host: String
-
-    @Value("\${pureureum.port}")
-    lateinit var port: String
-
     @BeforeEach
     internal fun setUp(
         webApplicationContext: WebApplicationContext,
@@ -80,10 +70,7 @@ abstract class ControllerTestHelper {
             .apply<DefaultMockMvcBuilder>(
                 MockMvcRestDocumentation.documentationConfiguration(restDocumentationContextProvider)
                     .operationPreprocessors()
-                    .withRequestDefaults(
-                        Preprocessors.prettyPrint(),
-                        Preprocessors.modifyUris().host(host).port(port.toInt()).scheme(scheme)
-                    )
+                    .withRequestDefaults(Preprocessors.prettyPrint())
                     .withResponseDefaults(Preprocessors.prettyPrint())
             )
             .build()

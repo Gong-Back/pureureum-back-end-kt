@@ -13,8 +13,3 @@ spring:
         globally_quoted_identifiers: true
         format_sql: true
     show-sql: true
-
-pureureum:
-  scheme: http
-  host: ec2-13-124-142-73.ap-northeast-2.compute.amazonaws.com
-  port: 9091

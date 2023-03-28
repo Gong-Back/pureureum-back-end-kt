@@ -62,7 +62,7 @@ class UserRepositoryTest(
             result.phoneNumber shouldBe user.phoneNumber
         }
 
-        expect("이메일 조회 실패") {
+        expect("전화번호 조회 실패") {
             shouldThrow<IllegalArgumentException> { userRepository.getUserByPhoneNumber("otherEmail") }
         }
     }

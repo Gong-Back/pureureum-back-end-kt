@@ -41,11 +41,7 @@ class OAuth2Service(
         return requestUserInfo(naverProperties.naverUserInfoUrl, token, NaverUserInfoRes::class.java)
     }
 
-    private fun isValidAuthenticationToken(code: String) {
-        if (code.isEmpty()) {
-            throw OAuthAuthenticationException()
-        }
-    }
+    fun bearerToken(token: String) = "Bearer $token"
 
     private fun getKakaoTokenParams(code: String, redirectUrl: String): MultiValueMap<String, String> {
         return LinkedMultiValueMap<String, String>().apply {
@@ -76,8 +72,6 @@ class OAuth2Service(
             add("client_secret", naverProperties.secretKey)
         }
     }
-
-    fun bearerToken(token: String) = "Bearer $token"
 
     private fun requestToken(uri: String, params: MultiValueMap<String, String>): OAuthToken {
         return webClient

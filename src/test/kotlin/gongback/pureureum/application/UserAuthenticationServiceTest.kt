@@ -28,7 +28,7 @@ class UserAuthenticationServiceTest : BehaviorSpec({
 
     Given("회원가입 정보") {
         val registerReq = createRegisterReq()
-        When("이미 존재하는 이메일이면") {
+        When("이미 존재하는 이메일이거나 닉네임이라면") {
             every { userRepository.existsEmailOrNickname(registerReq.email) } returns true
             Then("예외가 발생한다.") {
                 shouldThrow<IllegalArgumentException> {
@@ -46,7 +46,7 @@ class UserAuthenticationServiceTest : BehaviorSpec({
             }
         }
 
-        When("존재하지 않는 이메일이면서, 인증하지 않은 전화번호일 경우") {
+        When("이미 존재하지 않은 이메일이거나 닉네임이면서, 인증하지 않은 전화번호일 경우") {
             every { userRepository.existsEmailOrNickname(registerReq.email) } returns false
             every { smsLogService.isCertificated(registerReq.phoneNumber) } returns false
 
@@ -57,7 +57,7 @@ class UserAuthenticationServiceTest : BehaviorSpec({
             }
         }
 
-        When("존재하지 않는 이메일, 전화번호이면서, 본인 인증한 전화번호인 경우") {
+        When("이미 존재하지 않은 이메일이거나 닉네임이면서, 전화번호이면서, 본인 인증한 전화번호인 경우") {
             every { userRepository.existsEmailOrNickname(registerReq.email) } returns false
             every { userRepository.existsByPhoneNumber(registerReq.phoneNumber) } returns false
             every { smsLogService.isCertificated(registerReq.phoneNumber) } returns true
@@ -72,7 +72,7 @@ class UserAuthenticationServiceTest : BehaviorSpec({
     Given("소셜 로그인 사용자 정보") {
         val oAuthUserInfo = createKakaoUserInfo()
         val oAuthUserInfoWithEmpty = createKakaoUserInfo("", "", "", "", "")
-        When("이미 존재하는 이메일인 경우") {
+        When("이미 존재하는 이메일이거나 닉네임인 경우") {
             every { userRepository.existsEmail(any()) } returns true
 
             Then("ErrorCode OK 반환") {

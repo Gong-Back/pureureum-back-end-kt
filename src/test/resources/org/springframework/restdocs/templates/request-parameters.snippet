@@ -1,10 +1,10 @@
 |===
-|Parameter|Description|Required|Length|Example
+|Parameter|Type|Required|Description|Length
 {{#parameters}}
 |{{#tableCellContent}}`+{{name}}+`{{/tableCellContent}}
-|{{#tableCellContent}}{{description}}{{/tableCellContent}}
+|{{#tableCellContent}}`+{{type}}+`{{/tableCellContent}}
 |{{#tableCellContent}}{{^optional}}true{{/optional}}{{#optional}}false{{/optional}}{{/tableCellContent}}
+|{{#tableCellContent}}{{description}}{{/tableCellContent}}
 |{{#tableCellContent}}{{^length}}제한 없음{{/length}}{{#length}}{{.}}{{/length}}{{/tableCellContent}}
-|{{#tableCellContent}}{{#example}}{{.}}{{/example}}{{/tableCellContent}}
 {{/parameters}}
 |===

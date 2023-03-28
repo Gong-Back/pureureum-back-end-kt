@@ -45,7 +45,7 @@ class UserAuthenticationService(
     @Transactional
     fun register(registerUserReq: RegisterUserReq) {
         checkDuplicatedUser(registerUserReq.email, registerUserReq.phoneNumber)
-        existsSuccessPhoneNumber(registerUserReq.phoneNumber)
+        validateCertifiedPhoneNumber(registerUserReq.phoneNumber)
         userRepository.save(registerUserReq.toEntity())
     }
 
@@ -56,7 +56,7 @@ class UserAuthenticationService(
 
     @Transactional
     fun registerBySocialReq(socialRegisterUserReq: SocialRegisterUserReq) {
-        existsSuccessPhoneNumber(socialRegisterUserReq.phoneNumber)
+        validateCertifiedPhoneNumber(socialRegisterUserReq.phoneNumber)
         userRepository.save(socialRegisterUserReq.toUser())
         tempSocialAuthRepository.deleteByEmail(socialRegisterUserReq.email)
     }
@@ -83,13 +83,9 @@ class UserAuthenticationService(
 
     fun existsUserByEmail(email: String) = userRepository.existsEmail(email)
 
-    private fun existsSuccessPhoneNumber(phoneNumber: String) {
-        require(smsLogService.isCertificated(phoneNumber)) { "본인 인증되지 않은 정보입니다" }
-    }
-
     @Transactional
     fun saveTempSocialInfo(oAuthUserInfo: OAuthUserInfo) {
-        if (oAuthUserInfo.phoneNumber.isNotEmpty()) {
+        if (oAuthUserInfo.phoneNumber.isNotBlank()) {
             smsLogService.save(oAuthUserInfo.phoneNumber)
         }
         tempSocialAuthRepository.save(oAuthUserInfo.toTempSocialAuth())
@@ -125,5 +121,9 @@ class UserAuthenticationService(
             saveTempSocialInfo(oAuthUserInfo)
         }
         return ErrorCode.REQUEST_RESOURCE_NOT_ENOUGH
+    }
+
+    private fun validateCertifiedPhoneNumber(phoneNumber: String) {
+        require(smsLogService.isCertificated(phoneNumber)) { "본인 인증되지 않은 정보입니다" }
     }
 }

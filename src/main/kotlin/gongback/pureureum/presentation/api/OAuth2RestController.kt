@@ -55,7 +55,7 @@ class OAuth2RestController(
     }
 
     @GetMapping("/temp/{email}")
-    fun register(
+    fun tempRegister(
         @PathVariable("email") email: String
     ): ResponseEntity<ApiResponse<TempSocialAuthDto>> {
         val tempSocialAuth = userAuthenticationService.getTempSocialAuth(email)
@@ -76,13 +76,11 @@ class OAuth2RestController(
         oAuthUserInfo: OAuthUserInfo,
         response: HttpServletResponse
     ): ResponseEntity<ApiResponse<Any>> {
-        val code = userAuthenticationService.socialLogin(oAuthUserInfo)
-        when (code) {
+        return when (val code = userAuthenticationService.socialLogin(oAuthUserInfo)) {
             ErrorCode.REQUEST_RESOURCE_NOT_ENOUGH -> {
-                return ResponseEntity.badRequest().body(
+                ResponseEntity.badRequest().body(
                     ApiResponse.error(
-                        ErrorCode.REQUEST_RESOURCE_NOT_ENOUGH.code,
-                        ErrorCode.REQUEST_RESOURCE_NOT_ENOUGH.message,
+                        code,
                         SocialEmailDto(oAuthUserInfo.clientEmail)
                     )
                 )
@@ -90,10 +88,9 @@ class OAuth2RestController(
 
             ErrorCode.REQUEST_RESOURCE_ALREADY_EXISTS -> {
                 val userAccountDto = userAuthenticationService.getUserAccountDto(oAuthUserInfo.phoneNumber)
-                return ResponseEntity.badRequest().body(
+                ResponseEntity.badRequest().body(
                     ApiResponse.error(
-                        ErrorCode.REQUEST_RESOURCE_ALREADY_EXISTS.code,
-                        ErrorCode.REQUEST_RESOURCE_ALREADY_EXISTS.message,
+                        code,
                         userAccountDto
                     )
                 )
@@ -101,7 +98,7 @@ class OAuth2RestController(
 
             else -> {
                 setToken(response, oAuthUserInfo.clientEmail)
-                return ResponseEntity.ok().build()
+                ResponseEntity.ok().build()
             }
         }
     }

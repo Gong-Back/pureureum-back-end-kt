@@ -54,8 +54,7 @@ fun createKakaoUserInfo(
     birthyear: String = "1998",
     birthday: String = "1228",
     phoneNumber: String = PHONE_NUMBER,
-    gender: String = "male",
-    socialType: SocialType = SocialType.KAKAO
+    gender: String = "male"
 ): OAuthUserInfo {
     return KakaoUserInfoRes(
         "2129419241",
