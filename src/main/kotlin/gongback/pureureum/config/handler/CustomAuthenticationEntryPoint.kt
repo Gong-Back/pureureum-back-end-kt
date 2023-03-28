@@ -23,8 +23,9 @@ class CustomAuthenticationEntryPoint(
     ) {
         logger.error { "[AuthenticationEntryPoint] ${request?.requestURI}" }
 
-        response?.status = UNAUTHORIZED.httpStatus.value()
+        val code = UNAUTHORIZED.httpStatus.value()
+        response?.status = code
         response?.contentType = MediaType.APPLICATION_JSON_VALUE
-        jacksonObjectMapper().writeValue(response?.outputStream, ApiResponse.error(UNAUTHORIZED.message))
+        jacksonObjectMapper().writeValue(response?.outputStream, ApiResponse.error(code, UNAUTHORIZED.message))
     }
 }

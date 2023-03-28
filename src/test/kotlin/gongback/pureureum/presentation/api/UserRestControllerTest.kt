@@ -11,6 +11,12 @@ import io.mockk.runs
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.HttpHeaders
+import org.springframework.restdocs.headers.HeaderDocumentation.headerWithName
+import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
+import org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders
+import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
+import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
+import org.springframework.restdocs.snippet.Attributes
 import org.springframework.test.web.servlet.post
 import support.REFRESH_HEADER_NAME
 import support.createAccessToken
@@ -73,7 +79,19 @@ class UserRestControllerTest : ControllerTestHelper() {
                 string(HttpHeaders.AUTHORIZATION, accessToken)
                 string(REFRESH_HEADER_NAME, refreshToken)
             }
-        }.andDo { createDocument("user-login-success") }
+        }.andDo {
+            createDocument(
+                "user-login-success",
+                requestFields(
+                    fieldWithPath("email").description("아이디").attributes(Attributes.Attribute(LENGTH, "8-15")),
+                    fieldWithPath("password").description("비밀번호")
+                ),
+                responseHeaders(
+                    headerWithName(HttpHeaders.AUTHORIZATION).description("Access Token"),
+                    headerWithName(REFRESH_HEADER_NAME).description("Refresh Token")
+                )
+            )
+        }
     }
 
     @Test
@@ -84,7 +102,15 @@ class UserRestControllerTest : ControllerTestHelper() {
             jsonContent(createLoginReq())
         }.andExpect {
             status { isBadRequest() }
-        }.andDo { createDocument("user-login-fail-not-valid-email") }
+        }.andDo {
+            createDocument(
+                "user-login-fail-not-valid-email",
+                requestFields(
+                    fieldWithPath("email").description("유효하지 않은 이메일"),
+                    fieldWithPath("password").description("비밀번호")
+                )
+            )
+        }
     }
 
     @Test
@@ -95,7 +121,15 @@ class UserRestControllerTest : ControllerTestHelper() {
             jsonContent(createLoginReq())
         }.andExpect {
             status { isBadRequest() }
-        }.andDo { createDocument("user-login-fail-not-valid-password") }
+        }.andDo {
+            createDocument(
+                "user-login-fail-not-valid-password",
+                requestFields(
+                    fieldWithPath("email").description("아이디").attributes(Attributes.Attribute(LENGTH, "8-15")),
+                    fieldWithPath("password").description("유효하지 않은 비밀번호")
+                )
+            )
+        }
     }
 
     @Test
@@ -106,7 +140,19 @@ class UserRestControllerTest : ControllerTestHelper() {
             jsonContent(createRegisterUserRequest())
         }.andExpect {
             status { isCreated() }
-        }.andDo { createDocument("user-register-success") }
+        }.andDo {
+            createDocument(
+                "user-register-success",
+                requestFields(
+                    fieldWithPath("email").description("아이디").attributes(Attributes.Attribute(LENGTH, "8-15")),
+                    fieldWithPath("password").description("비밀번호"),
+                    fieldWithPath("name").description("이름").attributes(Attributes.Attribute(LENGTH, "max 20")),
+                    fieldWithPath("phoneNumber").description("전화번호").attributes(Attributes.Attribute(LENGTH, "13")),
+                    fieldWithPath("gender").description("성별"),
+                    fieldWithPath("birthday").description("생년월일")
+                )
+            )
+        }
     }
 
     @Test
@@ -122,29 +168,55 @@ class UserRestControllerTest : ControllerTestHelper() {
             jsonContent(registerUserReq)
         }.andExpect {
             status { isBadRequest() }
-        }.andDo { createDocument("user-register-fail") }
+        }.andDo {
+            createDocument(
+                "user-register-fail",
+                requestFields(
+                    fieldWithPath("email").description("형식에 맞지 않는 아이디"),
+                    fieldWithPath("password").description("비밀번호"),
+                    fieldWithPath("name").description("형식에 맞지 않는 이름"),
+                    fieldWithPath("phoneNumber").description("형식에 맞지 않는 전화번호"),
+                    fieldWithPath("gender").description("성별"),
+                    fieldWithPath("birthday").description("생년월일")
+                )
+            )
+        }
     }
 
     @Test
     fun `이메일 중복 확인 성공`() {
-        every { userAuthenticationService.checkDuplicatedEmail(any()) } just Runs
+        every { userAuthenticationService.checkDuplicatedEmailOrNickname(any()) } just Runs
 
         mockMvc.post("/api/v1/users/validate/email") {
             jsonContent(mapOf("email" to "testEmail123"))
         }.andExpect {
             status { isOk() }
-        }.andDo { createDocument("user-checkEmail-success") }
+        }.andDo {
+            createDocument(
+                "user-checkEmail-success",
+                requestFields(
+                    fieldWithPath("email").description("아이디").attributes(Attributes.Attribute(LENGTH, "8-15"))
+                )
+            )
+        }
     }
 
     @Test
     fun `이메일 중복 확인 실패`() {
-        every { userAuthenticationService.checkDuplicatedEmail(any()) } throws IllegalStateException("이미 가입된 이메일입니다.")
+        every { userAuthenticationService.checkDuplicatedEmailOrNickname(any()) } throws IllegalStateException("이미 가입된 이메일입니다")
 
         mockMvc.post("/api/v1/users/validate/email") {
             jsonContent(mapOf("email" to "testEmail123"))
         }.andExpect {
             status { isBadRequest() }
-        }.andDo { createDocument("user-checkEmail-fail") }
+        }.andDo {
+            createDocument(
+                "user-checkEmail-fail",
+                requestFields(
+                    fieldWithPath("email").description("이미 가입된 아이디")
+                )
+            )
+        }
     }
 
     @Test
@@ -159,7 +231,17 @@ class UserRestControllerTest : ControllerTestHelper() {
         }.andExpect {
             status { isOk() }
             header { string(HttpHeaders.AUTHORIZATION, accessToken) }
-        }.andDo { createDocument("reissue-access-token-success") }
+        }.andDo {
+            createDocument(
+                "reissue-access-token-success",
+                requestHeaders(
+                    headerWithName("RefreshToken").description("Refresh Token")
+                ),
+                responseHeaders(
+                    headerWithName(HttpHeaders.AUTHORIZATION).description("Access Token")
+                )
+            )
+        }
     }
 
     @Test

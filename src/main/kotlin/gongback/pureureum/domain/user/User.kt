@@ -4,6 +4,8 @@ import jakarta.persistence.AttributeOverride
 import jakarta.persistence.Column
 import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -20,7 +22,10 @@ class User(
 
     @Embedded
     @AttributeOverride(name = "value", column = Column(name = "password", nullable = false))
-    var password: Password
+    var password: Password,
+
+    @Enumerated(EnumType.STRING)
+    val socialType: SocialType
 ) {
     val email: String
         get() = information.email
@@ -40,19 +45,25 @@ class User(
     val role: Role
         get() = information.role
 
+    val nickname: String
+        get() = information.nickname
+
     constructor(
         email: String,
         phoneNumber: String,
         name: String,
+        nickname: String,
         gender: Gender,
         birthday: LocalDate,
         password: Password,
         role: Role,
+        socialType: SocialType,
         id: Long = 0L
     ) : this(
         id,
-        UserInformation(name, email, phoneNumber, gender, birthday, role = role),
-        password
+        UserInformation(name, email, phoneNumber, nickname, gender, birthday, role = role),
+        password,
+        socialType
     )
 
     fun authenticate(password: Password) {

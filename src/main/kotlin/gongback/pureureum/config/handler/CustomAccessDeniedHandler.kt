@@ -23,8 +23,9 @@ class CustomAccessDeniedHandler(
     ) {
         logger.error { "[AccessDeniedHandler] ${request?.requestURI}" }
 
-        response?.status = FORBIDDEN.httpStatus.value()
+        val code = FORBIDDEN.httpStatus.value()
+        response?.status = code
         response?.contentType = MediaType.APPLICATION_JSON_VALUE
-        jacksonObjectMapper().writeValue(response?.outputStream, ApiResponse.error(FORBIDDEN.message))
+        jacksonObjectMapper().writeValue(response?.outputStream, ApiResponse.error(code, FORBIDDEN.message))
     }
 }

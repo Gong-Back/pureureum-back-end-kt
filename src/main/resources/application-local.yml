@@ -1,7 +1,7 @@
 spring:
   config:
     import: secret.yml
-      
+  
   jpa:
     hibernate:
       ddl-auto: update
@@ -11,3 +11,6 @@ spring:
         format_sql: true
         dialect:
     show-sql: true
+
+server:
+  port: 9091

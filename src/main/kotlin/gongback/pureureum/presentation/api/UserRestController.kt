@@ -7,6 +7,7 @@ import gongback.pureureum.application.dto.RegisterUserReq
 import gongback.pureureum.domain.user.User
 import gongback.pureureum.security.LoginUser
 import gongback.pureureum.security.RefreshToken
+import gongback.pureureum.support.security.Tokens.Companion.REFRESH_TOKEN_HEADER
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpHeaders
@@ -17,8 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-
-private const val REFRESH_TOKEN = "RefreshToken"
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -36,7 +35,10 @@ class UserRestController(
             HttpHeaders.AUTHORIZATION,
             userAuthenticationService.generateAccessTokenByEmail(loginReq.email)
         )
-        response.setHeader(REFRESH_TOKEN, userAuthenticationService.generateRefreshTokenByEmail(loginReq.email))
+        response.setHeader(
+            REFRESH_TOKEN_HEADER,
+            userAuthenticationService.generateRefreshTokenByEmail(loginReq.email)
+        )
         return ResponseEntity.ok().build()
     }
 
@@ -52,7 +54,7 @@ class UserRestController(
     fun checkDuplicatedEmail(
         @RequestBody @Valid emailReq: EmailReq
     ): ResponseEntity<Unit> {
-        userAuthenticationService.checkDuplicatedEmail(emailReq.email)
+        userAuthenticationService.checkDuplicatedEmailOrNickname(emailReq.email)
         return ResponseEntity.ok().build()
     }
 
