@@ -28,4 +28,9 @@ class SmsLogService(
     fun completeCertification(phoneNumber: String) {
         smsLogRepository.getLastSmsLog(phoneNumber).completeCertification()
     }
+
+    @Transactional
+    fun deleteByPhoneNumber(phoneNumber: String) {
+        smsLogRepository.deleteByReceiver(phoneNumber)
+    }
 }

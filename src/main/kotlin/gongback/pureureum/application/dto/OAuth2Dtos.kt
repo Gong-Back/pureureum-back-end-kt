@@ -1,6 +1,7 @@
 package gongback.pureureum.application.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import gongback.pureureum.domain.file.Profile
 import gongback.pureureum.domain.user.Gender
 import gongback.pureureum.domain.user.Password
 import gongback.pureureum.domain.user.Role
@@ -35,13 +36,13 @@ open class OAuthUserInfo {
     open val phoneNumber: String = ""
     open val gender: Gender? = null
     open val socialType: SocialType? = null
+    open val profile: Profile? = null
 
     fun isValid(): Boolean =
         name.isNotBlank() && clientEmail.isNotBlank() && birthday.isNotBlank() && phoneNumber.isNotBlank() && gender != null
 
-    fun toUser(): User {
+    fun toUser(profile: Profile): User {
         require(isValid()) { "정보가 올바르지 않습니다" }
-
         return User(
             email = clientEmail,
             phoneNumber = phoneNumber,
@@ -51,7 +52,8 @@ open class OAuthUserInfo {
             birthday = LocalDate.parse(birthday, DateTimeFormatter.ISO_DATE),
             password = Password(clientEmail),
             role = Role.ROLE_USER,
-            socialType = socialType!!
+            socialType = socialType!!,
+            profile = profile
         )
     }
 
@@ -157,7 +159,7 @@ data class SocialRegisterUserReq(
     val gender: Gender,
     val socialType: SocialType
 ) {
-    fun toUser(): User {
+    fun toUser(profile: Profile): User {
         return User(
             email = email,
             phoneNumber = phoneNumber,
@@ -167,7 +169,8 @@ data class SocialRegisterUserReq(
             birthday = birthday,
             password = Password(email),
             role = Role.ROLE_USER,
-            socialType = socialType
+            socialType = socialType,
+            profile = profile
         )
     }
 }

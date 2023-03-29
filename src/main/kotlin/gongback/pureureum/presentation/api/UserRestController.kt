@@ -1,9 +1,12 @@
 package gongback.pureureum.presentation.api
 
 import gongback.pureureum.application.UserAuthenticationService
+import gongback.pureureum.application.UserService
 import gongback.pureureum.application.dto.EmailReq
 import gongback.pureureum.application.dto.LoginReq
 import gongback.pureureum.application.dto.RegisterUserReq
+import gongback.pureureum.application.dto.UserInfoReq
+import gongback.pureureum.application.dto.UserInfoRes
 import gongback.pureureum.domain.user.User
 import gongback.pureureum.security.LoginUser
 import gongback.pureureum.security.RefreshToken
@@ -17,11 +20,14 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @RequestMapping("/api/v1/users")
 class UserRestController(
+    private val userService: UserService,
     private val userAuthenticationService: UserAuthenticationService
 ) {
     @PostMapping("/login")
@@ -67,6 +73,32 @@ class UserRestController(
             HttpHeaders.AUTHORIZATION,
             userAuthenticationService.generateTokenByRefreshToken(refreshToken)
         )
+        return ResponseEntity.ok().build()
+    }
+
+    @GetMapping("/me")
+    fun getUserInfo(
+        @LoginUser user: User
+    ): ResponseEntity<ApiResponse<UserInfoRes>> {
+        val userInfo = userService.getUserInfo(user)
+        return ResponseEntity.ok().body(ApiResponse.ok(userInfo))
+    }
+
+    @PostMapping("/update/info")
+    fun updateUserInfo(
+        @RequestBody @Valid userInfoReq: UserInfoReq,
+        @LoginUser user: User
+    ): ResponseEntity<Unit> {
+        userService.updateUserInfo(user, userInfoReq)
+        return ResponseEntity.ok().build()
+    }
+
+    @PostMapping("/update/profile")
+    fun updateProfile(
+        @RequestPart profile: MultipartFile?,
+        @LoginUser user: User
+    ): ResponseEntity<Unit> {
+        userService.updateProfile(user, profile)
         return ResponseEntity.ok().build()
     }
 

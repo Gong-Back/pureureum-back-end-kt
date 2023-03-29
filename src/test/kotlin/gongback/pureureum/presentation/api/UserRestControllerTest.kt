@@ -1,9 +1,10 @@
 package gongback.pureureum.presentation.api
 
 import com.ninjasquad.springmockk.MockkBean
-import gongback.pureureum.application.SmsLogService
 import gongback.pureureum.application.UserAuthenticationService
+import gongback.pureureum.application.UserService
 import gongback.pureureum.domain.user.Gender
+import gongback.pureureum.domain.user.Password
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -11,17 +12,27 @@ import io.mockk.runs
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.HttpHeaders
+import org.springframework.mock.web.MockMultipartFile
 import org.springframework.restdocs.headers.HeaderDocumentation.headerWithName
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
 import org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders
 import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
+import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
+import org.springframework.restdocs.request.RequestDocumentation.partWithName
+import org.springframework.restdocs.request.RequestDocumentation.requestParts
 import org.springframework.restdocs.snippet.Attributes
+import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.multipart
 import org.springframework.test.web.servlet.post
+import support.PHONE_NUMBER
 import support.REFRESH_HEADER_NAME
+import support.accessToken
 import support.createAccessToken
 import support.createLocalDate
 import support.createRefreshToken
+import support.createUser
+import support.createUserInfoRes
 import support.refreshToken
 import support.test.ControllerTestHelper
 import java.time.LocalDate
@@ -54,10 +65,22 @@ private fun createLoginReq(
     return mapOf("email" to email, "password" to password)
 }
 
+private fun createUserInfoReq(
+    password: Password = support.PASSWORD,
+    phoneNumber: String = PHONE_NUMBER,
+    nickName: String = EMAIL
+): Map<String, Any> {
+    return mapOf(
+        "password" to password,
+        "phoneNumber" to phoneNumber,
+        "nickname" to nickName
+    )
+}
+
 @WebMvcTest(UserRestController::class)
 class UserRestControllerTest : ControllerTestHelper() {
     @MockkBean
-    private lateinit var smsLogService: SmsLogService
+    private lateinit var userService: UserService
 
     @MockkBean
     private lateinit var userAuthenticationService: UserAuthenticationService
@@ -250,5 +273,138 @@ class UserRestControllerTest : ControllerTestHelper() {
         }.andExpect {
             status { isUnauthorized() }
         }.andDo { createDocument("reissue-access-token-fail") }
+    }
+
+    @Test
+    fun `사용자 정보 조회 성공`() {
+        val userInfo = createUserInfoRes(createUser())
+
+        every { userService.getUserInfo(any()) } returns userInfo
+
+        mockMvc.get("/api/v1/users/me") {
+            accessToken(createAccessToken())
+        }.andExpect {
+            status { isOk() }
+            content { ApiResponse.ok(userInfo) }
+        }.andDo {
+            createDocument(
+                "get-user-info-success",
+                responseFields(
+                    fieldWithPath("code").description("응답 코드"),
+                    fieldWithPath("messages").description("응답 메시지"),
+                    fieldWithPath("data.email").description("아이디"),
+                    fieldWithPath("data.phoneNumber").description("핸드폰 번호"),
+                    fieldWithPath("data.name").description("이름"),
+                    fieldWithPath("data.nickname").description("닉네임"),
+                    fieldWithPath("data.gender").description("성별"),
+                    fieldWithPath("data.birthday").description("생년월일"),
+                    fieldWithPath("data.profileId").description("프로필 이미지 아이디")
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `회원 정보 수정 성공`() {
+        every { userService.updateUserInfo(any(), any()) } just runs
+
+        mockMvc.post("/api/v1/users/update/info") {
+            accessToken(createAccessToken())
+            jsonContent(createUserInfoReq())
+        }.andExpect {
+            status { isOk() }
+        }.andDo {
+            createDocument(
+                "update-user-info-success",
+                requestFields(
+                    fieldWithPath("password").description("비밀번호").optional(),
+                    fieldWithPath("phoneNumber").description("전화번호")
+                        .attributes(Attributes.Attribute(LENGTH, "13")).optional(),
+                    fieldWithPath("nickname").description("닉네임 (공백 X)")
+                        .attributes(Attributes.Attribute(LENGTH, "2~30")).optional()
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `회원 정보 수정 실패 - 중복된 닉네임이 들어왔을 때`() {
+        every { userService.updateUserInfo(any(), any()) } throws IllegalArgumentException("이미 존재하는 닉네임입니다")
+
+        mockMvc.post("/api/v1/users/update/info") {
+            accessToken(createAccessToken())
+            jsonContent(mapOf("nickname" to "duplicatedName"))
+        }.andExpect {
+            status { isBadRequest() }
+        }.andDo {
+            createDocument(
+                "update-user-info-fail-duplicate-nickname",
+                requestFields(
+                    fieldWithPath("nickname").description("중복된 닉네임")
+                ),
+                responseFields(
+                    fieldWithPath("code").description("오류 코드"),
+                    fieldWithPath("messages").description("오류 메시지"),
+                    fieldWithPath("data").description("응답 데이터")
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `회원 정보 수정 실패 - 형식에 맞지 않은 정보일 때`() {
+        val userInfoReq = createUserInfoReq(
+            password = support.PASSWORD,
+            phoneNumber = "00000000000",
+            nickName = "abcdeabcdeabcdeabcdeabcdeabcdea"
+        )
+
+        mockMvc.post("/api/v1/users/update/info") {
+            jsonContent(userInfoReq)
+        }.andExpect {
+            status { isBadRequest() }
+        }.andDo {
+            createDocument(
+                "update-user-info-fail",
+                requestFields(
+                    fieldWithPath("password").description("비밀번호"),
+                    fieldWithPath("nickname").description("형식에 맞지 않는 닉네임"),
+                    fieldWithPath("phoneNumber").description("형식에 맞지 않는 전화번호")
+                ),
+                responseFields(
+                    fieldWithPath("code").description("오류 코드"),
+                    fieldWithPath("messages").description("오류 메시지"),
+                    fieldWithPath("data").description("응답 데이터")
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `프로필 이미지 업데이트 성공`() {
+        every { userService.updateProfile(any(), any()) } just runs
+
+        val profile = MockMultipartFile(
+            "profile",
+            "default_profile.png",
+            "image/png",
+            "sample".toByteArray()
+        )
+
+        mockMvc.multipart("/api/v1/users/update/profile") {
+            accessToken(createAccessToken())
+            file(profile)
+        }.andExpect {
+            status { isOk() }
+        }.andDo {
+            createDocument(
+                "update-profile-success",
+                requestParts(
+                    partWithName("profile")
+                        .description("프로필 이미지 파일(image/*), 기본 이미지로 변경 시 단순 요청")
+                        .optional()
+                )
+            )
+        }
     }
 }
