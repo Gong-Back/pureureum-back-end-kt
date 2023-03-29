@@ -27,6 +27,7 @@ import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.payload.RequestFieldsSnippet
 import org.springframework.restdocs.payload.ResponseFieldsSnippet
 import org.springframework.restdocs.request.PathParametersSnippet
+import org.springframework.restdocs.request.RequestPartsSnippet
 import org.springframework.restdocs.snippet.Attributes.Attribute
 import org.springframework.test.web.servlet.MockHttpServletRequestDsl
 import org.springframework.test.web.servlet.MockMvc
@@ -133,6 +134,10 @@ abstract class ControllerTestHelper {
 
     fun MockMvcResultHandlersDsl.createDocument(value: Any, responseFieldsSnippet: ResponseFieldsSnippet) {
         return handle(document("{class-name}/$value", responseFieldsSnippet))
+    }
+
+    fun MockMvcResultHandlersDsl.createDocument(value: Any, requestPartsSnippet: RequestPartsSnippet) {
+        return handle(document("{class-name}/$value", requestPartsSnippet))
     }
 
     fun MockMvcResultHandlersDsl.createDocument(value: Any, requestFieldsSnippet: RequestFieldsSnippet) {
