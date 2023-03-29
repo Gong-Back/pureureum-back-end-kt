@@ -50,3 +50,27 @@ operation::user-rest-controller-test/user-checkEmail-success[snippets='http-requ
 === *4-2* 실패
 
 operation::user-rest-controller-test/user-checkEmail-fail[snippets='http-request,request-body,request-fields,http-response']
+
+[[회원-정보-조회-API]]
+== *5. 회원 정보 조회 API*
+
+=== *5-1* 성공
+operation::user-rest-controller-test/get-user-info-success[snippets='http-request,http-response,response-body']
+
+[[회원-정보-수정-API]]
+== *6. 회원 정보 수정 API*
+
+=== *6-1* 성공
+operation::user-rest-controller-test/update-user-info-success[snippets='http-request,request-fields,http-response']
+
+=== *6-2* 실패 - 닉네임이 중복된 값
+operation::user-rest-controller-test/update-user-info-fail-duplicate-nickname[snippets='http-request,request-fields,http-response,response-body']
+
+=== *6-3* 실패 - 형식에 맞지 않는 정보
+operation::user-rest-controller-test/update-user-info-fail[snippets='http-request,http-response,response-body']
+
+[[프로필-이미지-수정-API]]
+== *7. 프로필 이미지 수정 API*
+
+=== *7-1* 성공
+operation::user-rest-controller-test/update-profile-success[snippets='http-request,request-parts,http-response']
