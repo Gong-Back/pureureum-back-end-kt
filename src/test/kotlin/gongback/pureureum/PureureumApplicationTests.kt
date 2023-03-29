@@ -1,9 +1,9 @@
 package gongback.pureureum
 
 import org.junit.jupiter.api.Test
-import support.test.BaseTests.IntegrationTest
+import org.springframework.boot.test.context.SpringBootTest
 
-@IntegrationTest
+@SpringBootTest
 class PureureumApplicationTests {
 
     @Test
