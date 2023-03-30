@@ -17,7 +17,7 @@ enum class ErrorCode(
     OAUTH_AUTHENTICATION_FAIL(HttpStatus.UNAUTHORIZED, 415, "OAUTH2 인증에 실패했습니다"),
     SMS_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, 510, "SMS 전송할 수 없습니다"),
     SMS_OVER_SENDING_REQUEST(HttpStatus.INTERNAL_SERVER_ERROR, 511, "더 이상 SMS를 보낼 수 없습니다"),
-    S3_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, 512, "S3 업로드 오류가 발생하였습니다");
+    S3_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, 512, "S3 서버 오류가 발생하였습니다");
 
     override fun toString(): String {
         return "HttpStatus: $httpStatus, Message: $message"

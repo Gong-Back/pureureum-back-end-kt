@@ -24,14 +24,6 @@ class Profile(
     @Column(unique = true)
     val serverFileName: String
 ) {
-    constructor(
-        fileKey: String,
-        contentType: String,
-        originalFileName: String,
-        serverFileName: String,
-        id: Long = 0L
-    ) : this(id, fileKey, contentType, originalFileName, serverFileName)
-
     companion object {
         fun defaultProfile(): Profile {
             return Profile(

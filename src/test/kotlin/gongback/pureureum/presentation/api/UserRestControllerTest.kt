@@ -279,8 +279,6 @@ class UserRestControllerTest : ControllerTestHelper() {
     fun `사용자 정보 조회 성공`() {
         val userInfo = createUserInfoRes(createUser())
 
-        every { userService.getUserInfo(any()) } returns userInfo
-
         mockMvc.get("/api/v1/users/me") {
             accessToken(createAccessToken())
         }.andExpect {

@@ -40,7 +40,7 @@ class ProfileService(
         uploadService.deleteFile(fileKey)
     }
 
-    fun get(id: Long): Profile {
+    fun getProfile(id: Long): Profile {
         return profileRepository.getReferenceById(id)
     }
 

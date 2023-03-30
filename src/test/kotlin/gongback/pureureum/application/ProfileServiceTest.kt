@@ -71,7 +71,7 @@ class ProfileServiceTest : BehaviorSpec({
                 profileService.getFileUrl(profileId) shouldBe fileKey
             }
             Then("프로필 이미지 정보를 반환한다.") {
-                profileService.get(profileId) shouldBe profile
+                profileService.getProfile(profileId) shouldBe profile
             }
         }
     }

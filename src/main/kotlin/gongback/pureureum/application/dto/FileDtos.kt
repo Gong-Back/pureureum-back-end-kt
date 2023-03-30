@@ -9,7 +9,12 @@ data class FileDto(
     val serverFileName: String
 ) {
     fun toProfile(): Profile {
-        return Profile(fileKey, contentType, originalFileName, serverFileName)
+        return Profile(
+            fileKey = fileKey,
+            contentType = contentType,
+            originalFileName = originalFileName,
+            serverFileName = serverFileName
+        )
     }
 }
 

@@ -1,7 +1,6 @@
 package gongback.pureureum.application
 
 import gongback.pureureum.application.dto.UserInfoReq
-import gongback.pureureum.application.dto.UserInfoRes
 import gongback.pureureum.domain.file.FileType
 import gongback.pureureum.domain.file.Profile
 import gongback.pureureum.domain.user.User
@@ -20,18 +19,6 @@ class UserService(
     private val profileService: ProfileService
 ) {
     fun getUserByEmail(email: String): User = userRepository.getUserByEmail(email)
-
-    fun getUserInfo(user: User): UserInfoRes {
-        return UserInfoRes(
-            user.email,
-            user.phoneNumber,
-            user.name,
-            user.nickname,
-            user.gender,
-            user.birthday,
-            user.profile.id
-        )
-    }
 
     @Transactional
     fun updateUserInfo(user: User, userInfo: UserInfoReq) {

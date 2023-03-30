@@ -74,7 +74,7 @@ class UserAuthenticationServiceTest : BehaviorSpec({
             every { userRepository.existsByPhoneNumber(registerReq.phoneNumber) } returns false
             every { smsLogService.isCertificated(registerReq.phoneNumber) } returns true
             every { profileRepository.getReferenceById(any()) } returns profile
-            every { profileService.get(any()) } returns profile
+            every { profileService.getProfile(any()) } returns profile
             every { userRepository.save(any()) } returns createUser()
 
             Then("성공한다.") {

@@ -7,7 +7,7 @@ import org.springframework.web.multipart.MultipartFile
 
 @Service
 class UploadService(
-    private val amazonS3Service: AmazonS3Service,
+    private val storageService: StorageService,
     private val fileNameGenerator: NameGenerator
 ) {
     fun createServerFileName(originalFileName: String): String {
@@ -15,15 +15,15 @@ class UploadService(
     }
 
     fun uploadFile(file: MultipartFile, fileType: FileType, serverFileName: String): String {
-        return amazonS3Service.uploadFile(file, fileType, serverFileName)
+        return storageService.uploadFile(file, fileType, serverFileName)
     }
 
     fun getFileUrl(fileKey: String): String {
-        return amazonS3Service.getUrl(fileKey)
+        return storageService.getUrl(fileKey)
     }
 
     fun deleteFile(fileKey: String) {
-        amazonS3Service.deleteFile(fileKey)
+        storageService.deleteFile(fileKey)
     }
 
     private fun getExt(fileName: String): String {

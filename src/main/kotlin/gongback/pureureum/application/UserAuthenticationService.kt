@@ -47,20 +47,20 @@ class UserAuthenticationService(
     fun register(registerUserReq: RegisterUserReq) {
         checkDuplicatedUser(registerUserReq.email, registerUserReq.phoneNumber)
         validateCertifiedPhoneNumber(registerUserReq.phoneNumber)
-        val defaultProfile = profileService.get(Profile.defaultProfile().id)
+        val defaultProfile = profileService.getProfile(Profile.defaultProfile().id)
         userRepository.save(registerUserReq.toEntity(defaultProfile))
     }
 
     @Transactional
     fun registerBySocialInfo(oAuthUserInfo: OAuthUserInfo) {
-        val defaultProfile = profileService.get(Profile.defaultProfile().id)
+        val defaultProfile = profileService.getProfile(Profile.defaultProfile().id)
         userRepository.save(oAuthUserInfo.toUser(defaultProfile))
     }
 
     @Transactional
     fun registerBySocialReq(socialRegisterUserReq: SocialRegisterUserReq) {
         validateCertifiedPhoneNumber(socialRegisterUserReq.phoneNumber)
-        val defaultProfile = profileService.get(Profile.defaultProfile().id)
+        val defaultProfile = profileService.getProfile(Profile.defaultProfile().id)
         userRepository.save(socialRegisterUserReq.toUser(defaultProfile))
         tempSocialAuthRepository.deleteByEmail(socialRegisterUserReq.email)
     }

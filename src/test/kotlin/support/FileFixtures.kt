@@ -18,10 +18,10 @@ fun createProfile(
     serverFileName: String = PROFILE_SERVER_FILE_NAME
 ): Profile {
     return Profile(
-        fileKey,
-        contentType,
-        originalFileName,
-        serverFileName
+        fileKey = fileKey,
+        contentType = contentType,
+        originalFileName = originalFileName,
+        serverFileName = serverFileName
     )
 }
 

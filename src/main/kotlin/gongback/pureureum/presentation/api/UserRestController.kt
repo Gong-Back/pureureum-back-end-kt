@@ -80,7 +80,7 @@ class UserRestController(
     fun getUserInfo(
         @LoginUser user: User
     ): ResponseEntity<ApiResponse<UserInfoRes>> {
-        val userInfo = userService.getUserInfo(user)
+        val userInfo = UserInfoRes.toUser(user)
         return ResponseEntity.ok().body(ApiResponse.ok(userInfo))
     }
 

@@ -14,35 +14,47 @@ import java.util.*
 class AmazonS3Service(
     private val s3Client: AmazonS3,
     private val s3Properties: S3Properties
-) {
-    fun uploadFile(image: MultipartFile, type: FileType, serverFileName: String): String {
+) : StorageService {
+    override fun uploadFile(image: MultipartFile, type: FileType, serverFileName: String): String {
         val bucketName = s3Properties.bucketName
         val fileKey = getSaveFilePath(type) + serverFileName
         val objectMetadata = ObjectMetadata().apply {
             contentLength = image.size
             contentType = image.contentType
         }
-        s3Client.putObject(bucketName, fileKey, image.inputStream, objectMetadata)
-            ?: throw S3UploadException()
-        return fileKey
+
+        return execute {
+            s3Client.putObject(bucketName, fileKey, image.inputStream, objectMetadata)
+            fileKey
+        }
     }
 
-    fun getUrl(fileKey: String): String {
+    override fun getUrl(fileKey: String): String {
         val urlValidTime = s3Properties.urlValidTime
         val bucketName = s3Properties.bucketName
-        val expiration = Date(System.currentTimeMillis() + (urlValidTime * 60 * 1000))
+        val expiration = Date(System.currentTimeMillis() + urlValidTime)
         val preSignedUrlRequest = GeneratePresignedUrlRequest(bucketName, fileKey)
             .withMethod(GET)
             .withExpiration(expiration)
-        return s3Client.generatePresignedUrl(preSignedUrlRequest).toString()
+
+        return execute {
+            s3Client.generatePresignedUrl(preSignedUrlRequest).toString()
+        }
     }
 
-    fun deleteFile(fileKey: String) {
+    override fun deleteFile(fileKey: String) {
         val bucketName = s3Properties.bucketName
-        s3Client.deleteObject(bucketName, fileKey)
+        return execute {
+            s3Client.deleteObject(bucketName, fileKey)
+        }
     }
 
     private fun getSaveFilePath(type: FileType): String {
         return if (type == FileType.PROFILE) s3Properties.profileFolderName else ""
+    }
+
+    private fun <T> execute(operation: () -> T): T {
+        return runCatching { operation() }
+            .getOrElse { throw S3Exception(it) }
     }
 }

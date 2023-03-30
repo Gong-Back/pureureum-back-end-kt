@@ -14,5 +14,5 @@ class SmsOverRequestException(cause: Throwable? = null) :
 class OAuthAuthenticationException(cause: Throwable? = null) :
     PureureumException(cause = cause, errorCode = ErrorCode.OAUTH_AUTHENTICATION_FAIL)
 
-class S3UploadException(cause: Throwable? = null) :
+class S3Exception(cause: Throwable? = null) :
     PureureumException(cause = cause, errorCode = ErrorCode.S3_UPLOAD_FAILED)

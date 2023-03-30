@@ -70,7 +70,21 @@ data class UserInfoRes(
     val gender: Gender,
     val birthday: LocalDate,
     val profileId: Long
-)
+) {
+    companion object {
+        fun toUser(user: User): UserInfoRes {
+            return UserInfoRes(
+                user.email,
+                user.phoneNumber,
+                user.name,
+                user.nickname,
+                user.gender,
+                user.birthday,
+                user.profile.id
+            )
+        }
+    }
+}
 
 data class EmailReq(
     @field:Length(min = 8, max = 15, message = "올바른 형식의 아이디여야 합니다.")

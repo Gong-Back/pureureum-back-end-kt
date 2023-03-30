@@ -17,7 +17,6 @@ import support.createMockFile
 import support.createProfile
 import support.createUser
 import support.createUserInfoReq
-import support.createUserInfoRes
 
 class UserServiceTest : BehaviorSpec({
     val userRepository = mockk<UserRepository>()
@@ -41,16 +40,6 @@ class UserServiceTest : BehaviorSpec({
 
             Then("성공한다.") {
                 shouldThrow<IllegalArgumentException> { userService.getUserByEmail(email) }
-            }
-        }
-    }
-
-    Given("사용자") {
-        val user = createUser()
-        val userInfoRes = createUserInfoRes(user)
-        When("사용자의 정보를 요청받으면") {
-            Then("사용자 정보를 반환한다") {
-                userService.getUserInfo(user) shouldBe userInfoRes
             }
         }
     }
