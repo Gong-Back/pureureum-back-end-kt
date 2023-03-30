@@ -49,6 +49,9 @@
 | `511 SMS_SENDING_OVER_REQUEST`
 | SMS over sending error
 
+| `512 S3_UPLOAD_FAILED`
+| S3 Upload error
+
 |===
 
 [[overview-error-response]]

@@ -1,6 +1,7 @@
 package gongback.pureureum.domain.sms
 
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 
 fun SmsLogRepository.getLastSmsLog(receiver: String): SmsLog =
@@ -12,4 +13,7 @@ interface SmsLogRepository : JpaRepository<SmsLog, Long> {
     fun getTotalSize(): Long
 
     fun findFirstByReceiverOrderByCreateDateDesc(receiver: String): SmsLog?
+
+    @Modifying
+    fun deleteByReceiver(receiver: String)
 }

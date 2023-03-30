@@ -7,6 +7,7 @@ import gongback.pureureum.application.dto.RegisterUserReq
 import gongback.pureureum.application.dto.SocialRegisterUserReq
 import gongback.pureureum.application.dto.TempSocialAuthDto
 import gongback.pureureum.application.dto.UserAccountDto
+import gongback.pureureum.domain.file.Profile
 import gongback.pureureum.domain.user.TempSocialAuthRepository
 import gongback.pureureum.domain.user.UserRepository
 import gongback.pureureum.domain.user.existsByPhoneNumber
@@ -24,8 +25,8 @@ import org.springframework.transaction.annotation.Transactional
 class UserAuthenticationService(
     private val userRepository: UserRepository,
     private val tempSocialAuthRepository: TempSocialAuthRepository,
-
     private val smsLogService: SmsLogService,
+    private val profileService: ProfileService,
     private val jwtTokenProvider: JwtTokenProvider
 ) {
     fun validateAuthentication(loginReq: LoginReq) {
@@ -46,18 +47,21 @@ class UserAuthenticationService(
     fun register(registerUserReq: RegisterUserReq) {
         checkDuplicatedUser(registerUserReq.email, registerUserReq.phoneNumber)
         validateCertifiedPhoneNumber(registerUserReq.phoneNumber)
-        userRepository.save(registerUserReq.toEntity())
+        val defaultProfile = profileService.getProfile(Profile.defaultProfile().id)
+        userRepository.save(registerUserReq.toEntity(defaultProfile))
     }
 
     @Transactional
     fun registerBySocialInfo(oAuthUserInfo: OAuthUserInfo) {
-        userRepository.save(oAuthUserInfo.toUser())
+        val defaultProfile = profileService.getProfile(Profile.defaultProfile().id)
+        userRepository.save(oAuthUserInfo.toUser(defaultProfile))
     }
 
     @Transactional
     fun registerBySocialReq(socialRegisterUserReq: SocialRegisterUserReq) {
         validateCertifiedPhoneNumber(socialRegisterUserReq.phoneNumber)
-        userRepository.save(socialRegisterUserReq.toUser())
+        val defaultProfile = profileService.getProfile(Profile.defaultProfile().id)
+        userRepository.save(socialRegisterUserReq.toUser(defaultProfile))
         tempSocialAuthRepository.deleteByEmail(socialRegisterUserReq.email)
     }
 
@@ -123,7 +127,11 @@ class UserAuthenticationService(
         return ErrorCode.REQUEST_RESOURCE_NOT_ENOUGH
     }
 
-    private fun validateCertifiedPhoneNumber(phoneNumber: String) {
+    fun validateCertifiedPhoneNumber(phoneNumber: String) {
         require(smsLogService.isCertificated(phoneNumber)) { "본인 인증되지 않은 정보입니다" }
+    }
+
+    fun deleteByPhoneNumber(phoneNumber: String) {
+        smsLogService.deleteByPhoneNumber(phoneNumber)
     }
 }

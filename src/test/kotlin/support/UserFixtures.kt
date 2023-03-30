@@ -4,6 +4,9 @@ import gongback.pureureum.application.dto.KakaoUserInfoRes
 import gongback.pureureum.application.dto.OAuthUserInfo
 import gongback.pureureum.application.dto.RegisterUserReq
 import gongback.pureureum.application.dto.UserAccountDto
+import gongback.pureureum.application.dto.UserInfoReq
+import gongback.pureureum.application.dto.UserInfoRes
+import gongback.pureureum.domain.file.Profile
 import gongback.pureureum.domain.user.Gender
 import gongback.pureureum.domain.user.Password
 import gongback.pureureum.domain.user.Role
@@ -26,9 +29,13 @@ fun createUser(
     gender: Gender = GENDER,
     birthday: LocalDate = BIRTHDAY,
     password: Password = PASSWORD,
+    profile: Profile = createProfile(),
     id: Long = 0L
 ): User {
-    return User(name, email, phoneNumber, email, gender, birthday, password, Role.ROLE_USER, SocialType.PUREUREUM, id)
+    return User(
+        name, email, phoneNumber, email, gender, birthday, password, Role.ROLE_USER,
+        SocialType.PUREUREUM, profile, id
+    )
 }
 
 fun createRegisterReq(
@@ -59,5 +66,26 @@ fun createKakaoUserInfo(
     return KakaoUserInfoRes(
         "2129419241",
         KakaoUserInfoRes.KakaoAccount(name, "kakao_2129419241", birthyear, birthday, gender, phoneNumber)
+    )
+}
+
+fun createUserInfoReq(
+    password: Password = PASSWORD,
+    phoneNumber: String = PHONE_NUMBER,
+    nickname: String = EMAIL
+): UserInfoReq {
+    return UserInfoReq(password, phoneNumber, nickname)
+}
+fun createUserInfoRes(
+    user: User
+): UserInfoRes {
+    return UserInfoRes(
+        user.email,
+        user.phoneNumber,
+        user.name,
+        user.nickname,
+        user.gender,
+        user.birthday,
+        user.profile.id
     )
 }

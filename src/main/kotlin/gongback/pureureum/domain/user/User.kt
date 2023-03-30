@@ -1,14 +1,19 @@
 package gongback.pureureum.domain.user
 
+import gongback.pureureum.domain.file.Profile
 import jakarta.persistence.AttributeOverride
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.OneToOne
 import java.time.LocalDate
 
 @Entity
@@ -25,7 +30,11 @@ class User(
     var password: Password,
 
     @Enumerated(EnumType.STRING)
-    val socialType: SocialType
+    val socialType: SocialType,
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.MERGE])
+    @JoinColumn(name = "profile_id")
+    var profile: Profile
 ) {
     val email: String
         get() = information.email
@@ -58,16 +67,30 @@ class User(
         password: Password,
         role: Role,
         socialType: SocialType,
+        profile: Profile,
         id: Long = 0L
     ) : this(
         id,
         UserInformation(name, email, phoneNumber, nickname, gender, birthday, role = role),
         password,
-        socialType
+        socialType,
+        profile
     )
 
     fun authenticate(password: Password) {
         identify(this.password == password) { "비밀번호가 일치하지 않습니다" }
+    }
+
+    fun updatePhoneNumber(phoneNumber: String) {
+        information = information.copy(phoneNumber = phoneNumber)
+    }
+
+    fun updatePassword(password: Password) {
+        this.password = password
+    }
+
+    fun updateNickname(nickname: String) {
+        information = information.copy(nickname = nickname)
     }
 
     private fun identify(value: Boolean, message: () -> Any = {}) {

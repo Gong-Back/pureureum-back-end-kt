@@ -5,7 +5,9 @@ import gongback.pureureum.domain.sms.getLastSmsLog
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 
 class SmsLogServiceTest : BehaviorSpec({
     val smsLogRepository = mockk<SmsLogRepository>()
@@ -18,9 +20,13 @@ class SmsLogServiceTest : BehaviorSpec({
         When("Sms 전송을 성공하면") {
             val smsLog = createSmsLog(receiver, false)
             every { smsLogRepository.save(any()) } returns smsLog
+            every { smsLogRepository.deleteByReceiver(any()) } just runs
 
             Then("sms 정보를 저장한다.") {
                 smsLogService.save(receiver)
+            }
+            Then("sms 정보를 제거한다.") {
+                smsLogService.deleteByPhoneNumber(receiver)
             }
         }
 
