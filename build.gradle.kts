@@ -14,6 +14,7 @@ allOpen {
     annotation("javax.persistence.Entity")
     annotation("javax.persistence.MappedSuperclass")
     annotation("javax.persistence.Embeddable")
+    annotation("gongback.pureureum.support.domain.AllOpen")
 }
 
 group = "gongback"
