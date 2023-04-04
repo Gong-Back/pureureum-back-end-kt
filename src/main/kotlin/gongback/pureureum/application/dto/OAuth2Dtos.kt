@@ -52,7 +52,7 @@ open class OAuthUserInfo {
             birthday = LocalDate.parse(birthday, DateTimeFormatter.ISO_DATE),
             password = Password(clientEmail),
             userRole = UserRole.ROLE_USER,
-            socialType = socialType!!,
+            socialType = socialType!!
         )
     }
 

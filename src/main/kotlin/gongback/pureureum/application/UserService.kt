@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile
 class UserService(
     private val uploadService: UploadService,
     private val userRepository: UserRepository,
-    private val smsLogRepository: SmsLogRepository,
+    private val smsLogRepository: SmsLogRepository
 ) {
     fun getUserByEmail(email: String): User = userRepository.getUserByEmail(email)
 

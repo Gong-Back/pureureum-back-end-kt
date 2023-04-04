@@ -7,7 +7,7 @@ import jakarta.persistence.Entity
 class SmsLog(
     val receiver: String,
 
-    isSuccess: Boolean = false,
+    isSuccess: Boolean = false
 ) : BaseEntity() {
     final var isSuccess: Boolean = isSuccess
         protected set

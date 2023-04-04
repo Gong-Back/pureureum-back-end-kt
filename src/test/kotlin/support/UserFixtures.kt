@@ -27,7 +27,7 @@ fun createUser(
     phoneNumber: String = PHONE_NUMBER,
     userGender: UserGender = UserGENDER,
     birthday: LocalDate = BIRTHDAY,
-    password: Password = PASSWORD,
+    password: Password = PASSWORD
 ): User {
     return User(
         email, phoneNumber, name, email, userGender, birthday, password, UserRole.ROLE_USER,

@@ -11,7 +11,7 @@ data class FileDto(
         return Profile(
             fileKey = fileKey,
             contentType = contentType,
-            originalFileName = originalFileName,
+            originalFileName = originalFileName
         )
     }
 }
