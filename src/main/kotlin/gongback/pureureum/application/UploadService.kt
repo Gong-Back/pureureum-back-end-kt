@@ -1,7 +1,7 @@
 package gongback.pureureum.application
 
 import gongback.pureureum.application.util.NameGenerator
-import gongback.pureureum.domain.file.FileType
+import gongback.pureureum.support.enum.FileType
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 
@@ -10,11 +10,9 @@ class UploadService(
     private val storageService: StorageService,
     private val fileNameGenerator: NameGenerator
 ) {
-    fun createServerFileName(originalFileName: String): String {
-        return fileNameGenerator.generate() + "." + getExt(originalFileName)
-    }
 
-    fun uploadFile(file: MultipartFile, fileType: FileType, serverFileName: String): String {
+    fun uploadFile(file: MultipartFile, fileType: FileType, originalFileName: String): String {
+        val serverFileName = fileNameGenerator.generate() + "." + getExt(originalFileName)
         return storageService.uploadFile(file, fileType, serverFileName)
     }
 

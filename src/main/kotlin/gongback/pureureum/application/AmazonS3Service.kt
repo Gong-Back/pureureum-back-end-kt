@@ -5,7 +5,7 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
 import com.amazonaws.services.s3.model.ObjectMetadata
 import gongback.pureureum.application.properties.S3Properties
-import gongback.pureureum.domain.file.FileType
+import gongback.pureureum.support.enum.FileType
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
@@ -15,9 +15,9 @@ class AmazonS3Service(
     private val s3Client: AmazonS3,
     private val s3Properties: S3Properties
 ) : StorageService {
-    override fun uploadFile(image: MultipartFile, type: FileType, serverFileName: String): String {
+    override fun uploadFile(image: MultipartFile, fileType: FileType, serverFileName: String): String {
         val bucketName = s3Properties.bucketName
-        val fileKey = getSaveFilePath(type) + serverFileName
+        val fileKey = getSaveFilePath(fileType) + serverFileName
         val objectMetadata = ObjectMetadata().apply {
             contentLength = image.size
             contentType = image.contentType
@@ -49,8 +49,8 @@ class AmazonS3Service(
         }
     }
 
-    private fun getSaveFilePath(type: FileType): String {
-        return if (type == FileType.PROFILE) s3Properties.profileFolderName else ""
+    private fun getSaveFilePath(fileType: FileType): String {
+        return if (fileType == FileType.PROFILE) s3Properties.profileFolderName else ""
     }
 
     private fun <T> execute(operation: () -> T): T {

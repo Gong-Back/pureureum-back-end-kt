@@ -5,8 +5,12 @@ import gongback.pureureum.application.dto.NaverSendMessageDto
 import gongback.pureureum.application.dto.PhoneNumberReq
 import gongback.pureureum.application.dto.SmsSendResponse
 import gongback.pureureum.application.properties.NaverSmsProperties
+import gongback.pureureum.domain.sms.SmsLog
+import gongback.pureureum.domain.sms.SmsLogRepository
+import gongback.pureureum.domain.sms.getLastSmsLog
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.client.WebClient
 import java.util.*
 import javax.crypto.Mac
@@ -19,27 +23,28 @@ private const val SENDING_LIMIT = 50
 @Service
 class NaverSmsService(
     private val webClient: WebClient,
-    private val smsLogService: SmsLogService,
+    private val smsLogRepository: SmsLogRepository,
     private val naverSmsProperties: NaverSmsProperties
 ) : SmsService {
 
     private val SEND_URI = "/sms/v2/services/${naverSmsProperties.serviceId}/messages"
 
     override fun sendSmsCertification(phoneNumberReq: PhoneNumberReq): SmsSendResponse {
-        if (smsLogService.getTotalSize() > SENDING_LIMIT) {
+        if (smsLogRepository.getTotalSize() > SENDING_LIMIT) {
             throw SmsOverRequestException()
         }
 
         val certificationNumber = getCertificationNumber()
-        smsLogService.save(phoneNumberReq.phoneNumber)
+        smsLogRepository.save(SmsLog(phoneNumberReq.phoneNumber))
 
-        sendMessage(phoneNumberReq.receiver, certificationNumber)
+//        sendMessage(phoneNumberReq.receiver, certificationNumber)
 
         return SmsSendResponse(certificationNumber = certificationNumber)
     }
 
+    @Transactional
     override fun completeCertification(phoneNumberReq: PhoneNumberReq) {
-        smsLogService.completeCertification(phoneNumberReq.phoneNumber)
+        smsLogRepository.getLastSmsLog(phoneNumberReq.phoneNumber).completeCertification()
     }
 
     private fun sendMessage(receiver: String, randomNumber: String) {

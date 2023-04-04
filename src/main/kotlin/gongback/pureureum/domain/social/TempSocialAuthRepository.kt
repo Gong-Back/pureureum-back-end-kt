@@ -1,4 +1,4 @@
-package gongback.pureureum.domain.user
+package gongback.pureureum.domain.social
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying

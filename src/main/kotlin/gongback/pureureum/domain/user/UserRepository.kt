@@ -1,10 +1,6 @@
 package gongback.pureureum.domain.user
 
-import gongback.pureureum.domain.file.Profile
 import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Modifying
-import org.springframework.data.jpa.repository.Query
-import org.springframework.data.repository.query.Param
 
 fun UserRepository.existsEmailOrNickname(email: String): Boolean =
     existsByInformationEmailOrInformationNickname(email, email)
@@ -32,8 +28,4 @@ interface UserRepository : JpaRepository<User, Long> {
 
     fun existsByInformationEmail(email: String): Boolean
     fun existsByInformationNickname(nickname: String): Boolean
-
-    @Modifying
-    @Query("update User u set u.profile=:profile where u.id=:id")
-    fun updateProfile(@Param("profile") updatedProfile: Profile, @Param("id") id: Long)
 }
