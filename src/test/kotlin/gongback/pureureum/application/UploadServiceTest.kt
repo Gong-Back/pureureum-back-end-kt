@@ -1,7 +1,7 @@
 package gongback.pureureum.application
 
 import gongback.pureureum.application.util.NameGenerator
-import gongback.pureureum.domain.file.FileType
+import gongback.pureureum.support.enum.FileType
 import io.kotest.assertions.throwables.shouldNotThrowAnyUnit
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
@@ -9,6 +9,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import support.PROFILE_SERVER_FILE_NAME
 import support.PROFILE_URL
 import support.createMockFile
 import support.createProfile
@@ -24,15 +25,6 @@ class UploadServiceTest : BehaviorSpec({
         }
     )
 
-    Given("원본 파일 이름") {
-        val profile = createProfile()
-        When("정상적인 이름이라면") {
-            Then("서버 저장 파일 이름을 반환한다.") {
-                uploadService.createServerFileName(profile.originalFileName) shouldBe profile.serverFileName
-            }
-        }
-    }
-
     Given("파일과 파일 타입, 서버 저장 파일 이름") {
         val file = createMockFile()
         val profile = createProfile()
@@ -41,7 +33,7 @@ class UploadServiceTest : BehaviorSpec({
         When("정상적인 프로필 이미지 파일이라면") {
             every { storageService.uploadFile(any(), any(), any()) } returns fileKey
             Then("업로드를 진행한다") {
-                uploadService.uploadFile(file, fileType, profile.serverFileName) shouldBe fileKey
+                uploadService.uploadFile(file, fileType, PROFILE_SERVER_FILE_NAME) shouldBe fileKey
             }
         }
     }

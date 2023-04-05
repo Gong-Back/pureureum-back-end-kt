@@ -1,5 +1,9 @@
 package gongback.pureureum.domain.user
 
+import gongback.pureureum.domain.social.SocialType
+import gongback.pureureum.domain.social.TempSocialAuth
+import gongback.pureureum.domain.social.TempSocialAuthRepository
+import gongback.pureureum.domain.social.getTempByEmail
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.ExpectSpec
 import io.kotest.extensions.spring.SpringTestExtension
@@ -12,7 +16,7 @@ fun createTempSocialAuth(
     name: String = "회원",
     birthday: String = "1998-12-28",
     phoneNumber: String = "010-1234-5678",
-    gender: Gender = Gender.MALE,
+    userGender: UserGender = UserGender.MALE,
     socialType: SocialType = SocialType.NAVER
 ): TempSocialAuth {
     return TempSocialAuth(
@@ -20,7 +24,7 @@ fun createTempSocialAuth(
         name = name,
         birthday = birthday,
         phoneNumber = phoneNumber,
-        gender = gender,
+        gender = userGender,
         socialType = socialType
     )
 }

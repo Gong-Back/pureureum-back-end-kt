@@ -9,8 +9,6 @@ import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.method.support.ModelAndViewContainer
 
-private const val BEARER = "Bearer"
-
 @Component
 class LoginUserResolver(
     private val userService: UserService,

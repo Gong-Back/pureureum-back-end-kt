@@ -6,18 +6,17 @@ import gongback.pureureum.application.dto.RegisterUserReq
 import gongback.pureureum.application.dto.UserAccountDto
 import gongback.pureureum.application.dto.UserInfoReq
 import gongback.pureureum.application.dto.UserInfoRes
-import gongback.pureureum.domain.file.Profile
-import gongback.pureureum.domain.user.Gender
+import gongback.pureureum.domain.social.SocialType
 import gongback.pureureum.domain.user.Password
-import gongback.pureureum.domain.user.Role
-import gongback.pureureum.domain.user.SocialType
 import gongback.pureureum.domain.user.User
+import gongback.pureureum.domain.user.UserGender
+import gongback.pureureum.domain.user.UserRole
 import java.time.LocalDate
 
 const val NAME: String = "회원"
 const val EMAIL: String = "testEmail"
 const val PHONE_NUMBER: String = "010-0000-0000"
-val GENDER: Gender = Gender.MALE
+val UserGENDER: UserGender = UserGender.MALE
 val BIRTHDAY: LocalDate = createLocalDate(1998, 12, 28)
 val PASSWORD: Password = Password("passwordTest")
 val SOCIAL_TYPE_PUREUREUM: SocialType = SocialType.PUREUREUM
@@ -26,15 +25,13 @@ fun createUser(
     name: String = NAME,
     email: String = EMAIL,
     phoneNumber: String = PHONE_NUMBER,
-    gender: Gender = GENDER,
+    userGender: UserGender = UserGENDER,
     birthday: LocalDate = BIRTHDAY,
-    password: Password = PASSWORD,
-    profile: Profile = createProfile(),
-    id: Long = 0L
+    password: Password = PASSWORD
 ): User {
     return User(
-        name, email, phoneNumber, email, gender, birthday, password, Role.ROLE_USER,
-        SocialType.PUREUREUM, profile, id
+        email, phoneNumber, name, email, userGender, birthday, password, UserRole.ROLE_USER,
+        SocialType.PUREUREUM
     )
 }
 
@@ -42,11 +39,11 @@ fun createRegisterReq(
     email: String = EMAIL,
     password: Password = PASSWORD,
     name: String = NAME,
-    gender: Gender = GENDER,
+    userGender: UserGender = UserGENDER,
     phoneNumber: String = PHONE_NUMBER,
     birthday: LocalDate = BIRTHDAY
 ): RegisterUserReq {
-    return RegisterUserReq(email, password, name, gender, phoneNumber, birthday)
+    return RegisterUserReq(email, password, name, userGender, phoneNumber, birthday)
 }
 
 fun createUserAccountDto(
@@ -84,8 +81,8 @@ fun createUserInfoRes(
         user.phoneNumber,
         user.name,
         user.nickname,
-        user.gender,
+        user.userGender,
         user.birthday,
-        user.profile.id
+        "signedProfileUrl"
     )
 }

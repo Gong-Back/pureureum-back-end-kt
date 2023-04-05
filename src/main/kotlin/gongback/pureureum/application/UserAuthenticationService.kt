@@ -7,13 +7,15 @@ import gongback.pureureum.application.dto.RegisterUserReq
 import gongback.pureureum.application.dto.SocialRegisterUserReq
 import gongback.pureureum.application.dto.TempSocialAuthDto
 import gongback.pureureum.application.dto.UserAccountDto
-import gongback.pureureum.domain.file.Profile
-import gongback.pureureum.domain.user.TempSocialAuthRepository
+import gongback.pureureum.domain.sms.SmsLog
+import gongback.pureureum.domain.sms.SmsLogRepository
+import gongback.pureureum.domain.sms.getLastSmsLog
+import gongback.pureureum.domain.social.TempSocialAuthRepository
+import gongback.pureureum.domain.social.getTempByEmail
 import gongback.pureureum.domain.user.UserRepository
 import gongback.pureureum.domain.user.existsByPhoneNumber
 import gongback.pureureum.domain.user.existsEmail
 import gongback.pureureum.domain.user.existsEmailOrNickname
-import gongback.pureureum.domain.user.getTempByEmail
 import gongback.pureureum.domain.user.getUserByEmail
 import gongback.pureureum.domain.user.getUserByPhoneNumber
 import gongback.pureureum.security.JwtTokenProvider
@@ -25,8 +27,7 @@ import org.springframework.transaction.annotation.Transactional
 class UserAuthenticationService(
     private val userRepository: UserRepository,
     private val tempSocialAuthRepository: TempSocialAuthRepository,
-    private val smsLogService: SmsLogService,
-    private val profileService: ProfileService,
+    private val smsLogRepository: SmsLogRepository,
     private val jwtTokenProvider: JwtTokenProvider
 ) {
     fun validateAuthentication(loginReq: LoginReq) {
@@ -47,21 +48,18 @@ class UserAuthenticationService(
     fun register(registerUserReq: RegisterUserReq) {
         checkDuplicatedUser(registerUserReq.email, registerUserReq.phoneNumber)
         validateCertifiedPhoneNumber(registerUserReq.phoneNumber)
-        val defaultProfile = profileService.getProfile(Profile.defaultProfile().id)
-        userRepository.save(registerUserReq.toEntity(defaultProfile))
+        userRepository.save(registerUserReq.toEntity())
     }
 
     @Transactional
     fun registerBySocialInfo(oAuthUserInfo: OAuthUserInfo) {
-        val defaultProfile = profileService.getProfile(Profile.defaultProfile().id)
-        userRepository.save(oAuthUserInfo.toUser(defaultProfile))
+        userRepository.save(oAuthUserInfo.toUser())
     }
 
     @Transactional
     fun registerBySocialReq(socialRegisterUserReq: SocialRegisterUserReq) {
         validateCertifiedPhoneNumber(socialRegisterUserReq.phoneNumber)
-        val defaultProfile = profileService.getProfile(Profile.defaultProfile().id)
-        userRepository.save(socialRegisterUserReq.toUser(defaultProfile))
+        userRepository.save(socialRegisterUserReq.toUser())
         tempSocialAuthRepository.deleteByEmail(socialRegisterUserReq.email)
     }
 
@@ -83,14 +81,10 @@ class UserAuthenticationService(
         require(!existsPhoneNumber(phoneNumber)) { "이미 가입된 전화번호입니다" }
     }
 
-    fun existsPhoneNumber(phoneNumber: String) = userRepository.existsByPhoneNumber(phoneNumber)
-
-    fun existsUserByEmail(email: String) = userRepository.existsEmail(email)
-
     @Transactional
     fun saveTempSocialInfo(oAuthUserInfo: OAuthUserInfo) {
         if (oAuthUserInfo.phoneNumber.isNotBlank()) {
-            smsLogService.save(oAuthUserInfo.phoneNumber)
+            smsLogRepository.save(SmsLog(oAuthUserInfo.phoneNumber))
         }
         tempSocialAuthRepository.save(oAuthUserInfo.toTempSocialAuth())
     }
@@ -128,10 +122,14 @@ class UserAuthenticationService(
     }
 
     fun validateCertifiedPhoneNumber(phoneNumber: String) {
-        require(smsLogService.isCertificated(phoneNumber)) { "본인 인증되지 않은 정보입니다" }
+        require(smsLogRepository.getLastSmsLog(phoneNumber).isSuccess) { "본인 인증되지 않은 정보입니다" }
     }
 
     fun deleteByPhoneNumber(phoneNumber: String) {
-        smsLogService.deleteByPhoneNumber(phoneNumber)
+        smsLogRepository.deleteByReceiver(phoneNumber)
     }
+
+    private fun existsPhoneNumber(phoneNumber: String) = userRepository.existsByPhoneNumber(phoneNumber)
+
+    private fun existsUserByEmail(email: String) = userRepository.existsEmail(email)
 }

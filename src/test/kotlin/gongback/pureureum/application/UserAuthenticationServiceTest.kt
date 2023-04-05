@@ -1,8 +1,9 @@
 package gongback.pureureum.application
 
 import gongback.pureureum.application.dto.ErrorCode
-import gongback.pureureum.domain.file.ProfileRepository
-import gongback.pureureum.domain.user.TempSocialAuthRepository
+import gongback.pureureum.domain.sms.SmsLogRepository
+import gongback.pureureum.domain.sms.getLastSmsLog
+import gongback.pureureum.domain.social.TempSocialAuthRepository
 import gongback.pureureum.domain.user.User
 import gongback.pureureum.domain.user.UserRepository
 import gongback.pureureum.domain.user.existsByPhoneNumber
@@ -15,30 +16,25 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import support.createKakaoUserInfo
-import support.createProfile
 import support.createRegisterReq
 import support.createUser
 
 class UserAuthenticationServiceTest : BehaviorSpec({
     val userRepository = mockk<UserRepository>()
-    val smsLogService = mockk<SmsLogService>()
+    val smsLogRepository = mockk<SmsLogRepository>()
     val tempSocialAuthRepository = mockk<TempSocialAuthRepository>()
     val jwtTokenProvider = mockk<JwtTokenProvider>()
-    val profileRepository = mockk<ProfileRepository>()
-    val profileService = mockk<ProfileService>()
 
     val userAuthenticationService =
         UserAuthenticationService(
             userRepository,
             tempSocialAuthRepository,
-            smsLogService,
-            profileService,
+            smsLogRepository,
             jwtTokenProvider
         )
 
     Given("회원가입 정보") {
         val registerReq = createRegisterReq()
-        val profile = createProfile()
 
         When("이미 존재하는 이메일이거나 닉네임이라면") {
             every { userRepository.existsEmailOrNickname(registerReq.email) } returns true
@@ -60,7 +56,7 @@ class UserAuthenticationServiceTest : BehaviorSpec({
 
         When("이미 존재하지 않은 이메일이거나 닉네임이면서, 인증하지 않은 전화번호일 경우") {
             every { userRepository.existsEmailOrNickname(registerReq.email) } returns false
-            every { smsLogService.isCertificated(registerReq.phoneNumber) } returns false
+            every { smsLogRepository.getLastSmsLog(registerReq.phoneNumber).isSuccess } returns false
 
             Then("예외가 발생한다.") {
                 shouldThrow<IllegalArgumentException> {
@@ -72,9 +68,7 @@ class UserAuthenticationServiceTest : BehaviorSpec({
         When("이미 존재하지 않은 이메일이거나 닉네임이면서, 전화번호이면서, 본인 인증한 전화번호인 경우") {
             every { userRepository.existsEmailOrNickname(registerReq.email) } returns false
             every { userRepository.existsByPhoneNumber(registerReq.phoneNumber) } returns false
-            every { smsLogService.isCertificated(registerReq.phoneNumber) } returns true
-            every { profileRepository.getReferenceById(any()) } returns profile
-            every { profileService.getProfile(any()) } returns profile
+            every { smsLogRepository.getLastSmsLog(registerReq.phoneNumber).isSuccess } returns true
             every { userRepository.save(any()) } returns createUser()
 
             Then("성공한다.") {

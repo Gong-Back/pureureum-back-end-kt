@@ -1,7 +1,5 @@
 package gongback.pureureum.domain.user
 
-enum class Role(
-    val description: String
-) {
+enum class UserRole(val description: String) {
     ROLE_USER("유저"), ROLE_ADMIN("관리자")
 }

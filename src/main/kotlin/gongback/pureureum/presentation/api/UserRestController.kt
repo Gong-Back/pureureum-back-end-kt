@@ -80,7 +80,7 @@ class UserRestController(
     fun getUserInfo(
         @LoginUser user: User
     ): ResponseEntity<ApiResponse<UserInfoRes>> {
-        val userInfo = UserInfoRes.toUser(user)
+        val userInfo = userService.getUserInfoWithProfileUrl(user)
         return ResponseEntity.ok().body(ApiResponse.ok(userInfo))
     }
 
@@ -98,14 +98,7 @@ class UserRestController(
         @RequestPart profile: MultipartFile?,
         @LoginUser user: User
     ): ResponseEntity<Unit> {
-        userService.updateProfile(user, profile)
+        userService.updatedProfile(user.email, profile)
         return ResponseEntity.ok().build()
-    }
-
-    @GetMapping("/test")
-    fun test(
-        @LoginUser user: User
-    ): String {
-        return "Test Success!"
     }
 }

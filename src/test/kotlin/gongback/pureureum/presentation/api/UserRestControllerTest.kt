@@ -3,8 +3,8 @@ package gongback.pureureum.presentation.api
 import com.ninjasquad.springmockk.MockkBean
 import gongback.pureureum.application.UserAuthenticationService
 import gongback.pureureum.application.UserService
-import gongback.pureureum.domain.user.Gender
 import gongback.pureureum.domain.user.Password
+import gongback.pureureum.domain.user.UserGender
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -44,7 +44,7 @@ private fun createRegisterUserRequest(
     name: String = "회원",
     email: String = EMAIL,
     phoneNumber: String = "010-0000-0000",
-    gender: Gender = Gender.MALE,
+    userGender: UserGender = UserGender.MALE,
     birthday: LocalDate = createLocalDate(1998, 12, 28),
     password: String = PASSWORD
 ): Map<String, Any> {
@@ -52,7 +52,7 @@ private fun createRegisterUserRequest(
         "name" to name,
         "email" to email,
         "phoneNumber" to phoneNumber,
-        "gender" to gender,
+        "gender" to userGender,
         "birthday" to birthday,
         "password" to password
     )
@@ -279,6 +279,8 @@ class UserRestControllerTest : ControllerTestHelper() {
     fun `사용자 정보 조회 성공`() {
         val userInfo = createUserInfoRes(createUser())
 
+        every { userService.getUserInfoWithProfileUrl(any()) } returns userInfo
+
         mockMvc.get("/api/v1/users/me") {
             accessToken(createAccessToken())
         }.andExpect {
@@ -296,7 +298,7 @@ class UserRestControllerTest : ControllerTestHelper() {
                     fieldWithPath("data.nickname").description("닉네임"),
                     fieldWithPath("data.gender").description("성별"),
                     fieldWithPath("data.birthday").description("생년월일"),
-                    fieldWithPath("data.profileId").description("프로필 이미지 아이디")
+                    fieldWithPath("data.profileUrl").description("signed 프로필 주소")
                 )
             )
         }
@@ -318,7 +320,7 @@ class UserRestControllerTest : ControllerTestHelper() {
                     fieldWithPath("password").description("비밀번호").optional(),
                     fieldWithPath("phoneNumber").description("전화번호")
                         .attributes(Attributes.Attribute(LENGTH, "13")).optional(),
-                    fieldWithPath("nickname").description("닉네임 (공백 X)")
+                    fieldWithPath("nickname").description("닉네임")
                         .attributes(Attributes.Attribute(LENGTH, "2~30")).optional()
                 )
             )
@@ -380,7 +382,7 @@ class UserRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `프로필 이미지 업데이트 성공`() {
-        every { userService.updateProfile(any(), any()) } just runs
+        every { userService.updatedProfile(any(), any()) } just runs
 
         val profile = MockMultipartFile(
             "profile",
