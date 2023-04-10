@@ -1,6 +1,7 @@
 package gongback.pureureum.application.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import gongback.pureureum.domain.social.SocialTempGender
 import gongback.pureureum.domain.social.SocialType
 import gongback.pureureum.domain.social.TempSocialAuth
 import gongback.pureureum.domain.user.Password
@@ -34,7 +35,7 @@ open class OAuthUserInfo {
     open val clientEmail: String = ""
     open val birthday: String = ""
     open val phoneNumber: String = ""
-    open val gender: UserGender? = null
+    open val gender: SocialTempGender? = null
     open val socialType: SocialType? = null
     open val profile: Profile? = null
 
@@ -48,7 +49,7 @@ open class OAuthUserInfo {
             phoneNumber = phoneNumber,
             name = name,
             nickname = clientEmail,
-            gender = gender!!,
+            gender = UserGender.valueOf(gender!!.name),
             birthday = LocalDate.parse(birthday, DateTimeFormatter.ISO_DATE),
             password = Password(clientEmail),
             userRole = UserRole.ROLE_USER,
@@ -87,7 +88,7 @@ data class KakaoUserInfoRes(
     override val clientEmail: String = "kakao_$id"
     override val birthday: String = birthdayFormat()
     override val phoneNumber: String = kakaoAccount.phoneNumber
-    override val gender: UserGender? = genderFormat()
+    override val gender: SocialTempGender? = genderFormat()
     override val socialType: SocialType = SocialType.KAKAO
 
     fun birthdayFormat(): String {
@@ -101,8 +102,8 @@ data class KakaoUserInfoRes(
         return stringBuilder.toString()
     }
 
-    fun genderFormat(): UserGender? =
-        if (kakaoAccount.gender.isEmpty()) null else UserGender.valueOf(kakaoAccount.gender.uppercase())
+    fun genderFormat(): SocialTempGender? =
+        if (kakaoAccount.gender.isEmpty()) null else SocialTempGender.valueOf(kakaoAccount.gender.uppercase())
 }
 
 data class NaverUserInfoRes(
@@ -122,7 +123,7 @@ data class NaverUserInfoRes(
     override val clientEmail: String = "naver_${response.email.substring(0, response.email.indexOf("@"))}"
     override val birthday: String = birthdayFormat()
     override val phoneNumber: String = response.mobile
-    override val gender: UserGender? = genderFormat()
+    override val gender: SocialTempGender? = genderFormat()
     override val socialType: SocialType = SocialType.NAVER
 
     fun birthdayFormat(): String {
@@ -133,8 +134,8 @@ data class NaverUserInfoRes(
         return StringBuilder().append(response.birthyear).append("-").append(response.birthday).toString()
     }
 
-    fun genderFormat(): UserGender? =
-        if (response.gender.isEmpty()) null else if (response.gender == "F") UserGender.FEMALE else UserGender.MALE
+    fun genderFormat(): SocialTempGender? =
+        if (response.gender.isEmpty()) null else if (response.gender == "F") SocialTempGender.FEMALE else SocialTempGender.MALE
 }
 
 data class GoogleUserInfoRes(
@@ -182,6 +183,19 @@ data class TempSocialAuthDto(
     val name: String? = null,
     val birthday: String? = null,
     val phoneNumber: String? = null,
-    val gender: UserGender? = null,
+    val gender: SocialTempGender? = null,
     val socialType: SocialType? = null
-)
+) {
+    companion object {
+        fun fromTempSocialAuth(tempSocialAuth: TempSocialAuth): TempSocialAuthDto {
+            return TempSocialAuthDto(
+                tempSocialAuth.email,
+                tempSocialAuth.name,
+                tempSocialAuth.birthday,
+                tempSocialAuth.phoneNumber,
+                tempSocialAuth.gender,
+                tempSocialAuth.socialType
+            )
+        }
+    }
+}
