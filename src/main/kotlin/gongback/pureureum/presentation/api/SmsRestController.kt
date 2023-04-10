@@ -22,10 +22,10 @@ class SmsRestController(
     fun sendSmsCertification(
         @RequestBody @Valid phoneNumberReq: PhoneNumberReq
     ): ResponseEntity<ApiResponse<Any>> {
-        try {
+        return try {
             userAuthenticationService.checkDuplicatedPhoneNumber(phoneNumberReq.phoneNumber)
             val smsSendResponse = smsService.sendSmsCertification(phoneNumberReq)
-            return ResponseEntity.ok().body(ApiResponse.ok(smsSendResponse))
+            ResponseEntity.ok().body(ApiResponse.ok(smsSendResponse))
         } catch (e: IllegalArgumentException) {
             return ResponseEntity.badRequest().body(
                 ApiResponse.error(

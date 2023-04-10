@@ -66,4 +66,19 @@ class UserRepositoryTest(
             shouldThrow<IllegalArgumentException> { userRepository.getUserByPhoneNumber("otherEmail") }
         }
     }
+
+    context("닉네임 중복 확인") {
+        val user = createUser()
+        userRepository.save(user)
+
+        expect("존재한다.") {
+            val result = userRepository.existsNickname(user.nickname)
+            result shouldBe true
+        }
+
+        expect("존재하지 않는다.") {
+            val result = userRepository.existsNickname("otherNickname")
+            result shouldBe false
+        }
+    }
 })

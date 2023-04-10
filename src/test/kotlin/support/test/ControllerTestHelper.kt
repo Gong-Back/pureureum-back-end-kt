@@ -3,10 +3,10 @@ package support.test
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import gongback.pureureum.security.JwtNotExistsException
-import gongback.pureureum.security.LoginUser
-import gongback.pureureum.security.LoginUserResolver
-import gongback.pureureum.security.RefreshToken
-import gongback.pureureum.security.RefreshTokenResolver
+import gongback.pureureum.security.JwtNotValidException
+import gongback.pureureum.security.JwtTokenProvider
+import gongback.pureureum.security.LoginEmail
+import gongback.pureureum.security.LoginEmailResolver
 import io.mockk.every
 import io.mockk.slot
 import org.junit.jupiter.api.BeforeEach
@@ -18,6 +18,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.restdocs.RestDocumentationContextProvider
 import org.springframework.restdocs.RestDocumentationExtension
+import org.springframework.restdocs.cookies.ResponseCookiesSnippet
 import org.springframework.restdocs.headers.RequestHeadersSnippet
 import org.springframework.restdocs.headers.ResponseHeadersSnippet
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation
@@ -27,6 +28,7 @@ import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.payload.RequestFieldsSnippet
 import org.springframework.restdocs.payload.ResponseFieldsSnippet
 import org.springframework.restdocs.request.PathParametersSnippet
+import org.springframework.restdocs.request.RequestPartsSnippet
 import org.springframework.restdocs.snippet.Attributes.Attribute
 import org.springframework.test.web.servlet.MockHttpServletRequestDsl
 import org.springframework.test.web.servlet.MockMvc
@@ -37,9 +39,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.filter.CharacterEncodingFilter
-import support.REFRESH_HEADER_NAME
-import support.createAccessToken
-import support.createUser
+import support.ACCESS_TOKEN
+import support.EMAIL
+import support.NOT_VALID_ACCESS_TOKEN
+import support.NOT_VALID_REFRESH_TOKEN
+import support.REFRESH_TOKEN
 import support.test.BaseTests.TestEnvironment
 
 @TestEnvironment
@@ -49,10 +53,10 @@ abstract class ControllerTestHelper {
     lateinit var mockMvc: MockMvc
 
     @MockkBean
-    private lateinit var loginUserResolver: LoginUserResolver
+    private lateinit var loginEmailResolver: LoginEmailResolver
 
     @MockkBean
-    private lateinit var refreshTokenResolver: RefreshTokenResolver
+    private lateinit var jwtTokenProvider: JwtTokenProvider
 
     @Autowired
     lateinit var objectMapper: ObjectMapper
@@ -75,39 +79,33 @@ abstract class ControllerTestHelper {
             )
             .build()
 
-        loginUserResolver.also {
+        loginEmailResolver.also {
             slot<MethodParameter>().also { slot ->
                 every { it.supportsParameter(capture(slot)) } answers {
-                    slot.captured.hasParameterAnnotation(LoginUser::class.java)
+                    slot.captured.hasParameterAnnotation(LoginEmail::class.java)
                 }
             }
             slot<NativeWebRequest>().also { slot ->
                 every { it.resolveArgument(any(), any(), capture(slot), any()) } answers {
-                    val hasToken = slot.captured.getHeader(HttpHeaders.AUTHORIZATION)?.startsWith("Bearer", true)
-                    if (hasToken != true) {
-                        throw JwtNotExistsException()
+                    val accessToken =
+                        slot.captured.getHeader(HttpHeaders.AUTHORIZATION) ?: throw JwtNotExistsException()
+                    val tokenFormat = accessToken.split(" ")
+                    if (tokenFormat[0] != "Bearer" || tokenFormat[1] == NOT_VALID_ACCESS_TOKEN) {
+                        throw JwtNotValidException()
                     }
-                    createUser()
+
+                    EMAIL
                 }
             }
         }
 
-        refreshTokenResolver.also {
-            slot<MethodParameter>().also { slot ->
-                every { it.supportsParameter(capture(slot)) } answers {
-                    slot.captured.hasParameterAnnotation(RefreshToken::class.java)
-                }
-            }
-            slot<NativeWebRequest>().also { slot ->
-                every { it.resolveArgument(any(), any(), capture(slot), any()) } answers {
-                    val hasToken = slot.captured.getHeader(REFRESH_HEADER_NAME)?.startsWith("Bearer", true)
-                    if (hasToken != true) {
-                        throw JwtNotExistsException()
-                    }
-                    createAccessToken()
-                }
-            }
-        }
+        every { jwtTokenProvider.isValidToken(REFRESH_TOKEN) } returns true
+        every { jwtTokenProvider.isValidToken(ACCESS_TOKEN) } returns true
+        every { jwtTokenProvider.isValidToken(NOT_VALID_REFRESH_TOKEN) } returns false
+        every { jwtTokenProvider.isValidToken(NOT_VALID_ACCESS_TOKEN) } returns false
+        every { jwtTokenProvider.getSubject(REFRESH_TOKEN) } returns EMAIL
+        every { jwtTokenProvider.createRefreshToken(EMAIL) } returns REFRESH_TOKEN
+        every { jwtTokenProvider.createToken(EMAIL) } returns ACCESS_TOKEN
     }
 
     fun MockHttpServletRequestDsl.jsonContent(value: Any) {
@@ -126,13 +124,25 @@ abstract class ControllerTestHelper {
     fun MockMvcResultHandlersDsl.createDocument(
         value: Any,
         requestHeadersSnippet: RequestHeadersSnippet,
-        responseHeadersSnippet: ResponseHeadersSnippet
+        responseHeadersSnippet: ResponseHeadersSnippet,
+        responseFieldsSnippet: ResponseFieldsSnippet
     ) {
-        return handle(document("{class-name}/$value", requestHeadersSnippet, responseHeadersSnippet))
+        return handle(
+            document(
+                "{class-name}/$value",
+                requestHeadersSnippet,
+                responseHeadersSnippet,
+                responseFieldsSnippet
+            )
+        )
     }
 
     fun MockMvcResultHandlersDsl.createDocument(value: Any, responseFieldsSnippet: ResponseFieldsSnippet) {
         return handle(document("{class-name}/$value", responseFieldsSnippet))
+    }
+
+    fun MockMvcResultHandlersDsl.createDocument(value: Any, requestPartsSnippet: RequestPartsSnippet) {
+        return handle(document("{class-name}/$value", requestPartsSnippet))
     }
 
     fun MockMvcResultHandlersDsl.createDocument(value: Any, requestFieldsSnippet: RequestFieldsSnippet) {
@@ -149,6 +159,40 @@ abstract class ControllerTestHelper {
 
     fun MockMvcResultHandlersDsl.createDocument(
         value: Any,
+        requestHeadersSnippet: RequestHeadersSnippet,
+        responseHeadersSnippet: ResponseHeadersSnippet,
+        responseCookieSnippet: ResponseCookiesSnippet,
+        responseFieldsSnippet: ResponseFieldsSnippet
+    ) {
+        return handle(
+            document(
+                "{class-name}/$value",
+                requestHeadersSnippet,
+                responseHeadersSnippet,
+                responseCookieSnippet,
+                responseFieldsSnippet
+            )
+        )
+    }
+
+    fun MockMvcResultHandlersDsl.createDocument(
+        value: Any,
+        requestFieldsSnippet: RequestFieldsSnippet,
+        responseHeadersSnippet: ResponseHeadersSnippet,
+        responseCookieSnippet: ResponseCookiesSnippet
+    ) {
+        return handle(
+            document(
+                "{class-name}/$value",
+                requestFieldsSnippet,
+                responseHeadersSnippet,
+                responseCookieSnippet
+            )
+        )
+    }
+
+    fun MockMvcResultHandlersDsl.createDocument(
+        value: Any,
         requestFieldsSnippet: RequestFieldsSnippet,
         responseFieldsSnippet: ResponseFieldsSnippet
     ) {
@@ -157,10 +201,42 @@ abstract class ControllerTestHelper {
 
     fun MockMvcResultHandlersDsl.createDocument(
         value: Any,
+        responseHeadersSnippet: ResponseHeadersSnippet,
+        responseCookiesSnippet: ResponseCookiesSnippet
+    ) {
+        return handle(document("{class-name}/$value", responseHeadersSnippet, responseCookiesSnippet))
+    }
+
+    fun MockMvcResultHandlersDsl.createDocument(
+        value: Any,
+        responseHeadersSnippet: ResponseHeadersSnippet,
+        responseCookiesSnippet: ResponseCookiesSnippet,
+        responseFieldsSnippet: ResponseFieldsSnippet
+    ) {
+        return handle(
+            document(
+                "{class-name}/$value",
+                responseHeadersSnippet,
+                responseCookiesSnippet,
+                responseFieldsSnippet
+            )
+        )
+    }
+
+    fun MockMvcResultHandlersDsl.createDocument(
+        value: Any,
         pathParametersSnippet: PathParametersSnippet,
         responseFieldsSnippet: ResponseFieldsSnippet
     ) {
         return handle(document("{class-name}/$value", pathParametersSnippet, responseFieldsSnippet))
+    }
+
+    fun MockMvcResultHandlersDsl.createDocument(
+        value: Any,
+        requestHeadersSnippet: RequestHeadersSnippet,
+        responseFieldsSnippet: ResponseFieldsSnippet
+    ) {
+        return handle(document("{class-name}/$value", requestHeadersSnippet, responseFieldsSnippet))
     }
 
     fun createPathDocument(

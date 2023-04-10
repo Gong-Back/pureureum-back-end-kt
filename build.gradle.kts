@@ -14,6 +14,7 @@ allOpen {
     annotation("javax.persistence.Entity")
     annotation("javax.persistence.MappedSuperclass")
     annotation("javax.persistence.Embeddable")
+    annotation("gongback.pureureum.support.domain.AllOpen")
 }
 
 group = "gongback"
@@ -50,6 +51,9 @@ dependencies {
 
     // jackson
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
+    // aws s3
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.431")
 
     // DB Dependency
     runtimeOnly("com.h2database:h2")

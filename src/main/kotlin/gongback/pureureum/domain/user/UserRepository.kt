@@ -15,6 +15,8 @@ fun UserRepository.existsEmail(email: String): Boolean = existsByInformationEmai
 fun UserRepository.getUserByPhoneNumber(email: String): User =
     findByInformationPhoneNumber(email) ?: throw IllegalArgumentException("요청하신 사용자 정보를 찾을 수 없습니다")
 
+fun UserRepository.existsNickname(nickname: String): Boolean = existsByInformationNickname(nickname)
+
 interface UserRepository : JpaRepository<User, Long> {
     fun existsByInformationEmailOrInformationNickname(email: String, nickname: String): Boolean
 
@@ -25,4 +27,5 @@ interface UserRepository : JpaRepository<User, Long> {
     fun findByInformationPhoneNumber(phoneNumber: String): User?
 
     fun existsByInformationEmail(email: String): Boolean
+    fun existsByInformationNickname(nickname: String): Boolean
 }

@@ -6,7 +6,7 @@
 
 === *1-1* 성공
 
-operation::user-rest-controller-test/user-login-success[snippets='http-request,request-body,request-fields,http-response,response-headers']
+operation::user-rest-controller-test/user-login-success[snippets='http-request,request-body,request-fields,http-response,response-headers,response-cookies']
 
 === *1-2* 실패 - 이메일이 유효하지 않음
 
@@ -16,18 +16,24 @@ operation::user-rest-controller-test/user-login-fail-not-valid-email[snippets='h
 
 operation::user-rest-controller-test/user-login-fail-not-valid-password[snippets='http-request,request-body,request-fields,http-response']
 
-[[Access-토큰-재발급-API]]
-== *2. Access 토큰 재발급 API*
+[[JWT-응답-정보]]
+== *2. JWT 응답 정보*
 
-*"Jwt가 만료되었습니다"* 응답이 왔을 때 요청
+=== *2-1* ACCESS TOKEN 만료 시, REFRESH TOKEN 유효
 
-=== *2-1* 성공
+operation::user-rest-controller-test/reissue-access-token-expired-success[snippets='http-request,request-headers,http-response,response-headers,response-cookies,response-fields']
 
-operation::user-rest-controller-test/reissue-access-token-success[snippets='http-request,request-headers,http-response,response-headers']
+=== *2-2* ACCESS TOKEN 없을 시, REFRESH TOKEN 유효
 
-=== *2-2* 실패
+operation::user-rest-controller-test/reissue-access-token-not-exists-success[snippets='http-request,http-response,response-headers,response-cookies,response-fields']
 
-operation::user-rest-controller-test/reissue-access-token-fail[snippets='http-request,http-response']
+=== *2-3* ACCESS TOKEN 유효하지 않고, REFRESH TOKEN 없을 시
+
+operation::user-rest-controller-test/reissue-access-token-not-exists-refresh-token-fail[snippets='http-request,request-headers,http-response,response-fields']
+
+=== *2-4* ACCESS TOKEN 유효하지 않고, REFRESH TOKEN 만료
+
+operation::user-rest-controller-test/reissue-access-token-expired-refresh-token-fail[snippets='http-request,request-headers,http-response,response-fields']
 
 [[회원가입-API]]
 == *3. 회원가입 API*
@@ -50,3 +56,27 @@ operation::user-rest-controller-test/user-checkEmail-success[snippets='http-requ
 === *4-2* 실패
 
 operation::user-rest-controller-test/user-checkEmail-fail[snippets='http-request,request-body,request-fields,http-response']
+
+[[회원-정보-조회-API]]
+== *5. 회원 정보 조회 API*
+
+=== *5-1* 성공
+operation::user-rest-controller-test/get-user-info-success[snippets='http-request,http-response,response-body']
+
+[[회원-정보-수정-API]]
+== *6. 회원 정보 수정 API*
+
+=== *6-1* 성공
+operation::user-rest-controller-test/update-user-info-success[snippets='http-request,request-fields,http-response']
+
+=== *6-2* 실패 - 닉네임이 중복된 값
+operation::user-rest-controller-test/update-user-info-fail-duplicate-nickname[snippets='http-request,request-fields,http-response,response-body']
+
+=== *6-3* 실패 - 형식에 맞지 않는 정보
+operation::user-rest-controller-test/update-user-info-fail[snippets='http-request,http-response,response-body']
+
+[[프로필-이미지-수정-API]]
+== *7. 프로필 이미지 수정 API*
+
+=== *7-1* 성공
+operation::user-rest-controller-test/update-profile-success[snippets='http-request,request-parts,http-response']

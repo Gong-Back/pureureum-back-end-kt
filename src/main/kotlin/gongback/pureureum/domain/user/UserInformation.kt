@@ -15,22 +15,19 @@ data class UserInformation(
     val email: String,
 
     @Column(unique = true, nullable = false, length = 13)
-    val phoneNumber: String,
+    var phoneNumber: String,
 
     @Column(unique = true, nullable = false, length = 30)
-    val nickname: String,
+    var nickname: String,
 
     @Column(nullable = false, length = 6)
     @Enumerated(EnumType.STRING)
-    val gender: Gender,
+    val gender: UserGender,
 
     @Column(nullable = false)
     val birthday: LocalDate,
 
-    @Column(nullable = false)
-    val createdDate: LocalDate = LocalDate.now(),
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
-    val role: Role
+    val userRole: UserRole
 )

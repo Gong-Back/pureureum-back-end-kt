@@ -7,12 +7,15 @@ import gongback.pureureum.application.dto.RegisterUserReq
 import gongback.pureureum.application.dto.SocialRegisterUserReq
 import gongback.pureureum.application.dto.TempSocialAuthDto
 import gongback.pureureum.application.dto.UserAccountDto
-import gongback.pureureum.domain.user.TempSocialAuthRepository
+import gongback.pureureum.domain.sms.SmsLog
+import gongback.pureureum.domain.sms.SmsLogRepository
+import gongback.pureureum.domain.sms.getLastSmsLog
+import gongback.pureureum.domain.social.TempSocialAuthRepository
+import gongback.pureureum.domain.social.getTempByEmail
 import gongback.pureureum.domain.user.UserRepository
 import gongback.pureureum.domain.user.existsByPhoneNumber
 import gongback.pureureum.domain.user.existsEmail
 import gongback.pureureum.domain.user.existsEmailOrNickname
-import gongback.pureureum.domain.user.getTempByEmail
 import gongback.pureureum.domain.user.getUserByEmail
 import gongback.pureureum.domain.user.getUserByPhoneNumber
 import gongback.pureureum.security.JwtTokenProvider
@@ -24,8 +27,7 @@ import org.springframework.transaction.annotation.Transactional
 class UserAuthenticationService(
     private val userRepository: UserRepository,
     private val tempSocialAuthRepository: TempSocialAuthRepository,
-
-    private val smsLogService: SmsLogService,
+    private val smsLogRepository: SmsLogRepository,
     private val jwtTokenProvider: JwtTokenProvider
 ) {
     fun validateAuthentication(loginReq: LoginReq) {
@@ -36,11 +38,6 @@ class UserAuthenticationService(
     fun generateAccessTokenByEmail(email: String) = jwtTokenProvider.createToken(email)
 
     fun generateRefreshTokenByEmail(email: String) = jwtTokenProvider.createRefreshToken(email)
-
-    fun generateTokenByRefreshToken(refreshToken: String): String {
-        val userEmail = jwtTokenProvider.getSubject(refreshToken)
-        return jwtTokenProvider.createToken(userEmail)
-    }
 
     @Transactional
     fun register(registerUserReq: RegisterUserReq) {
@@ -79,28 +76,17 @@ class UserAuthenticationService(
         require(!existsPhoneNumber(phoneNumber)) { "이미 가입된 전화번호입니다" }
     }
 
-    fun existsPhoneNumber(phoneNumber: String) = userRepository.existsByPhoneNumber(phoneNumber)
-
-    fun existsUserByEmail(email: String) = userRepository.existsEmail(email)
-
     @Transactional
     fun saveTempSocialInfo(oAuthUserInfo: OAuthUserInfo) {
         if (oAuthUserInfo.phoneNumber.isNotBlank()) {
-            smsLogService.save(oAuthUserInfo.phoneNumber)
+            smsLogRepository.save(SmsLog(oAuthUserInfo.phoneNumber))
         }
         tempSocialAuthRepository.save(oAuthUserInfo.toTempSocialAuth())
     }
 
     fun getTempSocialAuth(email: String): TempSocialAuthDto {
         val tempSocialAuth = tempSocialAuthRepository.getTempByEmail(email)
-        return TempSocialAuthDto(
-            tempSocialAuth.email,
-            tempSocialAuth.name,
-            tempSocialAuth.birthday,
-            tempSocialAuth.phoneNumber,
-            tempSocialAuth.gender,
-            tempSocialAuth.socialType
-        )
+        return TempSocialAuthDto.fromTempSocialAuth(tempSocialAuth)
     }
 
     fun socialLogin(oAuthUserInfo: OAuthUserInfo): ErrorCode {
@@ -123,7 +109,15 @@ class UserAuthenticationService(
         return ErrorCode.REQUEST_RESOURCE_NOT_ENOUGH
     }
 
-    private fun validateCertifiedPhoneNumber(phoneNumber: String) {
-        require(smsLogService.isCertificated(phoneNumber)) { "본인 인증되지 않은 정보입니다" }
+    fun validateCertifiedPhoneNumber(phoneNumber: String) {
+        require(smsLogRepository.getLastSmsLog(phoneNumber).isSuccess) { "본인 인증되지 않은 정보입니다" }
     }
+
+    fun deleteByPhoneNumber(phoneNumber: String) {
+        smsLogRepository.deleteByReceiver(phoneNumber)
+    }
+
+    private fun existsPhoneNumber(phoneNumber: String) = userRepository.existsByPhoneNumber(phoneNumber)
+
+    private fun existsUserByEmail(email: String) = userRepository.existsEmail(email)
 }

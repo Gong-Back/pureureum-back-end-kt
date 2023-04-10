@@ -1,8 +1,10 @@
 package gongback.pureureum.presentation.api
 
 import gongback.pureureum.application.PureureumException
+import gongback.pureureum.application.S3Exception
 import gongback.pureureum.application.dto.ErrorCode
-import gongback.pureureum.security.JwtException
+import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
@@ -15,6 +17,7 @@ import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 
 @RestControllerAdvice
+@Order(Ordered.LOWEST_PRECEDENCE)
 class ExceptionHandler : ResponseEntityExceptionHandler() {
     override fun handleMethodArgumentNotValid(
         ex: MethodArgumentNotValidException,
@@ -77,10 +80,10 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
             .body(ApiResponse.error(ex.errorCode.code, ex.message ?: ex.errorCode.message))
     }
 
-    @ExceptionHandler(JwtException::class)
-    fun handleJwtException(ex: JwtException): ResponseEntity<ApiResponse<Unit>> {
-        logger.error("[JwtException] ", ex)
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(ex.code, ex.message ?: ""))
+    @ExceptionHandler(S3Exception::class)
+    fun handleS3Exception(ex: S3Exception): ResponseEntity<ApiResponse<Unit>> {
+        logger.error("[S3Exception] ", ex)
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error(ex.errorCode.code, ex.message ?: ex.errorCode.message))
     }
 
     @ExceptionHandler(Exception::class)
