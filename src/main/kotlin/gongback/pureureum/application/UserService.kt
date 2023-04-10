@@ -24,33 +24,41 @@ class UserService(
     fun getUserByEmail(email: String): User = userRepository.getUserByEmail(email)
 
     @Transactional
-    fun updateUserInfo(user: User, userInfo: UserInfoReq) {
+    fun updateUserInfo(email: String, userInfo: UserInfoReq) {
+        val findUser = userRepository.getUserByEmail(email)
         userInfo.phoneNumber?.let {
             validatePhoneNumber(it)
-            smsLogRepository.deleteByReceiver(user.phoneNumber)
-            userRepository.getReferenceById(user.id).updatePhoneNumber(it)
+            smsLogRepository.deleteByReceiver(findUser.phoneNumber)
+            findUser.updatePhoneNumber(it)
         }
         userInfo.password?.let {
-            userRepository.getReferenceById(user.id).updatePassword(it)
+            findUser.updatePassword(it)
         }
         userInfo.nickname?.let {
             validateNickname(it)
-            userRepository.getReferenceById(user.id).updateNickname(it)
+            findUser.updateNickname(it)
         }
     }
 
     @Transactional
-    fun updateProfile(user: User, updateProfile: MultipartFile?) {
+    fun updatedProfile(email: String, updateProfile: MultipartFile?) {
         updateProfile?.apply {
             val originalFileName = validateFileName(updateProfile)
             val contentType = validateContentType(updateProfile)
+
+            val findUser = userRepository.getUserByEmail(email)
+            if (findUser.profile.originalFileName != "default_profile.png") {
+                uploadService.deleteFile(findUser.profile.fileKey)
+            }
             val fileKey = uploadService.uploadFile(updateProfile, FileType.PROFILE, originalFileName)
-            user.profile.updateProfile(fileKey, contentType, originalFileName)
-            userRepository.save(user)
+
+            findUser.profile.updateProfile(fileKey, contentType, originalFileName)
+            userRepository.save(findUser)
         }
     }
 
-    fun getUserInfoWithProfileUrl(user: User): UserInfoRes {
+    fun getUserInfoWithProfileUrl(email: String): UserInfoRes {
+        val user = userRepository.getUserByEmail(email)
         val profileUrl = uploadService.getFileUrl(user.profile.fileKey)
         return UserInfoRes.toUserWithProfileUrl(user, profileUrl)
     }
