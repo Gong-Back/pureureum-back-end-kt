@@ -81,10 +81,15 @@ class User(
 
     fun updatePhoneNumber(phoneNumber: String) {
         information.phoneNumber = phoneNumber
+        if (phoneNumber.isNotBlank()) {
+            information.phoneNumber = phoneNumber
+        }
     }
 
     fun updatePassword(password: Password) {
-        this.password = password
+        if (password.value.isNotBlank()) {
+            this.password = password
+        }
     }
 
     fun updateNickname(nickname: String) {
