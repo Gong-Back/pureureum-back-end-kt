@@ -29,7 +29,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import support.BIRTHDAY
 import support.NAME
 import support.PHONE_NUMBER
-import support.REFRESH_HEADER_NAME
+import support.REFRESH_COOKIE_NAME
 import support.UserGENDER
 import support.createAccessToken
 import support.createKakaoUserInfo
@@ -91,7 +91,7 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
             status { isOk() }
             header {
                 string(HttpHeaders.AUTHORIZATION, accessToken)
-                string(REFRESH_HEADER_NAME, refreshToken)
+                string(REFRESH_COOKIE_NAME, refreshToken)
             }
         }.andDo {
             createDocument(
@@ -102,7 +102,7 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
                 ),
                 responseHeaders(
                     headerWithName(HttpHeaders.AUTHORIZATION).description("Access Token"),
-                    headerWithName(REFRESH_HEADER_NAME).description("Refresh Token")
+                    headerWithName(REFRESH_COOKIE_NAME).description("Refresh Token")
                 )
             )
         }
@@ -227,7 +227,7 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
             status { isCreated() }
             header {
                 string(HttpHeaders.AUTHORIZATION, accessToken)
-                string(REFRESH_HEADER_NAME, refreshToken)
+                string(REFRESH_COOKIE_NAME, refreshToken)
             }
         }.andDo {
             createDocument(
@@ -242,7 +242,7 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
                 ),
                 responseHeaders(
                     headerWithName(HttpHeaders.AUTHORIZATION).description("Access Token"),
-                    headerWithName(REFRESH_HEADER_NAME).description("Refresh Token")
+                    headerWithName(REFRESH_COOKIE_NAME).description("Refresh Token")
                 )
             )
         }
