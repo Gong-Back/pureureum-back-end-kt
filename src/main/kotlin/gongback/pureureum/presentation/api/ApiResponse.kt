@@ -18,6 +18,9 @@ data class ApiResponse<T>(
         fun <T> error(errorCode: ErrorCode, data: T): ApiResponse<T> =
             ApiResponse(code = errorCode.code, messages = listOf(errorCode.message), data)
 
+        fun error(errorCode: ErrorCode): ApiResponse<Unit> =
+            ApiResponse(code = errorCode.code, messages = listOf(errorCode.message))
+
         fun <T> error(code: Int, message: String, data: T): ApiResponse<T> =
             ApiResponse(code = code, messages = listOf(message), data)
 

@@ -5,6 +5,9 @@ import gongback.pureureum.application.UserAuthenticationService
 import gongback.pureureum.application.UserService
 import gongback.pureureum.domain.user.Password
 import gongback.pureureum.domain.user.UserGender
+import gongback.pureureum.security.JWT_INVALID_CODE
+import gongback.pureureum.security.JWT_REISSUE_CODE
+import gongback.pureureum.security.JwtResponse
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -13,6 +16,8 @@ import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.HttpHeaders
 import org.springframework.mock.web.MockMultipartFile
+import org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName
+import org.springframework.restdocs.cookies.CookieDocumentation.responseCookies
 import org.springframework.restdocs.headers.HeaderDocumentation.headerWithName
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
 import org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders
@@ -25,11 +30,14 @@ import org.springframework.restdocs.snippet.Attributes
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.multipart
 import org.springframework.test.web.servlet.post
+import support.ACCESS_TOKEN
 import support.PHONE_NUMBER
-import support.REFRESH_HEADER_NAME
+import support.REFRESH_COOKIE_NAME
 import support.accessToken
 import support.createAccessToken
 import support.createLocalDate
+import support.createNotValidAccessToken
+import support.createNotValidRefreshToken
 import support.createRefreshToken
 import support.createUser
 import support.createUserInfoRes
@@ -100,7 +108,9 @@ class UserRestControllerTest : ControllerTestHelper() {
             status { isOk() }
             header {
                 string(HttpHeaders.AUTHORIZATION, accessToken)
-                string(REFRESH_HEADER_NAME, refreshToken)
+            }
+            cookie {
+                value(REFRESH_COOKIE_NAME, refreshToken)
             }
         }.andDo {
             createDocument(
@@ -110,8 +120,10 @@ class UserRestControllerTest : ControllerTestHelper() {
                     fieldWithPath("password").description("비밀번호")
                 ),
                 responseHeaders(
-                    headerWithName(HttpHeaders.AUTHORIZATION).description("Access Token"),
-                    headerWithName(REFRESH_HEADER_NAME).description("Refresh Token")
+                    headerWithName(HttpHeaders.AUTHORIZATION).description("Access Token")
+                ),
+                responseCookies(
+                    cookieWithName(REFRESH_COOKIE_NAME).description("Refresh Token")
                 )
             )
         }
@@ -243,36 +255,106 @@ class UserRestControllerTest : ControllerTestHelper() {
     }
 
     @Test
-    fun `토큰 재발급 성공`() {
-        val accessToken = createAccessToken()
+    fun `ACCESS TOKEN 만료 시 - 재발급 성공`() {
+        val notValidAccessToken = createNotValidAccessToken()
         val refreshToken = createRefreshToken()
 
-        every { userAuthenticationService.generateTokenByRefreshToken(any()) } returns accessToken
-
-        mockMvc.post("/api/v1/users/reissue/token") {
+        mockMvc.get("/api/v1/users/me") {
+            accessToken(notValidAccessToken)
             refreshToken(refreshToken)
         }.andExpect {
-            status { isOk() }
-            header { string(HttpHeaders.AUTHORIZATION, accessToken) }
+            status { isBadRequest() }
+            header { string(HttpHeaders.AUTHORIZATION, ACCESS_TOKEN) }
+            content { JwtResponse(JWT_REISSUE_CODE) }
         }.andDo {
             createDocument(
-                "reissue-access-token-success",
+                "reissue-access-token-expired-success",
                 requestHeaders(
-                    headerWithName("RefreshToken").description("Refresh Token")
+                    headerWithName(HttpHeaders.AUTHORIZATION).description("Not-Valid-Access-token")
                 ),
                 responseHeaders(
-                    headerWithName(HttpHeaders.AUTHORIZATION).description("Access Token")
+                    headerWithName(HttpHeaders.AUTHORIZATION).description("New Access Token")
+                ),
+                responseCookies(
+                    cookieWithName(REFRESH_COOKIE_NAME).description("New Refresh Token")
+                ),
+                responseFields(
+                    fieldWithPath("code").description("응답 코드")
                 )
             )
         }
     }
 
     @Test
-    fun `토큰 재발급 실패 - 토큰이 없을 때`() {
-        mockMvc.post("/api/v1/users/reissue/token") {
+    fun `ACCESS TOKEN 없을 시 - 재발급 성공`() {
+        val refreshToken = createRefreshToken()
+
+        mockMvc.get("/api/v1/users/me") {
+            refreshToken(refreshToken)
+        }.andExpect {
+            status { isBadRequest() }
+            header { string(HttpHeaders.AUTHORIZATION, ACCESS_TOKEN) }
+            content { JwtResponse(JWT_REISSUE_CODE) }
+        }.andDo {
+            createDocument(
+                "reissue-access-token-not-exists-success",
+                responseHeaders(
+                    headerWithName(HttpHeaders.AUTHORIZATION).description("New Access Token")
+                ),
+                responseCookies(
+                    cookieWithName(REFRESH_COOKIE_NAME).description("New Refresh Token")
+                ),
+                responseFields(
+                    fieldWithPath("code").description("응답 코드")
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `ACCESS TOKEN 유효하지 않고, REFRESH TOKEN 없을 시 - 재발급 실패`() {
+        val noValidAccessToken = createNotValidAccessToken()
+
+        mockMvc.get("/api/v1/users/me") {
+            accessToken(noValidAccessToken)
         }.andExpect {
             status { isUnauthorized() }
-        }.andDo { createDocument("reissue-access-token-fail") }
+            content { JwtResponse(JWT_INVALID_CODE) }
+        }.andDo {
+            createDocument(
+                "reissue-access-token-not-exists-refresh-token-fail",
+                requestHeaders(
+                    headerWithName(HttpHeaders.AUTHORIZATION).description("Not-Valid-Access-token")
+                ),
+                responseFields(
+                    fieldWithPath("code").description("응답 코드")
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `ACCESS TOKEN 유효하지 않고, REFRESH TOKEN 만료 시 - 재발급 실패`() {
+        val noValidAccessToken = createNotValidAccessToken()
+        val notValidRefreshToken = createNotValidRefreshToken()
+
+        mockMvc.get("/api/v1/users/me") {
+            accessToken(noValidAccessToken)
+            refreshToken(notValidRefreshToken)
+        }.andExpect {
+            status { isUnauthorized() }
+            content { JwtResponse(JWT_INVALID_CODE) }
+        }.andDo {
+            createDocument(
+                "reissue-access-token-expired-refresh-token-fail",
+                requestHeaders(
+                    headerWithName(HttpHeaders.AUTHORIZATION).description("Not-Valid-Access-token")
+                ),
+                responseFields(
+                    fieldWithPath("code").description("응답 코드")
+                )
+            )
+        }
     }
 
     @Test
@@ -298,7 +380,7 @@ class UserRestControllerTest : ControllerTestHelper() {
                     fieldWithPath("data.nickname").description("닉네임"),
                     fieldWithPath("data.gender").description("성별"),
                     fieldWithPath("data.birthday").description("생년월일"),
-                    fieldWithPath("data.profileUrl").description("signed 프로필 주소")
+                    fieldWithPath("data.profileUrl").description("사인된 프로필 주소")
                 )
             )
         }

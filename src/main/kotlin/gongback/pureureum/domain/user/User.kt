@@ -12,11 +12,9 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
-import org.hibernate.annotations.DynamicUpdate
 import java.time.LocalDate
 
 @Entity
-@DynamicUpdate
 class User(
     @Embedded
     val information: UserInformation,
@@ -82,6 +80,7 @@ class User(
     }
 
     fun updatePhoneNumber(phoneNumber: String) {
+        information.phoneNumber = phoneNumber
         if (phoneNumber.isNotBlank()) {
             information.phoneNumber = phoneNumber
         }
@@ -94,9 +93,7 @@ class User(
     }
 
     fun updateNickname(nickname: String) {
-        if (nickname.isNotBlank()) {
-            information.nickname = nickname
-        }
+        information.nickname = nickname
     }
 
     private fun identify(value: Boolean, message: () -> Any = {}) {

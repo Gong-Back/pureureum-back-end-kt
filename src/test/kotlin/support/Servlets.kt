@@ -1,5 +1,6 @@
 package support
 
+import jakarta.servlet.http.Cookie
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.servlet.MockHttpServletRequestDsl
 
@@ -8,7 +9,9 @@ fun MockHttpServletRequestDsl.accessToken(token: String) {
 }
 
 fun MockHttpServletRequestDsl.refreshToken(token: String) {
-    header(REFRESH_HEADER_NAME, bearerToken(token))
+    val refreshTokenCookie = Cookie(REFRESH_COOKIE_NAME, token)
+    refreshTokenCookie.isHttpOnly = true
+    cookie(refreshTokenCookie)
 }
 
 private fun bearerToken(token: String): String = "Bearer $token"
