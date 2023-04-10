@@ -7,6 +7,7 @@ import gongback.pureureum.application.dto.AuthenticationInfo
 import gongback.pureureum.application.dto.ErrorCode
 import gongback.pureureum.application.dto.SocialRegisterUserReq
 import gongback.pureureum.application.dto.TempSocialAuthDto
+import gongback.pureureum.domain.social.SocialTempGender
 import gongback.pureureum.domain.social.SocialType
 import gongback.pureureum.domain.user.UserGender
 import io.mockk.every
@@ -50,7 +51,7 @@ fun createTempSocialAuthDto(
     name: String? = null,
     birthday: String? = null,
     phoneNumber: String? = null,
-    userGender: UserGender? = null,
+    userGender: SocialTempGender? = null,
     socialType: SocialType = SocialType.NAVER
 ): TempSocialAuthDto {
     return TempSocialAuthDto(email, name, birthday, phoneNumber, userGender, socialType)

@@ -39,11 +39,6 @@ class UserAuthenticationService(
 
     fun generateRefreshTokenByEmail(email: String) = jwtTokenProvider.createRefreshToken(email)
 
-    fun generateTokenByRefreshToken(refreshToken: String): String {
-        val userEmail = jwtTokenProvider.getSubject(refreshToken)
-        return jwtTokenProvider.createToken(userEmail)
-    }
-
     @Transactional
     fun register(registerUserReq: RegisterUserReq) {
         checkDuplicatedUser(registerUserReq.email, registerUserReq.phoneNumber)
@@ -91,14 +86,7 @@ class UserAuthenticationService(
 
     fun getTempSocialAuth(email: String): TempSocialAuthDto {
         val tempSocialAuth = tempSocialAuthRepository.getTempByEmail(email)
-        return TempSocialAuthDto(
-            tempSocialAuth.email,
-            tempSocialAuth.name,
-            tempSocialAuth.birthday,
-            tempSocialAuth.phoneNumber,
-            tempSocialAuth.gender,
-            tempSocialAuth.socialType
-        )
+        return TempSocialAuthDto.fromTempSocialAuth(tempSocialAuth)
     }
 
     fun socialLogin(oAuthUserInfo: OAuthUserInfo): ErrorCode {
