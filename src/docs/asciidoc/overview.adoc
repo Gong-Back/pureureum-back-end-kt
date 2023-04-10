@@ -37,8 +37,11 @@
 | `415 OAUTH_AUTHENTICATION_FAIL`
 | OAuth Authentication is failed
 
-| `420 JwtExpiredException`
-| Jwt is expired
+| `430 JWT_INVALID_Exception`
+| Jwt is invalid
+
+| `431 JWT_REISSUE_SUCCESS`
+| Jwt reissue success
 
 | `500 INTERNAL_SERVER_ERROR`
 | Internal server error

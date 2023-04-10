@@ -24,11 +24,11 @@ class UserService(
     fun getUserByEmail(email: String): User = userRepository.getUserByEmail(email)
 
     @Transactional
-    fun updateUserInfo(user: User, userInfo: UserInfoReq) {
-        val findUser = userRepository.getReferenceById(user.id)
+    fun updateUserInfo(email: String, userInfo: UserInfoReq) {
+        val findUser = userRepository.getUserByEmail(email)
         userInfo.phoneNumber?.let {
             validatePhoneNumber(it)
-            smsLogRepository.deleteByReceiver(user.phoneNumber)
+            smsLogRepository.deleteByReceiver(findUser.phoneNumber)
             findUser.updatePhoneNumber(it)
         }
         userInfo.password?.let {
@@ -57,7 +57,8 @@ class UserService(
         }
     }
 
-    fun getUserInfoWithProfileUrl(user: User): UserInfoRes {
+    fun getUserInfoWithProfileUrl(email: String): UserInfoRes {
+        val user = userRepository.getUserByEmail(email)
         val profileUrl = uploadService.getFileUrl(user.profile.fileKey)
         return UserInfoRes.toUserWithProfileUrl(user, profileUrl)
     }

@@ -1,18 +1,15 @@
 package gongback.pureureum.config
 
-import gongback.pureureum.security.LoginUserResolver
-import gongback.pureureum.security.RefreshTokenResolver
+import gongback.pureureum.security.LoginEmailResolver
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration
 class AuthenticationConfig(
-    private val loginUserResolver: LoginUserResolver,
-    private val refreshTokenResolver: RefreshTokenResolver
+    private val loginEmailResolver: LoginEmailResolver
 ) : WebMvcConfigurer {
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
-        resolvers.add(loginUserResolver)
-        resolvers.add(refreshTokenResolver)
+        resolvers.add(loginEmailResolver)
     }
 }
