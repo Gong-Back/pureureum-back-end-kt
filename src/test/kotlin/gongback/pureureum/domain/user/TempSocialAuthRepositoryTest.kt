@@ -1,5 +1,6 @@
 package gongback.pureureum.domain.user
 
+import gongback.pureureum.domain.social.SocialTempGender
 import gongback.pureureum.domain.social.SocialType
 import gongback.pureureum.domain.social.TempSocialAuth
 import gongback.pureureum.domain.social.TempSocialAuthRepository
@@ -16,7 +17,7 @@ fun createTempSocialAuth(
     name: String = "회원",
     birthday: String = "1998-12-28",
     phoneNumber: String = "010-1234-5678",
-    userGender: UserGender = UserGender.MALE,
+    userGender: SocialTempGender = SocialTempGender.MALE,
     socialType: SocialType = SocialType.NAVER
 ): TempSocialAuth {
     return TempSocialAuth(

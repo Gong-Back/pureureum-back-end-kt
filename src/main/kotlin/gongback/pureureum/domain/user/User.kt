@@ -12,11 +12,9 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
-import org.hibernate.annotations.DynamicUpdate
 import java.time.LocalDate
 
 @Entity
-@DynamicUpdate
 class User(
     @Embedded
     val information: UserInformation,

@@ -15,6 +15,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import support.EMAIL
 import support.createMockFile
 import support.createProfile
 import support.createUser
@@ -56,7 +57,7 @@ class UserServiceTest : BehaviorSpec({
                 userRepository.existsByPhoneNumber(any())
             } throws IllegalArgumentException("이미 가입된 전화번호입니다")
             Then("예외가 발생한다") {
-                shouldThrow<IllegalArgumentException> { userService.updateUserInfo(user, userInfoReq) }
+                shouldThrow<IllegalArgumentException> { userService.updateUserInfo(EMAIL, userInfoReq) }
             }
         }
         When("인증되지 않은 핸드폰 정보라면") {
@@ -65,14 +66,14 @@ class UserServiceTest : BehaviorSpec({
                 smsLogRepository.getLastSmsLog(any())
             } throws IllegalArgumentException("본인 인증되지 않은 정보입니다")
             Then("예외가 발생한다") {
-                shouldThrow<IllegalArgumentException> { userService.updateUserInfo(user, userInfoReq) }
+                shouldThrow<IllegalArgumentException> { userService.updateUserInfo(EMAIL, userInfoReq) }
             }
         }
         When("이미 존재하는 닉네임이라면") {
             every { userRepository.getReferenceById(any()) } returns user
             every { userRepository.existsNickname(any()) } returns true
             Then("예외가 발생한다") {
-                shouldThrow<IllegalArgumentException> { userService.updateUserInfo(user, userInfoReq) }
+                shouldThrow<IllegalArgumentException> { userService.updateUserInfo(EMAIL, userInfoReq) }
             }
         }
         When("존재하지 않으면서 인증된 핸드폰 정보이거나, 올바른 비밀번호이거나, 올바른 닉네임이라면") {
@@ -80,9 +81,9 @@ class UserServiceTest : BehaviorSpec({
             every { smsLogRepository.getLastSmsLog(any()).isSuccess } returns true
             every { smsLogRepository.deleteByReceiver(any()) } just runs
             every { userRepository.existsNickname(any()) } returns false
-            every { userRepository.getReferenceById(any()) } returns user
+            every { userRepository.getUserByEmail(any()) } returns user
             Then("사용자 정보를 업데이트한다") {
-                shouldNotThrowAnyUnit { userService.updateUserInfo(user, userInfoReq) }
+                shouldNotThrowAnyUnit { userService.updateUserInfo(EMAIL, userInfoReq) }
             }
         }
     }
@@ -103,12 +104,12 @@ class UserServiceTest : BehaviorSpec({
             every { userRepository.save(any()) } returns user
 
             Then("기존의 파일을 제거한 후 정보를 업데이트한다.") {
-                shouldNotThrowAnyUnit { userService.updatedProfile(user.email, file) }
+                shouldNotThrowAnyUnit { userService.updatedProfile(EMAIL, file) }
             }
         }
         When("사용자가 프로필을 설정하지 않았을 경우") {
             Then("아무 작업도 하지 않는다.") {
-                shouldNotThrowAnyUnit { userService.updatedProfile(user.email, null) }
+                shouldNotThrowAnyUnit { userService.updatedProfile(EMAIL, null) }
             }
         }
     }

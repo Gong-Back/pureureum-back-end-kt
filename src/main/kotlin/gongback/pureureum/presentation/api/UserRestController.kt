@@ -7,10 +7,9 @@ import gongback.pureureum.application.dto.LoginReq
 import gongback.pureureum.application.dto.RegisterUserReq
 import gongback.pureureum.application.dto.UserInfoReq
 import gongback.pureureum.application.dto.UserInfoRes
-import gongback.pureureum.domain.user.User
-import gongback.pureureum.security.LoginUser
-import gongback.pureureum.security.RefreshToken
+import gongback.pureureum.security.LoginEmail
 import gongback.pureureum.support.security.Tokens.Companion.REFRESH_TOKEN_HEADER
+import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpHeaders
@@ -37,15 +36,13 @@ class UserRestController(
     ): ResponseEntity<Unit> {
         userAuthenticationService.validateAuthentication(loginReq)
 
-        response.setHeader(
-            HttpHeaders.AUTHORIZATION,
-            userAuthenticationService.generateAccessTokenByEmail(loginReq.email)
-        )
-        response.setHeader(
-            REFRESH_TOKEN_HEADER,
-            userAuthenticationService.generateRefreshTokenByEmail(loginReq.email)
-        )
-        return ResponseEntity.ok().build()
+        val accessToken = userAuthenticationService.generateAccessTokenByEmail(loginReq.email)
+        val refreshToken = userAuthenticationService.generateRefreshTokenByEmail(loginReq.email)
+        val refreshCookie = Cookie(REFRESH_TOKEN_HEADER, refreshToken)
+        refreshCookie.isHttpOnly = true
+        response.addCookie(refreshCookie)
+
+        return ResponseEntity.status(HttpStatus.OK).header(HttpHeaders.AUTHORIZATION, accessToken).build()
     }
 
     @PostMapping("/register")
@@ -64,41 +61,29 @@ class UserRestController(
         return ResponseEntity.ok().build()
     }
 
-    @PostMapping("/reissue/token")
-    fun reissueToken(
-        @RefreshToken refreshToken: String,
-        response: HttpServletResponse
-    ): ResponseEntity<Unit> {
-        response.setHeader(
-            HttpHeaders.AUTHORIZATION,
-            userAuthenticationService.generateTokenByRefreshToken(refreshToken)
-        )
-        return ResponseEntity.ok().build()
-    }
-
     @GetMapping("/me")
     fun getUserInfo(
-        @LoginUser user: User
+        @LoginEmail email: String
     ): ResponseEntity<ApiResponse<UserInfoRes>> {
-        val userInfo = userService.getUserInfoWithProfileUrl(user)
+        val userInfo = userService.getUserInfoWithProfileUrl(email)
         return ResponseEntity.ok().body(ApiResponse.ok(userInfo))
     }
 
     @PostMapping("/update/info")
     fun updateUserInfo(
         @RequestBody @Valid userInfoReq: UserInfoReq,
-        @LoginUser user: User
+        @LoginEmail email: String
     ): ResponseEntity<Unit> {
-        userService.updateUserInfo(user, userInfoReq)
+        userService.updateUserInfo(email, userInfoReq)
         return ResponseEntity.ok().build()
     }
 
     @PostMapping("/update/profile")
     fun updateProfile(
         @RequestPart profile: MultipartFile?,
-        @LoginUser user: User
+        @LoginEmail email: String
     ): ResponseEntity<Unit> {
-        userService.updatedProfile(user.email, profile)
+        userService.updatedProfile(email, profile)
         return ResponseEntity.ok().build()
     }
 }
