@@ -298,7 +298,7 @@ class UserRestControllerTest : ControllerTestHelper() {
                     fieldWithPath("data.nickname").description("닉네임"),
                     fieldWithPath("data.gender").description("성별"),
                     fieldWithPath("data.birthday").description("생년월일"),
-                    fieldWithPath("data.profileUrl").description("사인된 프로필 주소")
+                    fieldWithPath("data.profileUrl").description("signed 프로필 주소")
                 )
             )
         }
@@ -382,7 +382,7 @@ class UserRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `프로필 이미지 업데이트 성공`() {
-        every { userService.updateProfile(any(), any()) } just runs
+        every { userService.updatedProfile(any(), any()) } just runs
 
         val profile = MockMultipartFile(
             "profile",

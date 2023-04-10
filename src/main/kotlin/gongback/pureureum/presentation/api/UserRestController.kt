@@ -98,7 +98,7 @@ class UserRestController(
         @RequestPart profile: MultipartFile?,
         @LoginUser user: User
     ): ResponseEntity<Unit> {
-        userService.updateProfile(user, profile)
+        userService.updatedProfile(user.email, profile)
         return ResponseEntity.ok().build()
     }
 }

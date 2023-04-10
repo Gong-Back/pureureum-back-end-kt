@@ -25,28 +25,35 @@ class UserService(
 
     @Transactional
     fun updateUserInfo(user: User, userInfo: UserInfoReq) {
+        val findUser = userRepository.getReferenceById(user.id)
         userInfo.phoneNumber?.let {
             validatePhoneNumber(it)
             smsLogRepository.deleteByReceiver(user.phoneNumber)
-            userRepository.getReferenceById(user.id).updatePhoneNumber(it)
+            findUser.updatePhoneNumber(it)
         }
         userInfo.password?.let {
-            userRepository.getReferenceById(user.id).updatePassword(it)
+            findUser.updatePassword(it)
         }
         userInfo.nickname?.let {
             validateNickname(it)
-            userRepository.getReferenceById(user.id).updateNickname(it)
+            findUser.updateNickname(it)
         }
     }
 
     @Transactional
-    fun updateProfile(user: User, updateProfile: MultipartFile?) {
+    fun updatedProfile(email: String, updateProfile: MultipartFile?) {
         updateProfile?.apply {
             val originalFileName = validateFileName(updateProfile)
             val contentType = validateContentType(updateProfile)
+
+            val findUser = userRepository.getUserByEmail(email)
+            if (findUser.profile.originalFileName != "default_profile.png") {
+                uploadService.deleteFile(findUser.profile.fileKey)
+            }
             val fileKey = uploadService.uploadFile(updateProfile, FileType.PROFILE, originalFileName)
-            user.profile.updateProfile(fileKey, contentType, originalFileName)
-            userRepository.save(user)
+
+            findUser.profile.updateProfile(fileKey, contentType, originalFileName)
+            userRepository.save(findUser)
         }
     }
 
