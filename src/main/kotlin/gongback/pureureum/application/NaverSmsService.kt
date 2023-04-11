@@ -37,7 +37,7 @@ class NaverSmsService(
         val certificationNumber = getCertificationNumber()
         smsLogRepository.save(SmsLog(phoneNumberReq.phoneNumber))
 
-//        sendMessage(phoneNumberReq.receiver, certificationNumber)
+        sendMessage(phoneNumberReq.receiver, certificationNumber)
 
         return SmsSendResponse(certificationNumber = certificationNumber)
     }
