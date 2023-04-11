@@ -16,7 +16,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import support.EMAIL
-import support.createMockFile
+import support.createMockProfileFile
 import support.createProfile
 import support.createUser
 import support.createUserInfoReq
@@ -90,14 +90,43 @@ class UserServiceTest : BehaviorSpec({
 
     Given("사용자와 프로필 이미지 정보") {
         val user = createUser()
-        val file = createMockFile()
         val profile = createProfile()
         val fileDto = FileDto(
             profile.fileKey,
             profile.contentType,
             profile.originalFileName
         )
+
+        When("원본 파일 이름이 존재하지 않는다면") {
+            val file = createMockProfileFile(originalFileName = null)
+            Then("예외가 발생한다.") {
+                shouldThrow<IllegalArgumentException> { userService.updatedProfile(user.email, file) }
+            }
+        }
+
+        When("원본 파일 이름이 비어있다면") {
+            val file = createMockProfileFile(originalFileName = "")
+            Then("예외가 발생한다.") {
+                shouldThrow<IllegalArgumentException> { userService.updatedProfile(user.email, file) }
+            }
+        }
+
+        When("파일 형식이 비어있다면") {
+            val file = createMockProfileFile(contentType = null)
+            Then("예외가 발생한다.") {
+                shouldThrow<IllegalArgumentException> { userService.updatedProfile(user.email, file) }
+            }
+        }
+
+        When("이미지 형식의 파일이 아니라면") {
+            val file = createMockProfileFile(contentType = "text/html")
+            Then("예외가 발생한다.") {
+                shouldThrow<IllegalArgumentException> { userService.updatedProfile(user.email, file) }
+            }
+        }
+
         When("사용자의 기존 프로필 이미지가 별도로 설정한 파일이라면") {
+            val file = createMockProfileFile()
             every { userRepository.getUserByEmail(any()) } returns user
             every { uploadService.uploadFile(any(), any(), any()) } returns fileDto.fileKey
             every { uploadService.deleteFile(any()) } just runs
