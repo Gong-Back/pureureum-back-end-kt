@@ -42,7 +42,7 @@ class FacilityService(
         facilityRepository.save(facility)
     }
 
-    fun getFacilityByCategory(userEmail: String, category: String): List<FacilityRes> {
+    fun getApprovedFacilityByCategory(userEmail: String, category: String): List<FacilityRes> {
         val facilityCategory = validateCategory(category)
         val user = userRepository.getUserByEmail(userEmail)
         val facilities = facilityRepository.getApprovedByCategory(facilityCategory, user.id)
@@ -51,7 +51,7 @@ class FacilityService(
         }
     }
 
-    fun getFacilities(userEmail: String): List<FacilityResWithProgress> {
+    fun getAllFacilities(userEmail: String): List<FacilityResWithProgress> {
         val user = userRepository.getUserByEmail(userEmail)
         val facilities = facilityRepository.getByUserId(user.id)
         return facilities.map {

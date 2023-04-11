@@ -111,7 +111,7 @@ class FacilityServiceTest : BehaviorSpec({
             val invalidCategory = "invalidCategory"
 
             Then("예외가 발생한다") {
-                shouldThrow<PureureumException> { facilityService.getFacilityByCategory(email, invalidCategory) }
+                shouldThrow<PureureumException> { facilityService.getApprovedFacilityByCategory(email, invalidCategory) }
             }
         }
 
@@ -120,7 +120,7 @@ class FacilityServiceTest : BehaviorSpec({
             every { facilityRepository.getApprovedByCategory(category, user.id) } returns facilities
 
             Then("사용자의 카테고리별 시설 정보를 반환한다.") {
-                facilityService.getFacilityByCategory(email, category.name) shouldBe facilityRes
+                facilityService.getApprovedFacilityByCategory(email, category.name) shouldBe facilityRes
             }
         }
     }
@@ -136,7 +136,7 @@ class FacilityServiceTest : BehaviorSpec({
             every { facilityRepository.getByUserId(user.id) } returns facilities
 
             Then("사용자의 시설 정보를 반환한다.") {
-                facilityService.getFacilities(email) shouldBe facilityResWithProgress
+                facilityService.getAllFacilities(email) shouldBe facilityResWithProgress
             }
         }
     }

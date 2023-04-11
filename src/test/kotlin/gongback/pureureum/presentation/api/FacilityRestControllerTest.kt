@@ -221,7 +221,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
     @Test
     fun `시설 정보 조회 성공 - 카테고리별 조회`() {
         val facilityRes = listOf(createFacilityRes())
-        every { facilityService.getFacilityByCategory(any(), any()) } returns facilityRes
+        every { facilityService.getApprovedFacilityByCategory(any(), any()) } returns facilityRes
 
         mockMvc.get("/api/v1/facilities/me") {
             accessToken(createAccessToken())
@@ -250,7 +250,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
     @Test
     fun `시설 정보 조회 성공 - 진행 정보 포함 조회`() {
         val facilityResWithProgress = listOf(createFacilityResWithProgress())
-        every { facilityService.getFacilities(any()) } returns facilityResWithProgress
+        every { facilityService.getAllFacilities(any()) } returns facilityResWithProgress
 
         mockMvc.get("/api/v1/facilities/all") {
             accessToken(createAccessToken())

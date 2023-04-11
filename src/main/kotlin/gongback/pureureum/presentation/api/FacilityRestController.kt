@@ -34,26 +34,26 @@ class FacilityRestController(
     }
 
     @GetMapping("/me")
-    fun getFacilitiesByCategory(
+    fun getApprovedFacilitiesByCategory(
         @RequestParam("category") category: String,
         @LoginEmail userEmail: String
     ): ResponseEntity<ApiResponse<List<FacilityRes>>> {
-        val facilityInfo = facilityService.getFacilityByCategory(userEmail, category)
+        val facilityInfo = facilityService.getApprovedFacilityByCategory(userEmail, category)
         return ResponseEntity.ok().body(ApiResponse.ok(facilityInfo))
     }
 
     @GetMapping("/all")
-    fun getFacilities(
+    fun getAllFacilities(
         @LoginEmail userEmail: String
     ): ResponseEntity<ApiResponse<List<FacilityResWithProgress>>> {
-        val facilityInfo = facilityService.getFacilities(userEmail)
+        val facilityInfo = facilityService.getAllFacilities(userEmail)
         return ResponseEntity.ok().body(ApiResponse.ok(facilityInfo))
     }
 
     // TODO 별도의 Admin 인증 권한 필요
-    @GetMapping("/download/{id}")
+    @GetMapping("/download/{docId}")
     fun downloadCertificationDoc(
-        @PathVariable("id") docId: Long
+        @PathVariable("docId") docId: Long
     ): ModelAndView {
         val downloadPath = facilityService.getCertificationDocDownloadPath(docId)
         return ModelAndView(RedirectView(downloadPath))
