@@ -50,7 +50,10 @@ class AmazonS3Service(
     }
 
     private fun getSaveFilePath(fileType: FileType): String {
-        return if (fileType == FileType.PROFILE) s3Properties.profileFolderName else ""
+        return when (fileType) {
+            FileType.PROFILE -> s3Properties.profileFolderName
+            FileType.FACILITY_CERTIFICATION -> s3Properties.facilityCertificationFolderName
+        }
     }
 
     private fun <T> execute(operation: () -> T): T {
