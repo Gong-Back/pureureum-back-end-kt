@@ -8,5 +8,6 @@ class S3Properties(
     val awsSecretKey: String = "",
     val urlValidTime: Int = 0,
     val bucketName: String = "",
-    val profileFolderName: String = ""
+    val profileFolderName: String = "",
+    val facilityCertificationFolderName: String = ""
 )

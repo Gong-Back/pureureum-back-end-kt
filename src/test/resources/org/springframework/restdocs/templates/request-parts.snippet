@@ -1,0 +1,10 @@
+|===
+|Part|Required|Description|Length|Example
+{{#requestParts}}
+|{{#tableCellContent}}`+{{name}}+`{{/tableCellContent}}
+|{{#tableCellContent}}{{^optional}}true{{/optional}}{{#optional}}false{{/optional}}{{/tableCellContent}}
+|{{#tableCellContent}}{{description}}{{/tableCellContent}}
+|{{#tableCellContent}}{{^length}}제한 없음{{/length}}{{#length}}{{.}}{{/length}}{{/tableCellContent}}
+|{{#tableCellContent}}{{#example}}{{.}}{{/example}}{{/tableCellContent}}
+{{/requestParts}}
+|===

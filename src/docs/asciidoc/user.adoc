@@ -80,3 +80,9 @@ operation::user-rest-controller-test/update-user-info-fail[snippets='http-reques
 
 === *7-1* 성공
 operation::user-rest-controller-test/update-profile-success[snippets='http-request,request-parts,http-response']
+
+=== *7-2* 실패 - 원본 파일 이름이 비어있을 경우
+operation::user-rest-controller-test/update-profile-original-file-name-empty-fail[snippets='http-request,request-parts,http-response']
+
+=== *7-3* 실패 - 파일 형식이 이미지가 아닐 경우
+operation::user-rest-controller-test/update-profile-file-type-not-image-fail[snippets='http-request,request-parts,http-response']
