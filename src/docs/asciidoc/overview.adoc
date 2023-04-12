@@ -37,6 +37,9 @@
 | `415 OAUTH_AUTHENTICATION_FAIL`
 | OAuth Authentication is failed
 
+| `420 ENUM_VALUE_INVALID`
+| Invalid Enum value
+
 | `430 JWT_INVALID_Exception`
 | Jwt is invalid
 

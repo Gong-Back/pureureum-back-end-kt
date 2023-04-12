@@ -11,7 +11,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import support.PROFILE_SERVER_FILE_NAME
 import support.PROFILE_URL
-import support.createMockFile
+import support.createMockProfileFile
 import support.createProfile
 
 class UploadServiceTest : BehaviorSpec({
@@ -26,7 +26,7 @@ class UploadServiceTest : BehaviorSpec({
     )
 
     Given("파일과 파일 타입, 서버 저장 파일 이름") {
-        val file = createMockFile()
+        val file = createMockProfileFile()
         val profile = createProfile()
         val fileKey = profile.fileKey
         val fileType = FileType.PROFILE
