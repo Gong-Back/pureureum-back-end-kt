@@ -99,6 +99,8 @@ class UserServiceTest : BehaviorSpec({
 
         When("원본 파일 이름이 존재하지 않는다면") {
             val file = createMockProfileFile(originalFileName = null)
+            every { uploadService.validateFileName(file) } throws IllegalArgumentException("원본 파일 이름이 존재하지 않습니다")
+
             Then("예외가 발생한다.") {
                 shouldThrow<IllegalArgumentException> { userService.updatedProfile(user.email, file) }
             }
@@ -106,6 +108,7 @@ class UserServiceTest : BehaviorSpec({
 
         When("원본 파일 이름이 비어있다면") {
             val file = createMockProfileFile(originalFileName = "")
+            every { uploadService.validateFileName(file) } throws IllegalArgumentException("원본 파일 이름이 비어있습니다")
             Then("예외가 발생한다.") {
                 shouldThrow<IllegalArgumentException> { userService.updatedProfile(user.email, file) }
             }
@@ -113,6 +116,8 @@ class UserServiceTest : BehaviorSpec({
 
         When("파일 형식이 비어있다면") {
             val file = createMockProfileFile(contentType = null)
+            every { uploadService.validateFileName(file) } returns file.name
+            every { uploadService.validateContentType(file) } throws IllegalArgumentException("파일 형식이 유효하지 않습니다")
             Then("예외가 발생한다.") {
                 shouldThrow<IllegalArgumentException> { userService.updatedProfile(user.email, file) }
             }
@@ -120,6 +125,9 @@ class UserServiceTest : BehaviorSpec({
 
         When("이미지 형식의 파일이 아니라면") {
             val file = createMockProfileFile(contentType = "text/html")
+            every { uploadService.validateFileName(file) } returns file.name
+            every { uploadService.validateContentType(file) } throws IllegalArgumentException("이미지 형식의 파일만 가능합니다")
+
             Then("예외가 발생한다.") {
                 shouldThrow<IllegalArgumentException> { userService.updatedProfile(user.email, file) }
             }
@@ -128,8 +136,10 @@ class UserServiceTest : BehaviorSpec({
         When("사용자의 기존 프로필 이미지가 별도로 설정한 파일이라면") {
             val file = createMockProfileFile()
             every { userRepository.getUserByEmail(any()) } returns user
-            every { uploadService.uploadFile(any(), any(), any()) } returns fileDto.fileKey
+            every { uploadService.validateFileName(file) } returns fileDto.fileKey
+            every { uploadService.validateContentType(file) } returns file.contentType!!
             every { uploadService.deleteFile(any()) } just runs
+            every { uploadService.uploadFile(any(), any(), any()) } returns fileDto.fileKey
             every { userRepository.save(any()) } returns user
 
             Then("기존의 파일을 제거한 후 정보를 업데이트한다.") {
