@@ -53,6 +53,7 @@ class AmazonS3Service(
         return when (fileType) {
             FileType.PROFILE -> s3Properties.profileFolderName
             FileType.FACILITY_CERTIFICATION -> s3Properties.facilityCertificationFolderName
+            FileType.PROJECT -> s3Properties.projectFileFolderName
         }
     }
 

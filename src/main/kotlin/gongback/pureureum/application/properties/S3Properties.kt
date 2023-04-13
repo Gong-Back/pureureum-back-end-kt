@@ -9,5 +9,6 @@ class S3Properties(
     val urlValidTime: Int = 0,
     val bucketName: String = "",
     val profileFolderName: String = "",
-    val facilityCertificationFolderName: String = ""
+    val facilityCertificationFolderName: String = "",
+    val projectFileFolderName: String = ""
 )

@@ -32,8 +32,8 @@ class FacilityService(
 
         certificationDoc?.let {
             it.forEach { file ->
-                val originalFileName = validateFileName(file)
-                val contentType = validateContentType(file)
+                val originalFileName = uploadService.validateFileName(file)
+                val contentType = uploadService.validateContentType(file)
                 val fileKey = uploadService.uploadFile(file, FileType.FACILITY_CERTIFICATION, originalFileName)
                 val facilityCertificationDoc = FacilityCertificationDoc(fileKey, contentType, originalFileName)
                 facility.addCertificationDoc(facilityCertificationDoc)
@@ -70,15 +70,5 @@ class FacilityService(
         } catch (e: IllegalArgumentException) {
             throw PureureumException(errorCode = ErrorCode.ENUM_VALUE_INVALID)
         }
-    }
-
-    private fun validateFileName(file: MultipartFile): String {
-        val originalFileName = (file.originalFilename ?: throw IllegalArgumentException("원본 파일 이름이 존재하지 않습니다"))
-        require(originalFileName.isNotBlank()) { throw IllegalArgumentException("원본 파일 이름이 비어있습니다") }
-        return originalFileName
-    }
-
-    private fun validateContentType(file: MultipartFile): String {
-        return file.contentType ?: throw IllegalArgumentException("파일 형식이 유효하지 않습니다")
     }
 }
