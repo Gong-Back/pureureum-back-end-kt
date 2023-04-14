@@ -43,8 +43,8 @@ class UserService(
     @Transactional
     fun updatedProfile(email: String, updateProfile: MultipartFile?) {
         updateProfile?.apply {
-            val originalFileName = validateFileName(updateProfile)
-            val contentType = validateContentType(updateProfile)
+            val originalFileName = uploadService.validateFileName(updateProfile)
+            val contentType = uploadService.getImageType(updateProfile)
 
             val findUser = userRepository.getUserByEmail(email)
             if (findUser.profile.originalFileName != "default_profile.png") {
@@ -61,19 +61,6 @@ class UserService(
         val user = userRepository.getUserByEmail(email)
         val profileUrl = uploadService.getFileUrl(user.profile.fileKey)
         return UserInfoRes.toUserWithProfileUrl(user, profileUrl)
-    }
-
-    private fun validateFileName(file: MultipartFile): String {
-        val originalFileName = (file.originalFilename ?: throw IllegalArgumentException("원본 파일 이름이 존재하지 않습니다"))
-        require(originalFileName.isNotBlank()) { throw IllegalArgumentException("원본 파일 이름이 비어있습니다") }
-        return originalFileName
-    }
-
-    private fun validateContentType(file: MultipartFile): String {
-        val contentType = file.contentType
-            ?: throw IllegalArgumentException("파일 형식이 유효하지 않습니다")
-        require(contentType.startsWith("image")) { "이미지 형식의 파일만 가능합니다" }
-        return contentType
     }
 
     private fun validatePhoneNumber(phoneNumber: String) {

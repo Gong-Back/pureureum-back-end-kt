@@ -380,7 +380,7 @@ class UserRestControllerTest : ControllerTestHelper() {
                     fieldWithPath("data.nickname").description("닉네임"),
                     fieldWithPath("data.gender").description("성별"),
                     fieldWithPath("data.birthday").description("생년월일"),
-                    fieldWithPath("data.profileUrl").description("사인된 프로필 주소")
+                    fieldWithPath("data.profileUrl").description("signed 프로필 주소")
                 )
             )
         }
