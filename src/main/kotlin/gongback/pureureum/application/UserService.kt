@@ -44,7 +44,7 @@ class UserService(
     fun updatedProfile(email: String, updateProfile: MultipartFile?) {
         updateProfile?.apply {
             val originalFileName = uploadService.validateFileName(updateProfile)
-            val contentType = uploadService.validateContentType(updateProfile)
+            val contentType = uploadService.getImageType(updateProfile)
 
             val findUser = userRepository.getUserByEmail(email)
             if (findUser.profile.originalFileName != "default_profile.png") {

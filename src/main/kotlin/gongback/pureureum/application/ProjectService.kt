@@ -32,7 +32,7 @@ class ProjectService(
         // ProjectFileUpload
         val projectFileList = projectFiles?.mapIndexed { index, multipartFile ->
             val originalFileName = uploadService.validateFileName(multipartFile)
-            val contentType = uploadService.validateContentType(multipartFile)
+            val contentType = uploadService.getAnyContentType(multipartFile)
             val fileKey = uploadService.uploadFile(multipartFile, FileType.PROJECT, originalFileName)
             when (index) {
                 0 -> ProjectFile(fileKey, contentType, originalFileName, ProjectFileType.THUMBNAIL)

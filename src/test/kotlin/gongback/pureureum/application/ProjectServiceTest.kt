@@ -54,7 +54,7 @@ class ProjectServiceTest : BehaviorSpec({
 
             every { userRepository.getUserByEmail(any()) } returns user
             every { uploadService.validateFileName(any()) } returns "OriginalFilename"
-            every { uploadService.validateContentType(any()) } returns "image/png"
+            every { uploadService.getAnyContentType(any()) } returns "image/png"
             every { uploadService.uploadFile(any(), FileType.PROJECT, any()) } returns fileKey
             every { projectRepository.save(any()) } returns project
             Then("정상적으로 저장된다.") {

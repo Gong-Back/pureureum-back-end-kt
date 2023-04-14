@@ -34,10 +34,17 @@ class UploadService(
         return originalFileName
     }
 
-    fun validateContentType(file: MultipartFile): String {
-        val contentType = file.contentType
-            ?: throw IllegalArgumentException("파일 형식이 유효하지 않습니다")
-        require(contentType.startsWith("image")) { "이미지 형식의 파일만 가능합니다" }
+    fun getImageType(file: MultipartFile): String {
+        val contentType = file.contentType ?: throw IllegalArgumentException("파일 형식이 유효하지 않습니다")
+        validateImageType(contentType)
         return contentType
+    }
+
+    fun getAnyContentType(file: MultipartFile): String {
+        return file.contentType ?: throw IllegalArgumentException("파일 형식이 유효하지 않습니다")
+    }
+
+    private fun validateImageType(contentType: String) {
+        require(contentType.startsWith("image")) { "이미지 형식의 파일만 가능합니다" }
     }
 }

@@ -33,7 +33,7 @@ class FacilityService(
         certificationDoc?.let {
             it.forEach { file ->
                 val originalFileName = uploadService.validateFileName(file)
-                val contentType = uploadService.validateContentType(file)
+                val contentType = uploadService.getImageType(file)
                 val fileKey = uploadService.uploadFile(file, FileType.FACILITY_CERTIFICATION, originalFileName)
                 val facilityCertificationDoc = FacilityCertificationDoc(fileKey, contentType, originalFileName)
                 facility.addCertificationDoc(facilityCertificationDoc)

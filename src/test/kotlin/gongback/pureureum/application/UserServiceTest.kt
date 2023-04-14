@@ -117,7 +117,7 @@ class UserServiceTest : BehaviorSpec({
         When("파일 형식이 비어있다면") {
             val file = createMockProfileFile(contentType = null)
             every { uploadService.validateFileName(file) } returns file.name
-            every { uploadService.validateContentType(file) } throws IllegalArgumentException("파일 형식이 유효하지 않습니다")
+            every { uploadService.getImageType(file) } throws IllegalArgumentException("파일 형식이 유효하지 않습니다")
             Then("예외가 발생한다.") {
                 shouldThrow<IllegalArgumentException> { userService.updatedProfile(user.email, file) }
             }
@@ -126,7 +126,7 @@ class UserServiceTest : BehaviorSpec({
         When("이미지 형식의 파일이 아니라면") {
             val file = createMockProfileFile(contentType = "text/html")
             every { uploadService.validateFileName(file) } returns file.name
-            every { uploadService.validateContentType(file) } throws IllegalArgumentException("이미지 형식의 파일만 가능합니다")
+            every { uploadService.getImageType(file) } throws IllegalArgumentException("이미지 형식의 파일만 가능합니다")
 
             Then("예외가 발생한다.") {
                 shouldThrow<IllegalArgumentException> { userService.updatedProfile(user.email, file) }
@@ -137,7 +137,7 @@ class UserServiceTest : BehaviorSpec({
             val file = createMockProfileFile()
             every { userRepository.getUserByEmail(any()) } returns user
             every { uploadService.validateFileName(file) } returns fileDto.fileKey
-            every { uploadService.validateContentType(file) } returns file.contentType!!
+            every { uploadService.getImageType(file) } returns file.contentType!!
             every { uploadService.deleteFile(any()) } just runs
             every { uploadService.uploadFile(any(), any(), any()) } returns fileDto.fileKey
             every { userRepository.save(any()) } returns user
