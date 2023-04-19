@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/oauth")
+@RequestMapping("/api/v1/oauth")
 class OAuth2RestController(
     private val oAuth2Service: OAuth2Service,
     private val userAuthenticationService: UserAuthenticationService
