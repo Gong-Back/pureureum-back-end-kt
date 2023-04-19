@@ -23,6 +23,7 @@ class User(
     @AttributeOverride(name = "value", column = Column(name = "password", nullable = false))
     var password: Password,
 
+    @Column(nullable = false, length = 10)
     @Enumerated(EnumType.STRING)
     val socialType: SocialType,
 
@@ -33,7 +34,7 @@ class User(
         cascade = [CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE],
         orphanRemoval = true
     )
-    @JoinColumn(name = "profile_id", unique = true)
+    @JoinColumn(name = "profile_id", nullable = false, unique = true)
     var profile: Profile = profile
         protected set
 
@@ -80,7 +81,6 @@ class User(
     }
 
     fun updatePhoneNumber(phoneNumber: String) {
-        information.phoneNumber = phoneNumber
         if (phoneNumber.isNotBlank()) {
             information.phoneNumber = phoneNumber
         }
@@ -93,7 +93,9 @@ class User(
     }
 
     fun updateNickname(nickname: String) {
-        information.nickname = nickname
+        if (nickname.isNotBlank()) {
+            information.nickname = nickname
+        }
     }
 
     private fun identify(value: Boolean, message: () -> Any = {}) {

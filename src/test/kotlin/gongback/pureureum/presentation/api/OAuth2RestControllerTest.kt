@@ -16,6 +16,7 @@ import io.mockk.runs
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.HttpHeaders
+import org.springframework.restdocs.cookies.CookieDocumentation
 import org.springframework.restdocs.headers.HeaderDocumentation.headerWithName
 import org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
@@ -86,13 +87,15 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
         every { userAuthenticationService.generateAccessTokenByEmail(any()) } returns accessToken
         every { userAuthenticationService.generateRefreshTokenByEmail(any()) } returns refreshToken
 
-        mockMvc.post("/oauth/login/kakao") {
+        mockMvc.post("/api/v1/oauth/login/kakao") {
             jsonContent(createAuthenticationInfo())
         }.andExpect {
             status { isOk() }
             header {
                 string(HttpHeaders.AUTHORIZATION, accessToken)
-                string(REFRESH_COOKIE_NAME, refreshToken)
+            }
+            cookie {
+                value(REFRESH_COOKIE_NAME, refreshToken)
             }
         }.andDo {
             createDocument(
@@ -102,8 +105,10 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
                     fieldWithPath("redirectUrl").description("리다이렉트 주소")
                 ),
                 responseHeaders(
-                    headerWithName(HttpHeaders.AUTHORIZATION).description("Access Token"),
-                    headerWithName(REFRESH_COOKIE_NAME).description("Refresh Token")
+                    headerWithName(HttpHeaders.AUTHORIZATION).description("Access Token")
+                ),
+                CookieDocumentation.responseCookies(
+                    CookieDocumentation.cookieWithName(REFRESH_COOKIE_NAME).description("New Refresh Token")
                 )
             )
         }
@@ -115,7 +120,7 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
         every { oAuth2Service.getKakaoUserInfo(any()) } returns oAuth2UserInfo
         every { userAuthenticationService.socialLogin(any()) } returns ErrorCode.REQUEST_RESOURCE_NOT_ENOUGH
 
-        mockMvc.post("/oauth/login/kakao") {
+        mockMvc.post("/api/v1/oauth/login/kakao") {
             jsonContent(createAuthenticationInfo())
         }.andExpect {
             status { isBadRequest() }
@@ -143,7 +148,7 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
         every { userAuthenticationService.socialLogin(any()) } returns ErrorCode.REQUEST_RESOURCE_ALREADY_EXISTS
         every { userAuthenticationService.getUserAccountDto(any()) } returns userAccountDto
 
-        mockMvc.post("/oauth/login/kakao") {
+        mockMvc.post("/api/v1/oauth/login/kakao") {
             jsonContent(createAuthenticationInfo())
         }.andExpect {
             status { isBadRequest() }
@@ -169,7 +174,7 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
         val tempSocialAuthDto = createTempSocialAuthDto()
         every { userAuthenticationService.getTempSocialAuth(any()) } returns tempSocialAuthDto
 
-        this.mockMvc.perform(get("/oauth/temp/{email}", tempSocialAuthDto.email))
+        this.mockMvc.perform(get("/api/v1/oauth/temp/{email}", tempSocialAuthDto.email))
             .andExpect(status().isOk())
             .andDo(
                 createPathDocument(
@@ -196,7 +201,7 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
         val tempSocialAuthDto = createTempSocialAuthDto()
         every { userAuthenticationService.getTempSocialAuth(any()) } throws IllegalArgumentException("요청하신 임시 소셜 사용자 정보를 찾을 수 없습니다")
 
-        this.mockMvc.perform(get("/oauth/temp/{email}", tempSocialAuthDto.email))
+        this.mockMvc.perform(get("/api/v1/oauth/temp/{email}", tempSocialAuthDto.email))
             .andExpect(status().isBadRequest)
             .andDo(
                 createPathDocument(
@@ -222,13 +227,15 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
         every { userAuthenticationService.generateAccessTokenByEmail(any()) } returns accessToken
         every { userAuthenticationService.generateRefreshTokenByEmail(any()) } returns refreshToken
 
-        mockMvc.post("/oauth/register") {
+        mockMvc.post("/api/v1/oauth/register") {
             jsonContent(socialRegisterUserReq)
         }.andExpect {
             status { isCreated() }
             header {
                 string(HttpHeaders.AUTHORIZATION, accessToken)
-                string(REFRESH_COOKIE_NAME, refreshToken)
+            }
+            cookie {
+                value(REFRESH_COOKIE_NAME, refreshToken)
             }
         }.andDo {
             createDocument(
@@ -242,8 +249,10 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
                     fieldWithPath("socialType").description("소셜 회원 로그인 타입")
                 ),
                 responseHeaders(
-                    headerWithName(HttpHeaders.AUTHORIZATION).description("Access Token"),
-                    headerWithName(REFRESH_COOKIE_NAME).description("Refresh Token")
+                    headerWithName(HttpHeaders.AUTHORIZATION).description("Access Token")
+                ),
+                CookieDocumentation.responseCookies(
+                    CookieDocumentation.cookieWithName(REFRESH_COOKIE_NAME).description("New Refresh Token")
                 )
             )
         }
@@ -254,7 +263,7 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
         val socialRegisterUserReq = createSocialRegisterUserReq()
         every { userAuthenticationService.registerBySocialReq(any()) } throws IllegalArgumentException("본인 인증되지 않은 정보입니다")
 
-        mockMvc.post("/oauth/register") {
+        mockMvc.post("/api/v1/oauth/register") {
             jsonContent(socialRegisterUserReq)
         }.andExpect {
             status { isBadRequest() }

@@ -9,6 +9,7 @@ import gongback.pureureum.application.dto.SocialEmailDto
 import gongback.pureureum.application.dto.SocialRegisterUserReq
 import gongback.pureureum.application.dto.TempSocialAuthDto
 import gongback.pureureum.support.security.Tokens.Companion.REFRESH_TOKEN_HEADER
+import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpHeaders
@@ -22,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/oauth")
+@RequestMapping("/api/v1/oauth")
 class OAuth2RestController(
     private val oAuth2Service: OAuth2Service,
     private val userAuthenticationService: UserAuthenticationService
@@ -111,9 +112,9 @@ class OAuth2RestController(
             HttpHeaders.AUTHORIZATION,
             userAuthenticationService.generateAccessTokenByEmail(email)
         )
-        response.setHeader(
-            REFRESH_TOKEN_HEADER,
-            userAuthenticationService.generateRefreshTokenByEmail(email)
-        )
+        val refreshToken = userAuthenticationService.generateRefreshTokenByEmail(email)
+        val refreshCookie = Cookie(REFRESH_TOKEN_HEADER, refreshToken)
+        refreshCookie.isHttpOnly = true
+        response.addCookie(refreshCookie)
     }
 }

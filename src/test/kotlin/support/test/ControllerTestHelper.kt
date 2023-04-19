@@ -1,6 +1,8 @@
 package support.test
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import gongback.pureureum.security.JwtNotExistsException
 import gongback.pureureum.security.JwtNotValidException
@@ -11,7 +13,6 @@ import io.mockk.every
 import io.mockk.slot
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs
 import org.springframework.core.MethodParameter
 import org.springframework.http.HttpHeaders
@@ -36,6 +37,7 @@ import org.springframework.test.web.servlet.MockMvcResultHandlersDsl
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import org.springframework.util.MultiValueMap
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.filter.CharacterEncodingFilter
@@ -58,16 +60,18 @@ abstract class ControllerTestHelper {
     @MockkBean
     private lateinit var jwtTokenProvider: JwtTokenProvider
 
-    @Autowired
     lateinit var objectMapper: ObjectMapper
 
     protected val LENGTH = "length"
+    protected val EXAMPLE = "example"
 
     @BeforeEach
     internal fun setUp(
         webApplicationContext: WebApplicationContext,
         restDocumentationContextProvider: RestDocumentationContextProvider
     ) {
+        objectMapper = jacksonObjectMapper().apply { registerModule(JavaTimeModule()) }
+
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
             .addFilter<DefaultMockMvcBuilder>(CharacterEncodingFilter("UTF-8", true))
             .alwaysDo<DefaultMockMvcBuilder>(MockMvcResultHandlers.print())
@@ -108,33 +112,15 @@ abstract class ControllerTestHelper {
         every { jwtTokenProvider.createToken(EMAIL) } returns ACCESS_TOKEN
     }
 
+    fun objectToString(value: Any): String = objectMapper.writeValueAsString(value)
+
     fun MockHttpServletRequestDsl.jsonContent(value: Any) {
-        content = objectMapper.writeValueAsString(value)
+        content = objectToString(value)
         contentType = MediaType.APPLICATION_JSON
     }
 
-    fun MockMvcResultHandlersDsl.createDocument(value: Any) {
-        return handle(document("{class-name}/$value"))
-    }
-
-    fun MockMvcResultHandlersDsl.createDocument(value: Any, requestHeadersSnippet: RequestHeadersSnippet) {
-        return handle(document("{class-name}/$value", requestHeadersSnippet))
-    }
-
-    fun MockMvcResultHandlersDsl.createDocument(
-        value: Any,
-        requestHeadersSnippet: RequestHeadersSnippet,
-        responseHeadersSnippet: ResponseHeadersSnippet,
-        responseFieldsSnippet: ResponseFieldsSnippet
-    ) {
-        return handle(
-            document(
-                "{class-name}/$value",
-                requestHeadersSnippet,
-                responseHeadersSnippet,
-                responseFieldsSnippet
-            )
-        )
+    fun MockHttpServletRequestDsl.params(data: MultiValueMap<String, String>) {
+        params = data
     }
 
     fun MockMvcResultHandlersDsl.createDocument(value: Any, responseFieldsSnippet: ResponseFieldsSnippet) {
@@ -145,16 +131,23 @@ abstract class ControllerTestHelper {
         return handle(document("{class-name}/$value", requestPartsSnippet))
     }
 
-    fun MockMvcResultHandlersDsl.createDocument(value: Any, requestFieldsSnippet: RequestFieldsSnippet) {
-        return handle(document("{class-name}/$value", requestFieldsSnippet))
+    fun MockMvcResultHandlersDsl.createDocument(
+        value: Any,
+        requestHeadersSnippet: RequestHeadersSnippet,
+        requestPartsSnippet: RequestPartsSnippet
+    ) {
+        return handle(document("{class-name}/$value", requestHeadersSnippet, requestPartsSnippet))
     }
 
     fun MockMvcResultHandlersDsl.createDocument(
         value: Any,
-        requestFieldsSnippet: RequestFieldsSnippet,
-        responseHeadersSnippet: ResponseHeadersSnippet
+        requestHeadersSnippet: RequestHeadersSnippet
     ) {
-        return handle(document("{class-name}/$value", requestFieldsSnippet, responseHeadersSnippet))
+        return handle(document("{class-name}/$value", requestHeadersSnippet))
+    }
+
+    fun MockMvcResultHandlersDsl.createDocument(value: Any, requestFieldsSnippet: RequestFieldsSnippet) {
+        return handle(document("{class-name}/$value", requestFieldsSnippet))
     }
 
     fun MockMvcResultHandlersDsl.createDocument(
@@ -202,14 +195,6 @@ abstract class ControllerTestHelper {
     fun MockMvcResultHandlersDsl.createDocument(
         value: Any,
         responseHeadersSnippet: ResponseHeadersSnippet,
-        responseCookiesSnippet: ResponseCookiesSnippet
-    ) {
-        return handle(document("{class-name}/$value", responseHeadersSnippet, responseCookiesSnippet))
-    }
-
-    fun MockMvcResultHandlersDsl.createDocument(
-        value: Any,
-        responseHeadersSnippet: ResponseHeadersSnippet,
         responseCookiesSnippet: ResponseCookiesSnippet,
         responseFieldsSnippet: ResponseFieldsSnippet
     ) {
@@ -221,14 +206,6 @@ abstract class ControllerTestHelper {
                 responseFieldsSnippet
             )
         )
-    }
-
-    fun MockMvcResultHandlersDsl.createDocument(
-        value: Any,
-        pathParametersSnippet: PathParametersSnippet,
-        responseFieldsSnippet: ResponseFieldsSnippet
-    ) {
-        return handle(document("{class-name}/$value", pathParametersSnippet, responseFieldsSnippet))
     }
 
     fun MockMvcResultHandlersDsl.createDocument(

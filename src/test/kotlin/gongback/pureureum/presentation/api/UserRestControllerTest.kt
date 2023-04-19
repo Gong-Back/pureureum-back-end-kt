@@ -15,7 +15,6 @@ import io.mockk.runs
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.HttpHeaders
-import org.springframework.mock.web.MockMultipartFile
 import org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName
 import org.springframework.restdocs.cookies.CookieDocumentation.responseCookies
 import org.springframework.restdocs.headers.HeaderDocumentation.headerWithName
@@ -36,6 +35,7 @@ import support.REFRESH_COOKIE_NAME
 import support.accessToken
 import support.createAccessToken
 import support.createLocalDate
+import support.createMockProfileFile
 import support.createNotValidAccessToken
 import support.createNotValidRefreshToken
 import support.createRefreshToken
@@ -380,7 +380,7 @@ class UserRestControllerTest : ControllerTestHelper() {
                     fieldWithPath("data.nickname").description("닉네임"),
                     fieldWithPath("data.gender").description("성별"),
                     fieldWithPath("data.birthday").description("생년월일"),
-                    fieldWithPath("data.profileUrl").description("사인된 프로필 주소")
+                    fieldWithPath("data.profileUrl").description("signed 프로필 주소")
                 )
             )
         }
@@ -465,13 +465,7 @@ class UserRestControllerTest : ControllerTestHelper() {
     @Test
     fun `프로필 이미지 업데이트 성공`() {
         every { userService.updatedProfile(any(), any()) } just runs
-
-        val profile = MockMultipartFile(
-            "profile",
-            "default_profile.png",
-            "image/png",
-            "sample".toByteArray()
-        )
+        val profile = createMockProfileFile()
 
         mockMvc.multipart("/api/v1/users/update/profile") {
             accessToken(createAccessToken())
@@ -485,6 +479,52 @@ class UserRestControllerTest : ControllerTestHelper() {
                     partWithName("profile")
                         .description("프로필 이미지 파일(image/*), 기본 이미지로 변경 시 단순 요청")
                         .optional()
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `프로필 이미지 업데이트 실패 - 원본 파일 이름이 비어있을 경우`() {
+        every { userService.updatedProfile(any(), any()) } throws IllegalArgumentException("원본 파일 이름이 비어있습니다")
+        val profile = createMockProfileFile(
+            originalFileName = ""
+        )
+
+        mockMvc.multipart("/api/v1/users/update/profile") {
+            accessToken(createAccessToken())
+            file(profile)
+        }.andExpect {
+            status { isBadRequest() }
+        }.andDo {
+            createDocument(
+                "update-profile-original-file-name-empty-fail",
+                requestParts(
+                    partWithName("profile")
+                        .description("형식에 맞지 않은 이미지 정보")
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `프로필 이미지 업데이트 실패 - 파일 형식이 이미지가 아닐 경우`() {
+        every { userService.updatedProfile(any(), any()) } throws IllegalArgumentException("이미지 형식의 파일만 가능합니다")
+        val profile = createMockProfileFile(
+            contentType = "text/html"
+        )
+
+        mockMvc.multipart("/api/v1/users/update/profile") {
+            accessToken(createAccessToken())
+            file(profile)
+        }.andExpect {
+            status { isBadRequest() }
+        }.andDo {
+            createDocument(
+                "update-profile-file-type-not-image-fail",
+                requestParts(
+                    partWithName("profile")
+                        .description("형식에 맞지 않은 이미지 정보")
                 )
             )
         }
