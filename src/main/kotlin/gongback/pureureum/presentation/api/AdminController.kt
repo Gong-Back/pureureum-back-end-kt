@@ -19,11 +19,6 @@ import org.springframework.web.servlet.view.RedirectView
 class AdminController(
     private val facilityService: FacilityService
 ) {
-    @GetMapping
-    fun login(): String {
-        return "admin"
-    }
-
     @GetMapping("/facility/download/{id}/{docId}")
     fun downloadCertificationDoc(
         @PathVariable("id") id: Long,
