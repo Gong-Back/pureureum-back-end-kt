@@ -3,6 +3,7 @@ package support
 import gongback.pureureum.application.dto.FacilityReq
 import gongback.pureureum.application.dto.FacilityRes
 import gongback.pureureum.application.dto.FacilityResWithProgress
+import gongback.pureureum.application.dto.FacilityWithDocIds
 import gongback.pureureum.domain.facility.Facility
 import gongback.pureureum.domain.facility.FacilityAddress
 import gongback.pureureum.domain.facility.FacilityCategory
@@ -10,7 +11,7 @@ import gongback.pureureum.domain.facility.FacilityCertificationDoc
 import gongback.pureureum.domain.facility.FacilityProgress
 import gongback.pureureum.domain.user.User
 import org.springframework.mock.web.MockMultipartFile
-import java.util.Collections
+import java.util.*
 
 const val FACILITY_ID: Long = 1L
 const val FACILITY_NAME: String = "test_name"
@@ -93,7 +94,7 @@ fun createCertificationDoc(
 }
 
 fun createFacilityRes(
-    id: Long = FACILITY_ID,
+    id: Long = 0L,
     category: FacilityCategory = FACILITY_CATEGORY,
     name: String = FACILITY_NAME,
     city: String = FACILITY_CITY,
@@ -131,5 +132,27 @@ fun createFacilityResWithProgress(
         district,
         detail,
         progress
+    )
+}
+
+fun createFacilityWithDocIds(
+    id: Long = 0L,
+    category: FacilityCategory = FACILITY_CATEGORY,
+    name: String = FACILITY_NAME,
+    city: String = FACILITY_CITY,
+    county: String = FACILITY_COUNTY,
+    district: String = FACILITY_DISTRICT,
+    detail: String = FACILITY_DETAIL,
+    fileIds: List<Long> = Collections.emptyList()
+): FacilityWithDocIds {
+    return FacilityWithDocIds(
+        id,
+        category,
+        name,
+        city,
+        county,
+        district,
+        detail,
+        fileIds
     )
 }

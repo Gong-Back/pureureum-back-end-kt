@@ -29,7 +29,7 @@ class Facility(
 
     @Column(nullable = false, length = 15)
     @Enumerated(EnumType.STRING)
-    val progress: FacilityProgress,
+    var progress: FacilityProgress,
 
     certificationDoc: MutableList<FacilityCertificationDoc> = Collections.emptyList()
 ) : BaseEntity() {
@@ -46,5 +46,9 @@ class Facility(
 
     fun addCertificationDoc(facilityCertificationDoc: FacilityCertificationDoc) {
         certificationDoc.add(facilityCertificationDoc)
+    }
+
+    fun updateProgress(progress: FacilityProgress) {
+        this.progress = progress
     }
 }
