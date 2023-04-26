@@ -1,8 +1,9 @@
-package gongback.pureureum.presentation.api
+package gongback.pureureum.presentation.api.admin
 
 import com.ninjasquad.springmockk.MockkBean
 import gongback.pureureum.application.FacilityService
 import gongback.pureureum.domain.facility.FacilityProgress
+import gongback.pureureum.presentation.api.ApiResponse
 import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
@@ -16,8 +17,8 @@ import support.createFacilityRes
 import support.createFacilityWithDocIds
 import support.test.ControllerTestHelper
 
-@WebMvcTest(AdminController::class)
-class AdminControllerTest : ControllerTestHelper() {
+@WebMvcTest(AdminFacilityController::class)
+class AdminFacilityControllerTest : ControllerTestHelper() {
     @MockkBean
     private lateinit var facilityService: FacilityService
 

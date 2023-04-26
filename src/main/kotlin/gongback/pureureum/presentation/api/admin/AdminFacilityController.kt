@@ -1,9 +1,10 @@
-package gongback.pureureum.presentation.api
+package gongback.pureureum.presentation.api.admin
 
 import gongback.pureureum.application.FacilityService
 import gongback.pureureum.application.dto.FacilityRes
 import gongback.pureureum.application.dto.FacilityWithDocIds
 import gongback.pureureum.domain.facility.FacilityProgress
+import gongback.pureureum.presentation.api.ApiResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -15,11 +16,12 @@ import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.view.RedirectView
 
 @RestController
-@RequestMapping("/admin")
-class AdminController(
+@RequestMapping("/admin/facility")
+class AdminFacilityController(
     private val facilityService: FacilityService
 ) {
-    @GetMapping("/facility/download/{id}/{docId}")
+
+    @GetMapping("/download/{id}/{docId}")
     fun downloadCertificationDoc(
         @PathVariable("id") id: Long,
         @PathVariable("docId") docId: Long
@@ -28,7 +30,7 @@ class AdminController(
         return ModelAndView(RedirectView(downloadPath))
     }
 
-    @GetMapping("/facility/all")
+    @GetMapping("/all")
     fun getNotApprovedFacility(
         @RequestParam("category") category: String
     ): ResponseEntity<ApiResponse<List<FacilityRes>>> {
@@ -36,7 +38,7 @@ class AdminController(
         return ResponseEntity.ok(ApiResponse.ok(facilityRes))
     }
 
-    @GetMapping("/facility/{id}")
+    @GetMapping("/{id}")
     fun getFacility(
         @PathVariable("id") id: Long
     ): ResponseEntity<ApiResponse<FacilityWithDocIds>> {
@@ -44,7 +46,7 @@ class AdminController(
         return ResponseEntity.ok(ApiResponse.ok(facilityRes))
     }
 
-    @PostMapping("/facility/update/{id}")
+    @PostMapping("/update/{id}")
     fun updateFacilityProgress(
         @PathVariable("id") id: Long,
         @RequestParam("progress") progress: FacilityProgress
@@ -53,7 +55,7 @@ class AdminController(
         return ResponseEntity.ok().build()
     }
 
-    @PostMapping("/facility/update")
+    @PostMapping("/update")
     fun updateFacilitiesProgress(
         @RequestParam("ids") ids: List<Long>,
         @RequestParam("progress") progress: FacilityProgress
