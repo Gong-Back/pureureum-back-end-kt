@@ -95,3 +95,29 @@ data class FacilityResWithProgress(
         }
     }
 }
+
+data class FacilityWithDocIds(
+    val id: Long,
+    val category: FacilityCategory,
+    val name: String,
+    val city: String,
+    val county: String,
+    val district: String,
+    val detail: String,
+    val fileIds: List<Long>
+) {
+    companion object {
+        fun fromFacility(facility: Facility, docIds: List<Long>): FacilityWithDocIds {
+            return FacilityWithDocIds(
+                facility.id,
+                facility.category,
+                facility.name,
+                facility.address.city,
+                facility.address.county,
+                facility.address.district,
+                facility.address.detail,
+                docIds
+            )
+        }
+    }
+}
