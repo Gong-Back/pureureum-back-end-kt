@@ -9,7 +9,7 @@ import gongback.pureureum.domain.user.UserRepository
 import gongback.pureureum.domain.user.existsByPhoneNumber
 import gongback.pureureum.domain.user.existsNickname
 import gongback.pureureum.domain.user.getUserByEmail
-import gongback.pureureum.support.enum.FileType
+import gongback.pureureum.support.constant.FileType
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile

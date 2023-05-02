@@ -1,12 +1,13 @@
 package gongback.pureureum.domain.facility
 
+import gongback.pureureum.support.constant.Category
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 
-fun FacilityRepository.getApprovedByCategoryAndUserId(category: FacilityCategory, userId: Long): List<Facility> {
-    return findByCategoryAndUserIdAndProgress(category, userId, FacilityProgress.APPROVED)
+fun FacilityRepository.getApprovedByCategoryAndUserId(category: Category, userId: Long): List<Facility> {
+    return findByFacilityCategoryAndUserIdAndProgress(category, userId, FacilityProgress.APPROVED)
 }
 
 fun FacilityRepository.getByUserId(userId: Long): List<Facility> {
@@ -17,8 +18,8 @@ fun FacilityRepository.getDocFileKeyByDocId(facilityId: Long, docId: Long): Stri
     return findDocFileKeyByDocId(facilityId, docId) ?: throw IllegalArgumentException("존재하지 않는 파일입니다")
 }
 
-fun FacilityRepository.getAllNotApprovedByCategory(category: FacilityCategory): List<Facility> {
-    return findByCategoryAndProgress(category, FacilityProgress.NOT_APPROVED)
+fun FacilityRepository.getAllNotApprovedByCategory(category: Category): List<Facility> {
+    return findByFacilityCategoryAndProgress(category, FacilityProgress.NOT_APPROVED)
 }
 
 fun FacilityRepository.getFacilityById(id: Long): Facility {
@@ -27,13 +28,17 @@ fun FacilityRepository.getFacilityById(id: Long): Facility {
 
 interface FacilityRepository : JpaRepository<Facility, Long> {
 
-    fun findByCategoryAndUserIdAndProgress(category: FacilityCategory, userId: Long, progress: FacilityProgress): List<Facility>
+    fun findByFacilityCategoryAndUserIdAndProgress(
+        category: Category,
+        userId: Long,
+        progress: FacilityProgress
+    ): List<Facility>
 
     fun findByUserId(userId: Long): List<Facility>
 
     @Query("select fc.fileKey from FacilityCertificationDoc fc join Facility f where fc.id=:docId and f.id=:facilityId")
     fun findDocFileKeyByDocId(@Param("facilityId") facilityId: Long, @Param("docId") docId: Long): String?
-    fun findByCategoryAndProgress(category: FacilityCategory, progress: FacilityProgress): List<Facility>
+    fun findByFacilityCategoryAndProgress(category: Category, progress: FacilityProgress): List<Facility>
     fun findFacilityById(id: Long): Facility?
 
     @Modifying

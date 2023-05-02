@@ -6,10 +6,10 @@ import gongback.pureureum.application.dto.FacilityResWithProgress
 import gongback.pureureum.application.dto.FacilityWithDocIds
 import gongback.pureureum.domain.facility.Facility
 import gongback.pureureum.domain.facility.FacilityAddress
-import gongback.pureureum.domain.facility.FacilityCategory
 import gongback.pureureum.domain.facility.FacilityCertificationDoc
 import gongback.pureureum.domain.facility.FacilityProgress
 import gongback.pureureum.domain.user.User
+import gongback.pureureum.support.constant.Category
 import org.springframework.mock.web.MockMultipartFile
 import java.util.*
 
@@ -26,7 +26,7 @@ const val CERTIFICATION_DOC_TYPE = "image/png"
 const val CERTIFICATION_DOC_CONTENT = "sample"
 const val CERTIFICATION_DOC_FILE_KEY = "facility/certification/sample.png"
 
-val FACILITY_CATEGORY: FacilityCategory = FacilityCategory.YOUTH_FARMING
+val FACILITY_CATEGORY: Category = Category.YOUTH_FARMING
 val FACILITY_PROGRESS: FacilityProgress = FacilityProgress.NOT_APPROVED
 
 fun createFacility(
@@ -50,7 +50,7 @@ fun createFacility(
 }
 
 fun createFacilityReq(
-    category: FacilityCategory = FACILITY_CATEGORY,
+    category: Category = FACILITY_CATEGORY,
     name: String = FACILITY_NAME,
     city: String = FACILITY_CITY,
     county: String = FACILITY_COUNTY,
@@ -95,7 +95,7 @@ fun createCertificationDoc(
 
 fun createFacilityRes(
     id: Long = 0L,
-    category: FacilityCategory = FACILITY_CATEGORY,
+    category: Category = FACILITY_CATEGORY,
     name: String = FACILITY_NAME,
     city: String = FACILITY_CITY,
     county: String = FACILITY_COUNTY,
@@ -115,7 +115,7 @@ fun createFacilityRes(
 
 fun createFacilityResWithProgress(
     id: Long = FACILITY_ID,
-    category: FacilityCategory = FACILITY_CATEGORY,
+    category: Category = FACILITY_CATEGORY,
     name: String = FACILITY_NAME,
     city: String = FACILITY_CITY,
     county: String = FACILITY_COUNTY,
@@ -137,7 +137,7 @@ fun createFacilityResWithProgress(
 
 fun createFacilityWithDocIds(
     id: Long = 0L,
-    category: FacilityCategory = FACILITY_CATEGORY,
+    category: Category = FACILITY_CATEGORY,
     name: String = FACILITY_NAME,
     city: String = FACILITY_CITY,
     county: String = FACILITY_COUNTY,

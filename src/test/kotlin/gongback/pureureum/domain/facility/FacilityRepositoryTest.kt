@@ -1,5 +1,6 @@
 package gongback.pureureum.domain.facility
 
+import gongback.pureureum.support.constant.Category
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.ExpectSpec
 import io.kotest.extensions.spring.SpringTestExtension
@@ -24,12 +25,12 @@ class FacilityRepositoryTest(
         facilityRepository.save(facility)
 
         expect("시설이 존재한다") {
-            val result = facilityRepository.getApprovedByCategoryAndUserId(FacilityCategory.YOUTH_FARMING, user.id)
+            val result = facilityRepository.getApprovedByCategoryAndUserId(Category.YOUTH_FARMING, user.id)
             result shouldBe listOf(facility)
         }
 
         expect("시설이 존재하지 않는다") {
-            val result = facilityRepository.getApprovedByCategoryAndUserId(FacilityCategory.FARMING_HEALING, user.id)
+            val result = facilityRepository.getApprovedByCategoryAndUserId(Category.FARMING_HEALING, user.id)
             result shouldBe Collections.emptyList()
         }
     }
