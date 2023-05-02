@@ -174,15 +174,6 @@ data class ProjectFileRes(
 )
 
 /**
- * 프로젝트 전체 정보가 들어있는 PageDto
- */
-data class ProjectPageRes(
-    val page: Int,
-    val size: Int,
-    val projectList: List<ProjectRes>
-)
-
-/**
  * 프로젝트 일부 정보가 들어있는 PageDto
  */
 data class ProjectPartPageRes(
