@@ -10,7 +10,6 @@ import java.time.LocalDate
  * content: 프로젝트 내용
  * projectStartDate: 프로젝트 시작 시간
  * projectEndDate: 프로젝트 종료 시간
- * likeCount: 좋아요 수
  * totalRecruits: 총 모집 인원
  * recruits: 현재 모집 인원
  * minAge: 나이 제한(최소)
@@ -35,9 +34,6 @@ data class ProjectInformation(
 
     @Column(nullable = false)
     val projectEndDate: LocalDate,
-
-    @Column(nullable = false)
-    val likeCount: Int = 0,
 
     @Column(nullable = false)
     val totalRecruits: Int,
