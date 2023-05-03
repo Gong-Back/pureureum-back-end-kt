@@ -24,7 +24,7 @@ interface ProjectRepository : JpaRepository<Project, Long>, CustomProjectReposit
 
 interface CustomProjectRepository {
 
-    fun getRunningProjectPartsByTypeAndCategory(
+    fun getRunningProjectsByCategoryOrderedSearchType(
         type: SearchType,
         category: Category?,
         pageable: Pageable
@@ -33,7 +33,7 @@ interface CustomProjectRepository {
 
 @Repository
 internal class ProjectRepositoryImpl(private val queryFactory: QueryFactory) : CustomProjectRepository {
-    override fun getRunningProjectPartsByTypeAndCategory(
+    override fun getRunningProjectsByCategoryOrderedSearchType(
         type: SearchType,
         category: Category?,
         pageable: Pageable

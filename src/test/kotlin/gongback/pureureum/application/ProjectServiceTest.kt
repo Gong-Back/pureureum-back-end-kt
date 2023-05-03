@@ -92,7 +92,7 @@ class ProjectServiceTest : BehaviorSpec({
         When("프로젝트 ID에 맞는 프로젝트가 있을 경우") {
             val project = createProject()
             val facility = createFacility()
-            val projectRes = createProjectResWithoutPayment(project, facility)
+            val projectRes = createProjectResWithoutPayment(project, facility.address)
             every { projectRepository.getProjectById(projectId) } returns project
             every { facilityRepository.getReferenceById(project.facilityId) } returns facility
             every { uploadService.getFileUrl(any()) } returns "signedUrl"
@@ -134,17 +134,17 @@ class ProjectServiceTest : BehaviorSpec({
         }
     }
 
-    Given("검색 조건, 카테고리, Pageable") {
+    Given("검색 조건, 카테고리, 페이지 조건") {
         val searchType = SEARCH_TYPE_POPULAR
         val pageable = Pageable.ofSize(10)
 
-        When("카테고리가 null인 경우") {
+        When("모든 프로젝트에 대한 페이지 조회 일 경우") {
             val category = null
             val projects = createDifferentCategoryProject()
             val facility = createFacility()
 
             every {
-                projectRepository.getRunningProjectPartsByTypeAndCategory(
+                projectRepository.getRunningProjectsByCategoryOrderedSearchType(
                     searchType,
                     category,
                     pageable
@@ -155,18 +155,18 @@ class ProjectServiceTest : BehaviorSpec({
 
             every { uploadService.getFileUrl(any()) } returns PROJECT_THUMBNAIL_KEY
 
-            Then("다른 카테고리의 프로젝트 Page 조회 성공") {
+            Then("모든 카테고리의 프로젝트 Page 조회 성공") {
                 projectService.getRunningProjectPartsByTypeAndCategory(searchType, category, pageable).size shouldBe 3
             }
         }
 
-        When("카테고리가 null이 아닌 경우") {
+        When("카테고리가 지정된 경우") {
             val category = PROJECT_CATEGORY
             val projects = createSameCategoryProject()
             val facility = createFacility()
 
             every {
-                projectRepository.getRunningProjectPartsByTypeAndCategory(searchType, category, pageable)
+                projectRepository.getRunningProjectsByCategoryOrderedSearchType(searchType, category, pageable)
             } returns PageImpl(projects, pageable, projects.size.toLong())
 
             every { facilityRepository.getFacilityById(any()) } returns facility

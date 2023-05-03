@@ -37,7 +37,7 @@ class ProjectService(
         val findUser = userRepository.getUserByEmail(email)
 
         // ProjectFileUpload
-        val projectFileList = projectFiles?.mapIndexed { index, multipartFile ->
+        val productFiles = projectFiles?.mapIndexed { index, multipartFile ->
             val originalFileName = uploadService.validateFileName(multipartFile)
             val contentType = uploadService.getAnyContentType(multipartFile)
             val fileKey = uploadService.uploadFile(multipartFile, FileType.PROJECT, originalFileName)
@@ -50,7 +50,7 @@ class ProjectService(
         val project = projectRegisterReq.toEntityWithInfo(
             projectRegisterReq.facilityId,
             projectRegisterReq.projectCategory,
-            projectFileList,
+            productFiles,
             findUser.id
         )
         projectRepository.save(project)
@@ -80,8 +80,8 @@ class ProjectService(
         pageable: Pageable
     ): ProjectPartPageRes {
         val projectPartResList =
-            projectRepository.getRunningProjectPartsByTypeAndCategory(type, category, pageable)
-                .map { project -> projectToPartDto(project) }
+            projectRepository.getRunningProjectsByCategoryOrderedSearchType(type, category, pageable)
+                .map { project -> convertProjectToPartRes(project) }
 
         return ProjectPartPageRes(
             pageable.pageNumber,
@@ -97,19 +97,19 @@ class ProjectService(
             ProjectFileRes(projectFileUrl, projectFile.projectFileType)
         }
 
-        return ProjectRes(project, findFacility, projectFileResList)
+        return ProjectRes(project, findFacility.address, projectFileResList)
     }
 
-    private fun projectToPartDto(project: Project): ProjectPartRes {
+    private fun convertProjectToPartRes(project: Project): ProjectPartRes {
         val findFacility = facilityRepository.getFacilityById(project.facilityId)
 
         return try {
             val thumbnailFile = project.projectFiles.first { it.projectFileType == ProjectFileType.THUMBNAIL }
             val thumbnailFileUrl = uploadService.getFileUrl(thumbnailFile.fileKey)
             val thumbnailFileRes = ProjectFileRes(thumbnailFileUrl, thumbnailFile.projectFileType)
-            ProjectPartRes(project, findFacility, thumbnailFileRes)
+            ProjectPartRes(project, findFacility.address, thumbnailFileRes)
         } catch (e: NoSuchElementException) {
-            ProjectPartRes(project, findFacility, null)
+            ProjectPartRes(project, findFacility.address, null)
         }
     }
 }

@@ -250,13 +250,13 @@ class ProjectRestControllerTest : ControllerTestHelper() {
     }
 
     @Test
-    fun `메인 페이지에서 조건에 따른 프로젝트 페이지 조회 - 성공`() {
+    fun `메인 페이지에서 페이지 조건과 검색 조건에 따른 프로젝트 페이지 조회 - 성공`() {
         val projects = createSameCategoryProject()
         val response = createProjectPartPageRes(projects)
 
         every { projectService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
 
-        mockMvc.get("/api/v1/projects/parts") {
+        mockMvc.get("/api/v1/projects") {
             accessToken(createAccessToken())
             param("searchType", SEARCH_TYPE_POPULAR.name)
             param("category", PROJECT_CATEGORY.name)
@@ -271,7 +271,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                 queryParameters(
                     parameterWithName("searchType").description("검색 타입"),
                     parameterWithName("category").description("카테고리").optional(),
-                    parameterWithName("page").description("페이지 단위").optional(),
+                    parameterWithName("page").description("페이지 사이즈").optional(),
                     parameterWithName("size").description("사이즈 크기").optional()
                 ),
                 responseFields(
@@ -314,7 +314,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
 
         every { projectService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
 
-        mockMvc.get("/api/v1/projects/parts") {
+        mockMvc.get("/api/v1/projects") {
             accessToken(createAccessToken())
             param("searchType", SEARCH_TYPE_POPULAR.name)
         }.andExpect {
@@ -326,7 +326,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                 queryParameters(
                     parameterWithName("searchType").description("검색 타입"),
                     parameterWithName("category").description("카테고리").optional(),
-                    parameterWithName("page").description("페이지 단위").optional(),
+                    parameterWithName("page").description("페이지 사이즈").optional(),
                     parameterWithName("size").description("사이즈 크기").optional()
                 ),
                 responseFields(

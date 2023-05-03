@@ -53,7 +53,7 @@ class Project(
     var likeCount: Int = 0
         protected set
 
-    @OneToMany(cascade = [CascadeType.PERSIST, CascadeType.MERGE, CascadeType.MERGE], orphanRemoval = true)
+    @OneToMany(cascade = [CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE], orphanRemoval = true)
     @JoinColumn(
         name = "project_id",
         nullable = false,

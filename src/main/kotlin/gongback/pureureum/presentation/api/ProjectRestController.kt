@@ -53,7 +53,7 @@ class ProjectRestController(
     /**
      * 메인 페이지에서 인기 순으로 프로젝트 페이지 조회
      */
-    @GetMapping("/parts")
+    @GetMapping
     fun getPopularProjectPage(
         @RequestParam(value = "searchType") searchType: SearchType,
         @RequestParam(value = "category", required = false) category: Category?,

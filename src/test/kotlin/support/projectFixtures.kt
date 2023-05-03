@@ -5,7 +5,7 @@ import gongback.pureureum.application.dto.ProjectPartPageRes
 import gongback.pureureum.application.dto.ProjectPartRes
 import gongback.pureureum.application.dto.ProjectRegisterReq
 import gongback.pureureum.application.dto.ProjectRes
-import gongback.pureureum.domain.facility.Facility
+import gongback.pureureum.domain.facility.FacilityAddress
 import gongback.pureureum.domain.project.Project
 import gongback.pureureum.domain.project.ProjectFile
 import gongback.pureureum.domain.project.ProjectFileType
@@ -27,7 +27,7 @@ const val PROJECT_END_DATE = "2023-03-15"
 const val PROJECT_TOTAL_RECRUITS = 10
 val PROJECT_CATEGORY = Category.FARMING_HEALING
 val SEARCH_TYPE_POPULAR = SearchType.POPULAR
-val PROJECT_THUMBNAIL_KEY = "profile/thumbnail-key"
+const val PROJECT_THUMBNAIL_KEY = "profile/thumbnail-key"
 
 fun createProject(
     userId: Long = 0L,
@@ -94,10 +94,10 @@ fun createProjectRegisterReq(): ProjectRegisterReq {
 
 fun createProjectResWithoutPayment(
     project: Project = createProject(),
-    facility: Facility = createFacility()
+    facilityAddress: FacilityAddress = createFacility().address
 ): ProjectRes = ProjectRes(
     project,
-    facility,
+    facilityAddress,
     listOf(
         ProjectFileRes("signedUrl", ProjectFileType.THUMBNAIL),
         ProjectFileRes("signedUrl", ProjectFileType.COMMON)
@@ -106,7 +106,7 @@ fun createProjectResWithoutPayment(
 
 fun createProjectResWithPayment(): ProjectRes = ProjectRes(
     createProjectWithPayment(),
-    createFacility(),
+    createFacility().address,
     listOf(
         ProjectFileRes("signedUrl", ProjectFileType.THUMBNAIL),
         ProjectFileRes("signedUrl", ProjectFileType.COMMON)
@@ -122,13 +122,13 @@ fun createMockProjectFile(
 
 fun createProjectPartPageRes(projects: List<Project>): ProjectPartPageRes {
     val facility = createFacility()
-    val projectPartResList = projects.map { createProjectPartRes(it, facility) }.toList()
+    val projectPartResList = projects.map { createProjectPartRes(it, facility.address) }.toList()
 
     return ProjectPartPageRes(0, 1, 3, projectPartResList)
 }
 
-fun createProjectPartRes(project: Project, facility: Facility) =
-    ProjectPartRes(project, facility, ProjectFileRes("signedUrl", ProjectFileType.THUMBNAIL))
+fun createProjectPartRes(project: Project, facilityAddress: FacilityAddress) =
+    ProjectPartRes(project, facilityAddress, ProjectFileRes("signedUrl", ProjectFileType.THUMBNAIL))
 
 fun createSameCategoryProject(): List<Project> {
     val project1 =

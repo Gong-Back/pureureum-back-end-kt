@@ -42,7 +42,7 @@ class ProjectRepositoryTest(
             val category = null
             val searchType = SearchType.POPULAR
             val pageable = Pageable.ofSize(10)
-            val result = projectRepository.getRunningProjectPartsByTypeAndCategory(searchType, category, pageable)
+            val result = projectRepository.getRunningProjectsByCategoryOrderedSearchType(searchType, category, pageable)
             result.content.size shouldBe 4
         }
 
@@ -50,7 +50,7 @@ class ProjectRepositoryTest(
             val category = Category.ETC
             val searchType = SearchType.POPULAR
             val pageable = Pageable.ofSize(10)
-            val result = projectRepository.getRunningProjectPartsByTypeAndCategory(searchType, category, pageable)
+            val result = projectRepository.getRunningProjectsByCategoryOrderedSearchType(searchType, category, pageable)
             result.content.size shouldBe 1
         }
     }

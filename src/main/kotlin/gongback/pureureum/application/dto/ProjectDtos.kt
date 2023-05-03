@@ -1,6 +1,5 @@
 package gongback.pureureum.application.dto
 
-import gongback.pureureum.domain.facility.Facility
 import gongback.pureureum.domain.facility.FacilityAddress
 import gongback.pureureum.domain.project.Project
 import gongback.pureureum.domain.project.ProjectFile
@@ -100,7 +99,7 @@ data class ProjectRes(
 ) {
     constructor(
         project: Project,
-        facility: Facility,
+        address: FacilityAddress,
         projectFileRes: List<ProjectFileRes>
     ) : this(
         projectInformation = ProjectInformationRes(
@@ -114,11 +113,11 @@ data class ProjectRes(
             project.totalRecruits,
             project.minAge,
             project.maxAge,
-            facility.address,
+            FacilityAddressRes(address),
             project.guide,
             project.notice
         ),
-        projectCategory = facility.facilityCategory,
+        projectCategory = project.projectCategory,
         projectStatus = project.projectStatus,
         paymentType = project.paymentType,
         projectFiles = projectFileRes,
@@ -129,6 +128,20 @@ data class ProjectRes(
                 it.depositInformation
             )
         }
+    )
+}
+
+data class FacilityAddressRes(
+    val city: String,
+    val county: String,
+    val district: String,
+    val detail: String
+) {
+    constructor(facilityAddress: FacilityAddress) : this(
+        facilityAddress.city,
+        facilityAddress.county,
+        facilityAddress.district,
+        facilityAddress.detail
     )
 }
 
@@ -146,7 +159,7 @@ data class ProjectInformationRes(
     val totalRecruits: Int,
     val minAge: Int = -1,
     val maxAge: Int = -1,
-    val facilityAddress: FacilityAddress,
+    val facilityAddress: FacilityAddressRes,
     val guide: String?,
     val notice: String?
 )
@@ -203,7 +216,7 @@ data class ProjectPartRes(
 ) {
     constructor(
         project: Project,
-        facility: Facility,
+        address: FacilityAddress,
         thumbnailFileRes: ProjectFileRes?
     ) : this(
         ProjectPartInformationRes(
@@ -214,7 +227,7 @@ data class ProjectPartRes(
             project.projectEndDate,
             project.recruits,
             project.totalRecruits,
-            facility.address
+            address
         ),
         project.projectCategory,
         thumbnailFileRes
