@@ -5,7 +5,6 @@ import gongback.pureureum.application.dto.FacilityReq
 import gongback.pureureum.application.dto.FacilityRes
 import gongback.pureureum.application.dto.FacilityResWithProgress
 import gongback.pureureum.application.dto.FacilityWithDocIds
-import gongback.pureureum.domain.facility.FacilityCategory
 import gongback.pureureum.domain.facility.FacilityCertificationDoc
 import gongback.pureureum.domain.facility.FacilityProgress
 import gongback.pureureum.domain.facility.FacilityRepository
@@ -16,7 +15,8 @@ import gongback.pureureum.domain.facility.getDocFileKeyByDocId
 import gongback.pureureum.domain.facility.getFacilityById
 import gongback.pureureum.domain.user.UserRepository
 import gongback.pureureum.domain.user.getUserByEmail
-import gongback.pureureum.support.enum.FileType
+import gongback.pureureum.support.constant.Category
+import gongback.pureureum.support.constant.FileType
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -97,9 +97,9 @@ class FacilityService(
         facilityRepository.updateProgressByIds(ids, progress)
     }
 
-    private fun validateCategory(category: String): FacilityCategory {
+    private fun validateCategory(category: String): Category {
         return try {
-            FacilityCategory.valueOf(category)
+            Category.valueOf(category)
         } catch (e: IllegalArgumentException) {
             throw PureureumException(errorCode = ErrorCode.ENUM_VALUE_INVALID)
         }

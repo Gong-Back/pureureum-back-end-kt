@@ -2,15 +2,15 @@ package gongback.pureureum.application.dto
 
 import gongback.pureureum.domain.facility.Facility
 import gongback.pureureum.domain.facility.FacilityAddress
-import gongback.pureureum.domain.facility.FacilityCategory
 import gongback.pureureum.domain.facility.FacilityProgress
+import gongback.pureureum.support.constant.Category
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 
 data class FacilityReq(
     @NotNull
-    val category: FacilityCategory,
+    val category: Category,
 
     @NotBlank
     val name: String,
@@ -33,7 +33,7 @@ data class FacilityReq(
 ) {
     fun toFacility(userId: Long): Facility {
         val progress = when (category) {
-            FacilityCategory.ETC -> FacilityProgress.APPROVED
+            Category.ETC -> FacilityProgress.APPROVED
             else -> FacilityProgress.NOT_APPROVED
         }
         return Facility(
@@ -48,7 +48,7 @@ data class FacilityReq(
 
 data class FacilityRes(
     val id: Long,
-    val category: FacilityCategory,
+    val category: Category,
     val name: String,
     val city: String,
     val county: String,
@@ -59,7 +59,7 @@ data class FacilityRes(
         fun fromFacility(facility: Facility): FacilityRes {
             return FacilityRes(
                 facility.id,
-                facility.category,
+                facility.facilityCategory,
                 facility.name,
                 facility.address.city,
                 facility.address.county,
@@ -72,7 +72,7 @@ data class FacilityRes(
 
 data class FacilityResWithProgress(
     val id: Long,
-    val category: FacilityCategory,
+    val category: Category,
     val name: String,
     val city: String,
     val county: String,
@@ -84,7 +84,7 @@ data class FacilityResWithProgress(
         fun fromFacility(facility: Facility): FacilityResWithProgress {
             return FacilityResWithProgress(
                 facility.id,
-                facility.category,
+                facility.facilityCategory,
                 facility.name,
                 facility.address.city,
                 facility.address.county,
@@ -98,7 +98,7 @@ data class FacilityResWithProgress(
 
 data class FacilityWithDocIds(
     val id: Long,
-    val category: FacilityCategory,
+    val category: Category,
     val name: String,
     val city: String,
     val county: String,
@@ -110,7 +110,7 @@ data class FacilityWithDocIds(
         fun fromFacility(facility: Facility, docIds: List<Long>): FacilityWithDocIds {
             return FacilityWithDocIds(
                 facility.id,
-                facility.category,
+                facility.facilityCategory,
                 facility.name,
                 facility.address.city,
                 facility.address.county,

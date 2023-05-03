@@ -1,4 +1,4 @@
-package gongback.pureureum.support.enum
+package gongback.pureureum.support.constant
 
 enum class FileType(val description: String) {
     PROFILE("프로필"), PROJECT("프로젝트 사진"), FACILITY_CERTIFICATION("시설 인증 서류")

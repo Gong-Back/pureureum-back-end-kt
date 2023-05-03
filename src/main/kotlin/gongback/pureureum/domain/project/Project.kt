@@ -1,5 +1,6 @@
 package gongback.pureureum.domain.project
 
+import gongback.pureureum.support.constant.Category
 import gongback.pureureum.support.domain.BaseEntity
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
@@ -30,21 +31,29 @@ class Project(
     @Enumerated(EnumType.STRING)
     val projectStatus: ProjectStatus = ProjectStatus.RUNNING,
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     val userId: Long,
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     val facilityId: Long,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     val paymentType: ProjectPaymentType = ProjectPaymentType.NONE,
 
+    @Column(nullable = false, length = 20)
+    @Enumerated(EnumType.STRING)
+    val projectCategory: Category,
+
     projectFiles: List<ProjectFile> = emptyList(),
 
     payments: List<ProjectPayment> = emptyList()
 ) : BaseEntity() {
-    @OneToMany(cascade = [CascadeType.PERSIST, CascadeType.MERGE, CascadeType.MERGE], orphanRemoval = true)
+    @Column(nullable = false)
+    var likeCount: Int = 0
+        protected set
+
+    @OneToMany(cascade = [CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE], orphanRemoval = true)
     @JoinColumn(
         name = "project_id",
         nullable = false,
@@ -81,9 +90,6 @@ class Project(
     val projectEndDate: LocalDate
         get() = projectInformation.projectEndDate
 
-    val likeCount: Int
-        get() = projectInformation.likeCount
-
     val totalRecruits: Int
         get() = projectInformation.totalRecruits
 
@@ -101,4 +107,8 @@ class Project(
 
     val notice: String?
         get() = projectInformation.notice
+
+    fun addLikeCount() {
+        this.likeCount = this.likeCount + 1
+    }
 }

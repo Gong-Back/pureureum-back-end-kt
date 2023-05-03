@@ -5,7 +5,7 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
 import com.amazonaws.services.s3.model.ObjectMetadata
 import gongback.pureureum.application.properties.S3Properties
-import gongback.pureureum.support.enum.FileType
+import gongback.pureureum.support.constant.FileType
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
