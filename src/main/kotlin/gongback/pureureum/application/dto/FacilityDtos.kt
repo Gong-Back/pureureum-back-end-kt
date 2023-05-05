@@ -28,8 +28,18 @@ data class FacilityReq(
     val district: String,
 
     @field:NotBlank
+    @field:Size(min = 1, max = 100)
+    val jibun: String,
+
+    val detail: String,
+
+    @field:NotBlank
     @field:Size(min = 1, max = 20)
-    val detail: String
+    val longitude: String,
+
+    @field:NotBlank
+    @field:Size(min = 1, max = 20)
+    val latitude: String
 ) {
     fun toFacility(userId: Long): Facility {
         val progress = when (category) {
@@ -38,7 +48,7 @@ data class FacilityReq(
         }
         return Facility(
             name,
-            FacilityAddress(city, county, district, detail),
+            FacilityAddress(city, county, district, jibun, detail, longitude, latitude),
             category,
             userId,
             progress
@@ -53,7 +63,10 @@ data class FacilityRes(
     val city: String,
     val county: String,
     val district: String,
-    val detail: String
+    val jibun: String,
+    val detail: String,
+    val longitude: String,
+    val latitude: String
 ) {
     companion object {
         fun fromFacility(facility: Facility): FacilityRes {
@@ -64,7 +77,10 @@ data class FacilityRes(
                 facility.address.city,
                 facility.address.county,
                 facility.address.district,
-                facility.address.detail
+                facility.address.jibun,
+                facility.address.detail,
+                facility.address.longitude,
+                facility.address.latitude
             )
         }
     }
@@ -77,7 +93,10 @@ data class FacilityResWithProgress(
     val city: String,
     val county: String,
     val district: String,
+    val jibun: String,
     val detail: String,
+    val longitude: String,
+    val latitude: String,
     val progress: FacilityProgress
 ) {
     companion object {
@@ -89,7 +108,10 @@ data class FacilityResWithProgress(
                 facility.address.city,
                 facility.address.county,
                 facility.address.district,
+                facility.address.jibun,
                 facility.address.detail,
+                facility.address.longitude,
+                facility.address.latitude,
                 facility.progress
             )
         }
@@ -103,7 +125,10 @@ data class FacilityWithDocIds(
     val city: String,
     val county: String,
     val district: String,
+    val jibun: String,
     val detail: String,
+    val longitude: String,
+    val latitude: String,
     val fileIds: List<Long>
 ) {
     companion object {
@@ -115,7 +140,10 @@ data class FacilityWithDocIds(
                 facility.address.city,
                 facility.address.county,
                 facility.address.district,
+                facility.address.jibun,
                 facility.address.detail,
+                facility.address.longitude,
+                facility.address.latitude,
                 docIds
             )
         }

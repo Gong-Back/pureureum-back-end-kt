@@ -135,13 +135,19 @@ data class FacilityAddressRes(
     val city: String,
     val county: String,
     val district: String,
-    val detail: String
+    val jibun: String,
+    val detail: String,
+    val longitude: String,
+    val latitude: String
 ) {
     constructor(facilityAddress: FacilityAddress) : this(
         facilityAddress.city,
         facilityAddress.county,
         facilityAddress.district,
-        facilityAddress.detail
+        facilityAddress.jibun,
+        facilityAddress.detail,
+        facilityAddress.longitude,
+        facilityAddress.latitude
     )
 }
 

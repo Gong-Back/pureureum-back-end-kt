@@ -18,7 +18,10 @@ const val FACILITY_NAME: String = "test_name"
 const val FACILITY_CITY: String = "test_city"
 const val FACILITY_COUNTY: String = "test_county"
 const val FACILITY_DISTRICT: String = "test_district"
+const val FACILITY_JIBUN: String = "test_jibun"
 const val FACILITY_DETAIL: String = "test_detail"
+const val FACILITY_LONGITUDE: String = "test_longitude"
+const val FACILITY_LATITUDE: String = "test_latitude"
 
 const val CERTIFICATION_DOC_NAME = "certificationDoc"
 const val CERTIFICATION_DOC_ORIGINAL_FILE_NAME = "test_certification_file_name"
@@ -34,14 +37,17 @@ fun createFacility(
     city: String = FACILITY_CITY,
     county: String = FACILITY_COUNTY,
     district: String = FACILITY_DISTRICT,
+    jibun: String = FACILITY_JIBUN,
     detail: String = FACILITY_DETAIL,
+    longitude: String = FACILITY_LONGITUDE,
+    latitude: String = FACILITY_LATITUDE,
     user: User = createUser(),
     progress: FacilityProgress = FACILITY_PROGRESS,
     certificationDoc: MutableList<FacilityCertificationDoc> = Collections.emptyList()
 ): Facility {
     return Facility(
         name,
-        FacilityAddress(city, county, district, detail),
+        FacilityAddress(city, county, district, jibun, detail, longitude, latitude),
         FACILITY_CATEGORY,
         user.id,
         progress,
@@ -55,7 +61,10 @@ fun createFacilityReq(
     city: String = FACILITY_CITY,
     county: String = FACILITY_COUNTY,
     district: String = FACILITY_DISTRICT,
-    detail: String = FACILITY_DETAIL
+    jibun: String = FACILITY_JIBUN,
+    detail: String = FACILITY_DETAIL,
+    longitude: String = FACILITY_LONGITUDE,
+    latitude: String = FACILITY_LATITUDE
 ): FacilityReq {
     return FacilityReq(
         category,
@@ -63,7 +72,10 @@ fun createFacilityReq(
         city,
         county,
         district,
-        detail
+        jibun,
+        detail,
+        longitude,
+        latitude
     )
 }
 
@@ -100,7 +112,10 @@ fun createFacilityRes(
     city: String = FACILITY_CITY,
     county: String = FACILITY_COUNTY,
     district: String = FACILITY_DISTRICT,
-    detail: String = FACILITY_DETAIL
+    jibun: String = FACILITY_JIBUN,
+    detail: String = FACILITY_DETAIL,
+    longitude: String = FACILITY_LONGITUDE,
+    latitude: String = FACILITY_LATITUDE
 ): FacilityRes {
     return FacilityRes(
         id,
@@ -109,7 +124,10 @@ fun createFacilityRes(
         city,
         county,
         district,
-        detail
+        jibun,
+        detail,
+        longitude,
+        latitude
     )
 }
 
@@ -120,7 +138,10 @@ fun createFacilityResWithProgress(
     city: String = FACILITY_CITY,
     county: String = FACILITY_COUNTY,
     district: String = FACILITY_DISTRICT,
+    jibun: String = FACILITY_JIBUN,
     detail: String = FACILITY_DETAIL,
+    longitude: String = FACILITY_LONGITUDE,
+    latitude: String = FACILITY_LATITUDE,
     progress: FacilityProgress = FACILITY_PROGRESS
 ): FacilityResWithProgress {
     return FacilityResWithProgress(
@@ -130,7 +151,10 @@ fun createFacilityResWithProgress(
         city,
         county,
         district,
+        jibun,
         detail,
+        longitude,
+        latitude,
         progress
     )
 }
@@ -142,7 +166,10 @@ fun createFacilityWithDocIds(
     city: String = FACILITY_CITY,
     county: String = FACILITY_COUNTY,
     district: String = FACILITY_DISTRICT,
+    jibun: String = FACILITY_JIBUN,
     detail: String = FACILITY_DETAIL,
+    longitude: String = FACILITY_LONGITUDE,
+    latitude: String = FACILITY_LATITUDE,
     fileIds: List<Long> = Collections.emptyList()
 ): FacilityWithDocIds {
     return FacilityWithDocIds(
@@ -152,7 +179,10 @@ fun createFacilityWithDocIds(
         city,
         county,
         district,
+        jibun,
         detail,
+        longitude,
+        latitude,
         fileIds
     )
 }

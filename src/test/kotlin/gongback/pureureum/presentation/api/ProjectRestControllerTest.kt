@@ -149,7 +149,10 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                         fieldWithPath("data.projectInformation.facilityAddress.city").description("시설 주소 (시)"),
                         fieldWithPath("data.projectInformation.facilityAddress.county").description("시설 주소 (군)"),
                         fieldWithPath("data.projectInformation.facilityAddress.district").description("시설 주소 (구)"),
+                        fieldWithPath("data.projectInformation.facilityAddress.jibun").description("시설 주소 (지번)"),
                         fieldWithPath("data.projectInformation.facilityAddress.detail").description("시설 주소 (상세 정보)"),
+                        fieldWithPath("data.projectInformation.facilityAddress.longitude").description("시설 주소 (경도)"),
+                        fieldWithPath("data.projectInformation.facilityAddress.latitude").description("시설 주소 (위도)"),
                         fieldWithPath("data.projectInformation.guide").description("찾아오시는 길 안내(최소)"),
                         fieldWithPath("data.projectInformation.notice").description("유의 사항"),
                         fieldWithPath("data.projectCategory").description("프로젝트 카테고리"),
@@ -192,7 +195,10 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                         fieldWithPath("data.projectInformation.facilityAddress.city").description("시설 주소 (시)"),
                         fieldWithPath("data.projectInformation.facilityAddress.county").description("시설 주소 (군)"),
                         fieldWithPath("data.projectInformation.facilityAddress.district").description("시설 주소 (구)"),
+                        fieldWithPath("data.projectInformation.facilityAddress.jibun").description("시설 주소 (지번)"),
                         fieldWithPath("data.projectInformation.facilityAddress.detail").description("시설 주소 (상세 정보)"),
+                        fieldWithPath("data.projectInformation.facilityAddress.longitude").description("시설 주소 (경도)"),
+                        fieldWithPath("data.projectInformation.facilityAddress.latitude").description("시설 주소 (위도)"),
                         fieldWithPath("data.projectInformation.guide").description("찾아오시는 길 안내(최소)"),
                         fieldWithPath("data.projectInformation.notice").description("유의 사항"),
                         fieldWithPath("data.projectCategory").description("프로젝트 카테고리"),
@@ -287,18 +293,13 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                     fieldWithPath("data.projectList[0].projectPartInformation.projectEndDate").description("프로젝트 종료 시간"),
                     fieldWithPath("data.projectList[0].projectPartInformation.recruits").description("현재 모집된 인원"),
                     fieldWithPath("data.projectList[0].projectPartInformation.totalRecruits").description("총 모집 인원"),
-                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.city").description(
-                        "시설 주소 (시)"
-                    ),
-                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.county").description(
-                        "시설 주소 (군)"
-                    ),
-                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.district").description(
-                        "시설 주소 (구)"
-                    ),
-                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.detail").description(
-                        "시설 주소 (상세 정보)"
-                    ),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.city").description("시설 주소 (시)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.county").description("시설 주소 (군)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.district").description("시설 주소 (구)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.jibun").description("시설 주소 (지번)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.detail").description("시설 주소 (상세 정보)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.longitude").description("시설 주소 (경도)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.latitude").description("시설 주소 (위도)"),
                     fieldWithPath("data.projectList[0].projectCategory").description("프로젝트 카테고리"),
                     fieldWithPath("data.projectList[0].thumbnailFileRes.projectFileUrl").description("썸네일 URL"),
                     fieldWithPath("data.projectList[0].thumbnailFileRes.projectFileType").description("파일 타입")
@@ -342,18 +343,13 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                     fieldWithPath("data.projectList[0].projectPartInformation.projectEndDate").description("프로젝트 종료 시간"),
                     fieldWithPath("data.projectList[0].projectPartInformation.recruits").description("현재 모집된 인원"),
                     fieldWithPath("data.projectList[0].projectPartInformation.totalRecruits").description("총 모집 인원"),
-                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.city").description(
-                        "시설 주소 (시)"
-                    ),
-                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.county").description(
-                        "시설 주소 (군)"
-                    ),
-                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.district").description(
-                        "시설 주소 (구)"
-                    ),
-                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.detail").description(
-                        "시설 주소 (상세 정보)"
-                    ),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.city").description("시설 주소 (시)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.county").description("시설 주소 (군)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.district").description("시설 주소 (구)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.jibun").description("시설 주소 (지번)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.detail").description("시설 주소 (상세 정보)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.longitude").description("시설 주소 (경도)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.latitude").description("시설 주소 (위도)"),
                     fieldWithPath("data.projectList[0].projectCategory").description("프로젝트 카테고리"),
                     fieldWithPath("data.projectList[0].thumbnailFileRes.projectFileUrl").description("썸네일 URL"),
                     fieldWithPath("data.projectList[0].thumbnailFileRes.projectFileType").description("파일 타입")
