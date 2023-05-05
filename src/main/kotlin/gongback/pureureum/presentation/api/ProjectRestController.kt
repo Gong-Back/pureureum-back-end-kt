@@ -3,6 +3,7 @@ package gongback.pureureum.presentation.api
 import gongback.pureureum.application.ProjectService
 import gongback.pureureum.application.dto.ProjectPartPageRes
 import gongback.pureureum.application.dto.ProjectRegisterReq
+import gongback.pureureum.application.dto.ProjectRes
 import gongback.pureureum.security.LoginEmail
 import gongback.pureureum.support.constant.Category
 import gongback.pureureum.support.constant.SearchType
@@ -39,7 +40,7 @@ class ProjectRestController(
     @GetMapping("/{id}")
     fun getProjectDetail(
         @PathVariable("id") id: Long
-    ): ResponseEntity<ApiResponse<Any>> = ResponseEntity.ok().body(ApiResponse.ok(projectService.getProject(id)))
+    ): ResponseEntity<ApiResponse<ProjectRes>> = ResponseEntity.ok().body(ApiResponse.ok(projectService.getProject(id)))
 
     @DeleteMapping("/{id}")
     fun deleteProject(

@@ -44,7 +44,10 @@ class AdminFacilityControllerTest : ControllerTestHelper() {
                     fieldWithPath("data[0].city").description("시설 주소 (시)"),
                     fieldWithPath("data[0].county").description("시설 주소 (군)"),
                     fieldWithPath("data[0].district").description("시설 주소 (구)"),
-                    fieldWithPath("data[0].detail").description("시설 주소 (상세 주소)")
+                    fieldWithPath("data[0].jibun").description("시설 주소 (지번)"),
+                    fieldWithPath("data[0].detail").description("시설 주소 (상세 주소)"),
+                    fieldWithPath("data[0].longitude").description("시설 주소 (상세 경도)"),
+                    fieldWithPath("data[0].latitude").description("시설 주소 (상세 위도)")
                 )
             )
         }
@@ -71,7 +74,10 @@ class AdminFacilityControllerTest : ControllerTestHelper() {
                     fieldWithPath("data.city").description("시설 주소 (시)"),
                     fieldWithPath("data.county").description("시설 주소 (군)"),
                     fieldWithPath("data.district").description("시설 주소 (구)"),
+                    fieldWithPath("data.jibun").description("시설 주소 (지번)"),
                     fieldWithPath("data.detail").description("시설 주소 (상세 주소)"),
+                    fieldWithPath("data.longitude").description("시설 주소 (상세 경도)"),
+                    fieldWithPath("data.latitude").description("시설 주소 (상세 위도)"),
                     fieldWithPath("data.fileIds").description("인증 서류 아이디")
                 )
             )
