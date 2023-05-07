@@ -153,12 +153,8 @@ abstract class ControllerTestHelper {
         return handle(document("{class-name}/$value", requestHeadersSnippet))
     }
 
-    fun MockMvcResultHandlersDsl.createDocument(
-        value: Any,
-        requestHeadersSnippet: RequestHeadersSnippet,
-        requestPartsSnippet: RequestPartsSnippet
-    ) {
-        return handle(document("{class-name}/$value", requestHeadersSnippet, requestPartsSnippet))
+    fun MockMvcResultHandlersDsl.createDocument(value: Any, requestFieldsSnippet: RequestFieldsSnippet) {
+        return handle(document("{class-name}/$value", requestFieldsSnippet))
     }
 
     fun MockMvcResultHandlersDsl.createDocument(
