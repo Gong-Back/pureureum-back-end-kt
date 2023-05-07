@@ -26,7 +26,7 @@ data class ProjectInformation(
     @Column(nullable = false, length = 200)
     val introduction: String,
 
-    @Column(nullable = false, length = 500)
+    @Column(nullable = false)
     val content: String,
 
     @Column(nullable = false)

@@ -106,7 +106,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                             Attributes.Attribute(
                                 LENGTH,
                                 "title, introduction - 길이 제한 (1~200)\n" +
-                                    "content - 길이 제한 (1~500)"
+                                    "content - 길이 제한 (1~65535)"
                             )
                         ),
                     partWithName("THUMBNAIL")
