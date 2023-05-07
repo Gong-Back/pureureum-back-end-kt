@@ -1,6 +1,6 @@
 package gongback.pureureum.application
 
-import gongback.pureureum.support.enum.FileType
+import gongback.pureureum.support.constant.FileType
 import org.springframework.web.multipart.MultipartFile
 
 interface StorageService {

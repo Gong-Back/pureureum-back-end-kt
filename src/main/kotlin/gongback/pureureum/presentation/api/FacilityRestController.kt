@@ -8,15 +8,12 @@ import gongback.pureureum.security.LoginEmail
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
-import org.springframework.web.servlet.ModelAndView
-import org.springframework.web.servlet.view.RedirectView
 
 @RestController
 @RequestMapping("/api/v1/facilities")
@@ -48,14 +45,5 @@ class FacilityRestController(
     ): ResponseEntity<ApiResponse<List<FacilityResWithProgress>>> {
         val facilityInfo = facilityService.getAllFacilities(userEmail)
         return ResponseEntity.ok().body(ApiResponse.ok(facilityInfo))
-    }
-
-    // TODO 별도의 Admin 인증 권한 필요
-    @GetMapping("/download/{docId}")
-    fun downloadCertificationDoc(
-        @PathVariable("docId") docId: Long
-    ): ModelAndView {
-        val downloadPath = facilityService.getCertificationDocDownloadPath(docId)
-        return ModelAndView(RedirectView(downloadPath))
     }
 }

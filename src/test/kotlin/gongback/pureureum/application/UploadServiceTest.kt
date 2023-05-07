@@ -1,7 +1,7 @@
 package gongback.pureureum.application
 
 import gongback.pureureum.application.util.NameGenerator
-import gongback.pureureum.support.enum.FileType
+import gongback.pureureum.support.constant.FileType
 import io.kotest.assertions.throwables.shouldNotThrowAnyUnit
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe

@@ -19,17 +19,24 @@ import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
 import org.springframework.restdocs.request.RequestDocumentation.partWithName
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
+import org.springframework.restdocs.request.RequestDocumentation.queryParameters
 import org.springframework.restdocs.request.RequestDocumentation.requestParts
 import org.springframework.restdocs.snippet.Attributes
 import org.springframework.test.web.servlet.delete
+import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.multipart
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import support.PROJECT_CATEGORY
+import support.SEARCH_TYPE_POPULAR
 import support.accessToken
 import support.createAccessToken
+import support.createDifferentCategoryProject
 import support.createMockProjectFile
+import support.createProjectPartPageRes
 import support.createProjectRegisterReq
 import support.createProjectResWithPayment
 import support.createProjectResWithoutPayment
+import support.createSameCategoryProject
 import support.test.ControllerTestHelper
 import java.nio.charset.StandardCharsets
 
@@ -99,7 +106,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                             Attributes.Attribute(
                                 LENGTH,
                                 "title, introduction - 길이 제한 (1~200)\n" +
-                                    "content - 길이 제한 (1~500)"
+                                    "content - 길이 제한 (1~65535)"
                             )
                         ),
                     partWithName("THUMBNAIL")
@@ -142,7 +149,10 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                         fieldWithPath("data.projectInformation.facilityAddress.city").description("시설 주소 (시)"),
                         fieldWithPath("data.projectInformation.facilityAddress.county").description("시설 주소 (군)"),
                         fieldWithPath("data.projectInformation.facilityAddress.district").description("시설 주소 (구)"),
+                        fieldWithPath("data.projectInformation.facilityAddress.jibun").description("시설 주소 (지번)"),
                         fieldWithPath("data.projectInformation.facilityAddress.detail").description("시설 주소 (상세 정보)"),
+                        fieldWithPath("data.projectInformation.facilityAddress.longitude").description("시설 주소 (경도)"),
+                        fieldWithPath("data.projectInformation.facilityAddress.latitude").description("시설 주소 (위도)"),
                         fieldWithPath("data.projectInformation.guide").description("찾아오시는 길 안내(최소)"),
                         fieldWithPath("data.projectInformation.notice").description("유의 사항"),
                         fieldWithPath("data.projectCategory").description("프로젝트 카테고리"),
@@ -185,7 +195,10 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                         fieldWithPath("data.projectInformation.facilityAddress.city").description("시설 주소 (시)"),
                         fieldWithPath("data.projectInformation.facilityAddress.county").description("시설 주소 (군)"),
                         fieldWithPath("data.projectInformation.facilityAddress.district").description("시설 주소 (구)"),
+                        fieldWithPath("data.projectInformation.facilityAddress.jibun").description("시설 주소 (지번)"),
                         fieldWithPath("data.projectInformation.facilityAddress.detail").description("시설 주소 (상세 정보)"),
+                        fieldWithPath("data.projectInformation.facilityAddress.longitude").description("시설 주소 (경도)"),
+                        fieldWithPath("data.projectInformation.facilityAddress.latitude").description("시설 주소 (위도)"),
                         fieldWithPath("data.projectInformation.guide").description("찾아오시는 길 안내(최소)"),
                         fieldWithPath("data.projectInformation.notice").description("유의 사항"),
                         fieldWithPath("data.projectCategory").description("프로젝트 카테고리"),
@@ -237,6 +250,109 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                     fieldWithPath("code").description("응답 코드"),
                     fieldWithPath("messages").description("응답 메시지"),
                     fieldWithPath("data").description("응답 데이터")
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `메인 페이지에서 페이지 조건과 검색 조건에 따른 프로젝트 페이지 조회 - 성공`() {
+        val projects = createSameCategoryProject()
+        val response = createProjectPartPageRes(projects)
+
+        every { projectService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
+
+        mockMvc.get("/api/v1/projects") {
+            accessToken(createAccessToken())
+            param("searchType", SEARCH_TYPE_POPULAR.name)
+            param("category", PROJECT_CATEGORY.name)
+            param("page", "0")
+            param("size", "10")
+        }.andExpect {
+            status { isOk() }
+            content { ApiResponse.ok(response) }
+        }.andDo {
+            createDocument(
+                "get-page-project-part-success",
+                queryParameters(
+                    parameterWithName("searchType").description("검색 타입"),
+                    parameterWithName("category").description("카테고리").optional(),
+                    parameterWithName("page").description("페이지 사이즈").optional(),
+                    parameterWithName("size").description("사이즈 크기").optional()
+                ),
+                responseFields(
+                    fieldWithPath("code").description("응답 코드"),
+                    fieldWithPath("messages").description("응답 메시지"),
+                    fieldWithPath("data.page").description("현재 응답 페이지 (0부터 시작)"),
+                    fieldWithPath("data.totalPages").description("총 페이지 (1부터 시작)"),
+                    fieldWithPath("data.size").description("응답 데이터 개수"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.id").description("프로젝트 ID"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.title").description("제목"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.likeCount").description("좋아요 개수"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.projectStartDate").description("프로젝트 시작 시간"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.projectEndDate").description("프로젝트 종료 시간"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.recruits").description("현재 모집된 인원"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.totalRecruits").description("총 모집 인원"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.city").description("시설 주소 (시)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.county").description("시설 주소 (군)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.district").description("시설 주소 (구)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.jibun").description("시설 주소 (지번)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.detail").description("시설 주소 (상세 정보)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.longitude").description("시설 주소 (경도)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.latitude").description("시설 주소 (위도)"),
+                    fieldWithPath("data.projectList[0].projectCategory").description("프로젝트 카테고리"),
+                    fieldWithPath("data.projectList[0].thumbnailFileRes.projectFileUrl").description("썸네일 URL"),
+                    fieldWithPath("data.projectList[0].thumbnailFileRes.projectFileType").description("파일 타입")
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `메인 페이지에서 검색 조건으로만 프로젝트 페이지 조회 - 성공`() {
+        val projects = createDifferentCategoryProject()
+        val response = createProjectPartPageRes(projects)
+
+        every { projectService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
+
+        mockMvc.get("/api/v1/projects") {
+            accessToken(createAccessToken())
+            param("searchType", SEARCH_TYPE_POPULAR.name)
+        }.andExpect {
+            status { isOk() }
+            content { ApiResponse.ok(response) }
+        }.andDo {
+            createDocument(
+                "get-page-project-part-only-search-type-success",
+                queryParameters(
+                    parameterWithName("searchType").description("검색 타입"),
+                    parameterWithName("category").description("카테고리").optional(),
+                    parameterWithName("page").description("페이지 사이즈").optional(),
+                    parameterWithName("size").description("사이즈 크기").optional()
+                ),
+                responseFields(
+                    fieldWithPath("code").description("응답 코드"),
+                    fieldWithPath("messages").description("응답 메시지"),
+                    fieldWithPath("data.page").description("현재 응답 페이지 (0부터 시작)"),
+                    fieldWithPath("data.totalPages").description("총 페이지 (1부터 시작)"),
+                    fieldWithPath("data.size").description("응답 데이터 개수"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.id").description("프로젝트 ID"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.title").description("제목"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.likeCount").description("좋아요 개수"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.projectStartDate").description("프로젝트 시작 시간"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.projectEndDate").description("프로젝트 종료 시간"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.recruits").description("현재 모집된 인원"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.totalRecruits").description("총 모집 인원"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.city").description("시설 주소 (시)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.county").description("시설 주소 (군)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.district").description("시설 주소 (구)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.jibun").description("시설 주소 (지번)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.detail").description("시설 주소 (상세 정보)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.longitude").description("시설 주소 (경도)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.latitude").description("시설 주소 (위도)"),
+                    fieldWithPath("data.projectList[0].projectCategory").description("프로젝트 카테고리"),
+                    fieldWithPath("data.projectList[0].thumbnailFileRes.projectFileUrl").description("썸네일 URL"),
+                    fieldWithPath("data.projectList[0].thumbnailFileRes.projectFileType").description("파일 타입")
                 )
             )
         }

@@ -27,3 +27,13 @@ operation::project-rest-controller-test/delete-project-success[snippets='http-re
 === *3-2* 실패 - 프로젝트 생성자랑 다른 사용자 ID를 가진 유저가 요청할 경우
 
 operation::project-rest-controller-test/delete-project-fail-no-match-created-by[snippets='http-request,request-headers,http-response']
+
+== *4. 메인 페이지에서 프로젝트 페이지 조회 API*
+
+=== *4-1* 성공 - 모든 요청 값을 넣었을 경우
+
+operation::project-rest-controller-test/get-page-project-part-success[snippets='http-request,query-parameters,http-response,response-fields']
+
+=== *4-2* 성공 - 검색 조건으로만 요청했을 경우
+
+operation::project-rest-controller-test/get-page-project-part-only-search-type-success[snippets='http-request,query-parameters,http-response,response-fields']

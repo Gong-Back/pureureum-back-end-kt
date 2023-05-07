@@ -1,6 +1,9 @@
 package support.test
 
+import gongback.pureureum.config.EntityManagerConfig
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestConstructor
 
@@ -14,6 +17,13 @@ class BaseTests {
     @DataJpaTest
     @TestEnvironment
     @Target(AnnotationTarget.CLASS)
+    @Import(EntityManagerConfig::class)
     @Retention(AnnotationRetention.RUNTIME)
     annotation class RepositoryTest
+
+    @SpringBootTest
+    @TestEnvironment
+    @Target(AnnotationTarget.CLASS)
+    @Retention(AnnotationRetention.RUNTIME)
+    annotation class IntegrationTest
 }

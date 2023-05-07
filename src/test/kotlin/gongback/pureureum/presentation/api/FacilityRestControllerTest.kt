@@ -64,23 +64,30 @@ class FacilityRestControllerTest : ControllerTestHelper() {
                                 "city: 시설 주소(시)\n + " +
                                 "county: 시설 주소(군)\n + " +
                                 "district: 시설 주소(구)\n + " +
-                                "detail : 시설 주소(상세 주소)\n + "
+                                "jibun: 시설 주소(지번)\n + " +
+                                "detail : 시설 주소(상세 주소) - optional\n + " +
+                                "longitude : 시설 주소(경도)\n + " +
+                                "latitude : 시설 주소(위도)\n + "
                         )
                         .attributes(
                             Attributes.Attribute(
                                 EXAMPLE,
-                                "{\"category\": \"sample\"}\n + " +
-                                    "{\"name\": \"sample\"}\n + " +
-                                    "{\"city\": \"sample\"}\n + " +
-                                    "{\"county\": \"sample\"}\n + " +
-                                    "{\"district\": \"sample\"}\n + " +
-                                    "{\"detail\": \"sample\"})\n + "
+                                "{\"category\": \"청년 농활\"}\n + " +
+                                    "{\"name\": \"어느 농가\"}\n + " +
+                                    "{\"city\": \"경기도\"}\n + " +
+                                    "{\"county\": \"파주시\"}\n + " +
+                                    "{\"district\": \"XX동\"}\n + " +
+                                    "{\"jibun\": \"100번지 YYY 마을 회관\"})\n + " +
+                                    "{\"detail\": \"ZZZ 단지 앞\"}\n + " +
+                                    "{\"longitude\": \"100.123\"}\n + " +
+                                    "{\"latitude\": \"200.213\"}\n + "
                             )
                         )
                         .attributes(
                             Attributes.Attribute(
                                 LENGTH,
-                                "city, county, district, detail - 길이 제한 (1~20)"
+                                "city, county, district, longitude, latitude - 길이 제한 (1~20), " +
+                                    "jibun - 길이 제한 (1~100)"
                             )
                         ),
                     partWithName("certificationDoc")
@@ -130,7 +137,10 @@ class FacilityRestControllerTest : ControllerTestHelper() {
                                 "city: 형식에 맞지 않은 시설 주소(시)\n + " +
                                 "county: 형식에 맞지 않은 시설 주소(군)\n + " +
                                 "district: 형식에 맞지 않은 시설 주소(구)\n + " +
-                                "detail : 형식에 맞지 않은 시설 주소(상세 주소)\n + "
+                                "jibun: 형식에 맞지 않은 시설 주소(지번)\n + " +
+                                "detail : 형식에 맞지 않은 시설 주소(상세 주소) - optional\n + " +
+                                "longitude : 형식에 맞지 않은 시설 주소(경도)\n + " +
+                                "latitude : 형식에 맞지 않은 시설 주소(위도)\n + "
                         )
                         .attributes(
                             Attributes.Attribute(
@@ -140,13 +150,17 @@ class FacilityRestControllerTest : ControllerTestHelper() {
                                     "{\"city\": \"invalidSample\"}\n + " +
                                     "{\"county\": \"invalidSample\"}\n + " +
                                     "{\"district\": \"invalidSample\"}\n + " +
-                                    "{\"detail\": \"invalidSample\"})\n + "
+                                    "{\"jibun\": \"invalidSample\"}\n + " +
+                                    "{\"detail\": \"invalidSample\"})\n + " +
+                                    "{\"longitude\": \"invalidSample\"}\n + " +
+                                    "{\"latitude\": \"invalidSample\"}\n + "
                             )
                         )
                         .attributes(
                             Attributes.Attribute(
                                 LENGTH,
-                                "city, county, district, detail - 길이 제한 (1~20)"
+                                "city, county, district, longitude, latitude - 길이 제한 (1~20)" +
+                                    "jibun - 길이 제한 (1~100)"
                             )
                         ),
                     partWithName("certificationDoc")
@@ -191,23 +205,30 @@ class FacilityRestControllerTest : ControllerTestHelper() {
                                 "city: 시설 주소(시)\n + " +
                                 "county: 시설 주소(군)\n + " +
                                 "district: 시설 주소(구)\n + " +
-                                "detail : 시설 주소(상세 주소)\n + "
+                                "jibun: 시설 주소(지번)\n + " +
+                                "detail : 시설 주소(상세 주소) - optional\n + " +
+                                "longitude : 시설 주소(경도)\n + " +
+                                "latitude : 시설 주소(위도)\n + "
                         )
                         .attributes(
                             Attributes.Attribute(
                                 EXAMPLE,
-                                "{\"category\": \"sample\"}\n + " +
-                                    "{\"name\": \"sample\"}\n + " +
-                                    "{\"city\": \"sample\"}\n + " +
-                                    "{\"county\": \"sample\"}\n + " +
-                                    "{\"district\": \"sample\"}\n + " +
-                                    "{\"detail\": \"sample\"})\n + "
+                                "{\"category\": \"청년 농활\"}\n + " +
+                                    "{\"name\": \"어느 농가\"}\n + " +
+                                    "{\"city\": \"경기도\"}\n + " +
+                                    "{\"county\": \"파주시\"}\n + " +
+                                    "{\"district\": \"XX동\"}\n + " +
+                                    "{\"jibun\": \"100번지 YYY 마을 회관\"})\n + " +
+                                    "{\"detail\": \"ZZZ 단지 앞\"}\n + " +
+                                    "{\"longitude\": \"100.123\"}\n + " +
+                                    "{\"latitude\": \"200.213\"}\n + "
                             )
                         )
                         .attributes(
                             Attributes.Attribute(
                                 LENGTH,
-                                "city, county, district, detail - 길이 제한 (1~20)"
+                                "city, county, district, longitude, latitude - 길이 제한 (1~20), " +
+                                    "jibun - 길이 제한 (1~100)"
                             )
                         ),
                     partWithName("certificationDoc")
@@ -241,7 +262,10 @@ class FacilityRestControllerTest : ControllerTestHelper() {
                     fieldWithPath("data[0].city").description("시설 주소 (시)"),
                     fieldWithPath("data[0].county").description("시설 주소 (군)"),
                     fieldWithPath("data[0].district").description("시설 주소 (구)"),
-                    fieldWithPath("data[0].detail").description("시설 주소 (상세 주소)")
+                    fieldWithPath("data[0].jibun").description("시설 주소 (지번)"),
+                    fieldWithPath("data[0].detail").description("시설 주소 (상세 주소)").optional(),
+                    fieldWithPath("data[0].longitude").description("시설 주소 (경도)"),
+                    fieldWithPath("data[0].latitude").description("시설 주소 (위도)")
                 )
             )
         }
@@ -269,7 +293,10 @@ class FacilityRestControllerTest : ControllerTestHelper() {
                     fieldWithPath("data[0].city").description("시설 주소 (시)"),
                     fieldWithPath("data[0].county").description("시설 주소 (군)"),
                     fieldWithPath("data[0].district").description("시설 주소 (구)"),
+                    fieldWithPath("data[0].jibun").description("시설 주소 (지번)"),
                     fieldWithPath("data[0].detail").description("시설 주소 (상세 주소)"),
+                    fieldWithPath("data[0].longitude").description("시설 주소 (경도)"),
+                    fieldWithPath("data[0].latitude").description("시설 주소 (위도)"),
                     fieldWithPath("data[0].progress").description("진행 정보")
                 )
             )
