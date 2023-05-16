@@ -15,10 +15,6 @@ import io.mockk.just
 import io.mockk.runs
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.http.HttpHeaders
-import org.springframework.restdocs.cookies.CookieDocumentation
-import org.springframework.restdocs.headers.HeaderDocumentation.headerWithName
-import org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
@@ -31,7 +27,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import support.BIRTHDAY
 import support.NAME
 import support.PHONE_NUMBER
-import support.REFRESH_COOKIE_NAME
 import support.UserGENDER
 import support.createAccessToken
 import support.createKakaoUserInfo
@@ -91,12 +86,6 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
             jsonContent(createAuthenticationInfo())
         }.andExpect {
             status { isOk() }
-            header {
-                string(HttpHeaders.AUTHORIZATION, accessToken)
-            }
-            cookie {
-                value(REFRESH_COOKIE_NAME, refreshToken)
-            }
         }.andDo {
             createDocument(
                 "oAuth-login-success",
@@ -104,11 +93,11 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
                     fieldWithPath("code").description("인가 코드"),
                     fieldWithPath("redirectUrl").description("리다이렉트 주소")
                 ),
-                responseHeaders(
-                    headerWithName(HttpHeaders.AUTHORIZATION).description("Access Token")
-                ),
-                CookieDocumentation.responseCookies(
-                    CookieDocumentation.cookieWithName(REFRESH_COOKIE_NAME).description("New Refresh Token")
+                responseFields(
+                    fieldWithPath("code").description("응답 코드"),
+                    fieldWithPath("messages").description("응답 메시지"),
+                    fieldWithPath("data.accessToken").description("AccessToken"),
+                    fieldWithPath("data.refreshToken").description("RefreshToken")
                 )
             )
         }
@@ -231,12 +220,6 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
             jsonContent(socialRegisterUserReq)
         }.andExpect {
             status { isCreated() }
-            header {
-                string(HttpHeaders.AUTHORIZATION, accessToken)
-            }
-            cookie {
-                value(REFRESH_COOKIE_NAME, refreshToken)
-            }
         }.andDo {
             createDocument(
                 "oAuth-register-success",
@@ -248,11 +231,11 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
                     fieldWithPath("gender").description("소셜 회원 성별"),
                     fieldWithPath("socialType").description("소셜 회원 로그인 타입")
                 ),
-                responseHeaders(
-                    headerWithName(HttpHeaders.AUTHORIZATION).description("Access Token")
-                ),
-                CookieDocumentation.responseCookies(
-                    CookieDocumentation.cookieWithName(REFRESH_COOKIE_NAME).description("New Refresh Token")
+                responseFields(
+                    fieldWithPath("code").description("응답 코드"),
+                    fieldWithPath("messages").description("응답 메시지"),
+                    fieldWithPath("data.accessToken").description("AccessToken"),
+                    fieldWithPath("data.refreshToken").description("RefreshToken")
                 )
             )
         }

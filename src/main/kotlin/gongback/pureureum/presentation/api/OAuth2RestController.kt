@@ -8,11 +8,9 @@ import gongback.pureureum.application.dto.OAuthUserInfo
 import gongback.pureureum.application.dto.SocialEmailDto
 import gongback.pureureum.application.dto.SocialRegisterUserReq
 import gongback.pureureum.application.dto.TempSocialAuthDto
-import gongback.pureureum.support.security.Tokens.Companion.REFRESH_TOKEN_HEADER
-import jakarta.servlet.http.Cookie
+import gongback.pureureum.application.dto.TokenRes
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -34,7 +32,7 @@ class OAuth2RestController(
         response: HttpServletResponse
     ): ResponseEntity<ApiResponse<Any>> {
         val oAuthUserInfo = oAuth2Service.getKakaoUserInfo(authenticationInfo)
-        return login(oAuthUserInfo, response)
+        return login(oAuthUserInfo)
     }
 
     @PostMapping("/login/google")
@@ -43,7 +41,7 @@ class OAuth2RestController(
         response: HttpServletResponse
     ): ResponseEntity<ApiResponse<Any>> {
         val oAuthUserInfo = oAuth2Service.getGoogleUserInfo(authenticationInfo)
-        return login(oAuthUserInfo, response)
+        return login(oAuthUserInfo)
     }
 
     @PostMapping("/login/naver")
@@ -52,7 +50,7 @@ class OAuth2RestController(
         response: HttpServletResponse
     ): ResponseEntity<ApiResponse<Any>> {
         val oAuthUserInfo = oAuth2Service.getNaverUserInfo(authenticationInfo)
-        return login(oAuthUserInfo, response)
+        return login(oAuthUserInfo)
     }
 
     @GetMapping("/temp/{email}")
@@ -67,15 +65,14 @@ class OAuth2RestController(
     fun register(
         @RequestBody @Valid socialRegisterUserReq: SocialRegisterUserReq,
         response: HttpServletResponse
-    ): ResponseEntity<ApiResponse<Unit>> {
+    ): ResponseEntity<ApiResponse<TokenRes>> {
         userAuthenticationService.registerBySocialReq(socialRegisterUserReq)
-        setToken(response, socialRegisterUserReq.email)
-        return ResponseEntity.status(HttpStatus.CREATED).build()
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(ApiResponse.ok(createTokenRes(socialRegisterUserReq.email)))
     }
 
     private fun login(
-        oAuthUserInfo: OAuthUserInfo,
-        response: HttpServletResponse
+        oAuthUserInfo: OAuthUserInfo
     ): ResponseEntity<ApiResponse<Any>> {
         return when (val code = userAuthenticationService.socialLogin(oAuthUserInfo)) {
             ErrorCode.REQUEST_RESOURCE_NOT_ENOUGH -> {
@@ -98,23 +95,14 @@ class OAuth2RestController(
             }
 
             else -> {
-                setToken(response, oAuthUserInfo.clientEmail)
-                ResponseEntity.ok().build()
+                ResponseEntity.ok().body(ApiResponse.ok(createTokenRes(oAuthUserInfo.clientEmail)))
             }
         }
     }
 
-    private fun setToken(
-        response: HttpServletResponse,
-        email: String
-    ) {
-        response.setHeader(
-            HttpHeaders.AUTHORIZATION,
-            userAuthenticationService.generateAccessTokenByEmail(email)
-        )
+    private fun createTokenRes(email: String): TokenRes {
+        val accessToken = userAuthenticationService.generateAccessTokenByEmail(email)
         val refreshToken = userAuthenticationService.generateRefreshTokenByEmail(email)
-        val refreshCookie = Cookie(REFRESH_TOKEN_HEADER, refreshToken)
-        refreshCookie.isHttpOnly = true
-        response.addCookie(refreshCookie)
+        return TokenRes(accessToken, refreshToken)
     }
 }

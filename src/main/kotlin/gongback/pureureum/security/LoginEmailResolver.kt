@@ -1,6 +1,7 @@
 package gongback.pureureum.security
 
 import org.springframework.core.MethodParameter
+import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Component
 import org.springframework.web.bind.support.WebDataBinderFactory
 import org.springframework.web.context.request.NativeWebRequest
@@ -21,7 +22,8 @@ class LoginEmailResolver(
         webRequest: NativeWebRequest,
         binderFactory: WebDataBinderFactory?
     ): String {
-        val token = jwtTokenProvider.extractAccessToken(webRequest)
-        return jwtTokenProvider.getSubject(token)
+        val bearerToken = webRequest.getHeader(HttpHeaders.AUTHORIZATION) ?: throw JwtNotExistsException()
+        val accessToken = jwtTokenProvider.extractToken(bearerToken)
+        return jwtTokenProvider.getSubject(accessToken)
     }
 }

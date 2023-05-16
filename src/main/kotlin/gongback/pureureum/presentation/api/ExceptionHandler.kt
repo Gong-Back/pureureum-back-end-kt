@@ -3,6 +3,10 @@ package gongback.pureureum.presentation.api
 import gongback.pureureum.application.PureureumException
 import gongback.pureureum.application.S3Exception
 import gongback.pureureum.application.dto.ErrorCode
+import gongback.pureureum.security.JwtException
+import gongback.pureureum.security.JwtExpiredException
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpHeaders
@@ -83,7 +87,31 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(S3Exception::class)
     fun handleS3Exception(ex: S3Exception): ResponseEntity<ApiResponse<Unit>> {
         logger.error("[S3Exception] ", ex)
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error(ex.errorCode.code, ex.message ?: ex.errorCode.message))
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(ApiResponse.error(ex.errorCode.code, ex.message ?: ex.errorCode.message))
+    }
+
+    @ExceptionHandler(JwtException::class)
+    fun handleJwtException(
+        ex: JwtException,
+        httpServletRequest: HttpServletRequest,
+        httpServletResponse: HttpServletResponse
+    ): ResponseEntity<Any> {
+        logger.error("[JwtException] ", ex)
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponse.error(ex.code, ex.message))
+    }
+
+    @ExceptionHandler(JwtExpiredException::class)
+    fun handleJwtExpiredException(
+        ex: JwtExpiredException,
+        httpServletRequest: HttpServletRequest,
+        httpServletResponse: HttpServletResponse
+    ): ResponseEntity<Any> {
+        logger.error("[JwtExpiredException] ", ex)
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponse.error(ex.code, ex.message))
     }
 
     @ExceptionHandler(Exception::class)

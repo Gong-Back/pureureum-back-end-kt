@@ -1,7 +1,6 @@
 package gongback.pureureum.config
 
 import org.springframework.context.annotation.Configuration
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
@@ -29,6 +28,5 @@ class CorsConfig : WebMvcConfigurer {
             .allowedOrigins("*")
             .allowedMethods(*permitHttpMethods.map(HttpMethod::name).toTypedArray())
             .allowedHeaders("*")
-            .exposedHeaders(HttpHeaders.AUTHORIZATION)
     }
 }

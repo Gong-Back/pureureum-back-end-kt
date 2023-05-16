@@ -5,9 +5,7 @@ import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
-import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Component
-import org.springframework.web.context.request.WebRequest
 import java.util.*
 import javax.crypto.SecretKey
 
@@ -45,17 +43,6 @@ class JwtTokenProvider(
             .compact()
     }
 
-    fun isValidToken(token: String): Boolean = try {
-        getClaimsJws(token)
-        true
-    } catch (e: ExpiredJwtException) {
-        false
-    } catch (e: JwtException) {
-        false
-    } catch (e: IllegalArgumentException) {
-        false
-    }
-
     fun getSubject(token: String): String = getClaimsJws(token)
         .body
         .subject
@@ -65,17 +52,23 @@ class JwtTokenProvider(
         .build()
         .parseClaimsJws(token)
 
-    fun extractAccessToken(request: WebRequest): String {
-        val accessToken = request.getHeader(HttpHeaders.AUTHORIZATION) ?: throw JwtNotExistsException()
-        return extractToken(accessToken)
-    }
-
-    private fun extractToken(authentication: String): String {
-        val (tokenType, token) = splitToTokenFormat(authentication)
+    fun extractToken(bearerToken: String): String {
+        val (tokenType, token) = splitToTokenFormat(bearerToken)
         if (tokenType != BEARER || !isValidToken(token)) {
             throw JwtNotValidException()
         }
         return token
+    }
+
+    private fun isValidToken(token: String): Boolean = try {
+        getClaimsJws(token)
+        true
+    } catch (e: ExpiredJwtException) {
+        throw JwtExpiredException()
+    } catch (e: JwtException) {
+        false
+    } catch (e: IllegalArgumentException) {
+        false
     }
 
     private fun splitToTokenFormat(authorization: String): Pair<String, String> = try {

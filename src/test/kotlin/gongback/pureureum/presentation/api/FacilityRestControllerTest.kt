@@ -17,13 +17,13 @@ import org.springframework.restdocs.snippet.Attributes
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.multipart
 import support.FACILITY_CATEGORY
-import support.accessToken
 import support.createAccessToken
 import support.createFacilityReq
 import support.createFacilityRes
 import support.createFacilityResWithProgress
 import support.createMockCertificationDoc
 import support.test.ControllerTestHelper
+import support.token
 import java.nio.charset.StandardCharsets
 
 @WebMvcTest(FacilityRestController::class)
@@ -47,7 +47,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
         val certificationDoc = createMockCertificationDoc()
 
         mockMvc.multipart("/api/v1/facilities/register") {
-            accessToken(createAccessToken())
+            token(createAccessToken())
             file(facilityInfo)
             file(certificationDoc)
         }.andExpect {
@@ -120,7 +120,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
         val certificationDoc = createMockCertificationDoc()
 
         mockMvc.multipart("/api/v1/facilities/register") {
-            accessToken(createAccessToken())
+            token(createAccessToken())
             file(invalidFacilityInfo)
             file(certificationDoc)
         }.andExpect {
@@ -188,7 +188,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
         val invalidCertificationDoc = createMockCertificationDoc(originalFileName = "")
 
         mockMvc.multipart("/api/v1/facilities/register") {
-            accessToken(createAccessToken())
+            token(createAccessToken())
             file(facilityInfo)
             file(invalidCertificationDoc)
         }.andExpect {
@@ -245,7 +245,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
         every { facilityService.getApprovedFacilityByCategory(any(), any()) } returns facilityRes
 
         mockMvc.get("/api/v1/facilities/me") {
-            accessToken(createAccessToken())
+            token(createAccessToken())
             param("category", "FARMING_HEALING")
         }.andExpect {
             status { isOk() }
@@ -277,7 +277,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
         every { facilityService.getAllFacilities(any()) } returns facilityResWithProgress
 
         mockMvc.get("/api/v1/facilities/all") {
-            accessToken(createAccessToken())
+            token(createAccessToken())
         }.andExpect {
             status { isOk() }
             content { ApiResponse.ok(facilityResWithProgress) }

@@ -5,11 +5,12 @@ import gongback.pureureum.application.UserService
 import gongback.pureureum.application.dto.EmailReq
 import gongback.pureureum.application.dto.LoginReq
 import gongback.pureureum.application.dto.RegisterUserReq
+import gongback.pureureum.application.dto.TokenRes
 import gongback.pureureum.application.dto.UserInfoReq
 import gongback.pureureum.application.dto.UserInfoRes
+import gongback.pureureum.security.JwtNotExistsException
 import gongback.pureureum.security.LoginEmail
-import gongback.pureureum.support.security.Tokens.Companion.REFRESH_TOKEN_HEADER
-import jakarta.servlet.http.Cookie
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpHeaders
@@ -33,16 +34,13 @@ class UserRestController(
     fun login(
         @RequestBody @Valid loginReq: LoginReq,
         response: HttpServletResponse
-    ): ResponseEntity<Unit> {
+    ): ResponseEntity<ApiResponse<TokenRes>> {
         userAuthenticationService.validateAuthentication(loginReq)
 
         val accessToken = userAuthenticationService.generateAccessTokenByEmail(loginReq.email)
         val refreshToken = userAuthenticationService.generateRefreshTokenByEmail(loginReq.email)
-        val refreshCookie = Cookie(REFRESH_TOKEN_HEADER, refreshToken)
-        refreshCookie.isHttpOnly = true
-        response.addCookie(refreshCookie)
 
-        return ResponseEntity.status(HttpStatus.OK).header(HttpHeaders.AUTHORIZATION, accessToken).build()
+        return ResponseEntity.ok().body(ApiResponse.ok(TokenRes(accessToken, refreshToken)))
     }
 
     @PostMapping("/register")
@@ -85,5 +83,14 @@ class UserRestController(
     ): ResponseEntity<Unit> {
         userService.updatedProfile(email, profile)
         return ResponseEntity.ok().build()
+    }
+
+    @PostMapping("/reissue/token")
+    fun reissueToken(
+        httpServletRequest: HttpServletRequest
+    ): ResponseEntity<ApiResponse<TokenRes>> {
+        val bearerToken = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION) ?: throw JwtNotExistsException()
+        return ResponseEntity.ok()
+            .body(ApiResponse.ok(userAuthenticationService.reissueToken(bearerToken)))
     }
 }

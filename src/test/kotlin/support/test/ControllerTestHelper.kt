@@ -45,8 +45,8 @@ import org.springframework.web.filter.CharacterEncodingFilter
 import support.ACCESS_TOKEN
 import support.EMAIL
 import support.NOT_VALID_ACCESS_TOKEN
-import support.NOT_VALID_REFRESH_TOKEN
 import support.REFRESH_TOKEN
+import support.TOKEN_TYPE
 import support.test.BaseTests.TestEnvironment
 
 @TestEnvironment
@@ -104,10 +104,9 @@ abstract class ControllerTestHelper {
             }
         }
 
-        every { jwtTokenProvider.isValidToken(REFRESH_TOKEN) } returns true
-        every { jwtTokenProvider.isValidToken(ACCESS_TOKEN) } returns true
-        every { jwtTokenProvider.isValidToken(NOT_VALID_REFRESH_TOKEN) } returns false
-        every { jwtTokenProvider.isValidToken(NOT_VALID_ACCESS_TOKEN) } returns false
+        every { jwtTokenProvider.extractToken(TOKEN_TYPE + ACCESS_TOKEN) } returns ACCESS_TOKEN
+        every { jwtTokenProvider.extractToken(TOKEN_TYPE + REFRESH_TOKEN) } returns REFRESH_TOKEN
+        every { jwtTokenProvider.getSubject(ACCESS_TOKEN) } returns EMAIL
         every { jwtTokenProvider.getSubject(REFRESH_TOKEN) } returns EMAIL
         every { jwtTokenProvider.createRefreshToken(EMAIL) } returns REFRESH_TOKEN
         every { jwtTokenProvider.createToken(EMAIL) } returns ACCESS_TOKEN
