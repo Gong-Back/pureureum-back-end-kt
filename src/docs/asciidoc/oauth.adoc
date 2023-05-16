@@ -8,7 +8,7 @@
 
 === *1-1* OAuth 로그인 성공
 
-operation::o-auth2-rest-controller-test/oAuth-login-success[snippets='http-request,request-body,request-fields,http-response,response-headers']
+operation::o-auth2-rest-controller-test/oAuth-login-success[snippets='http-request,request-body,request-fields,http-response,response-fields']
 
 === *1-2* OAuth 로그인 실패 - 정보 부족
 
@@ -38,7 +38,7 @@ operation::o-auth2-rest-controller-test/temp-user-info-search-fail-not-exists-em
 
 === *3-1* OAuth 회원가입 성공
 
-operation::o-auth2-rest-controller-test/oAuth-register-success[snippets='http-request,request-body,request-fields,http-response,response-headers']
+operation::o-auth2-rest-controller-test/oAuth-register-success[snippets='http-request,request-body,request-fields,http-response,response-fields']
 
 === *3-2* OAuth 회원가입 실패 - 인증 받지 않은 전화번호
 

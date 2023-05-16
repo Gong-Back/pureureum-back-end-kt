@@ -6,7 +6,7 @@
 
 === *1-1* 성공
 
-operation::user-rest-controller-test/user-login-success[snippets='http-request,request-body,request-fields,http-response,response-headers,response-cookies']
+operation::user-rest-controller-test/user-login-success[snippets='http-request,request-body,request-fields,http-response,response-fields']
 
 === *1-2* 실패 - 이메일이 유효하지 않음
 
@@ -17,23 +17,11 @@ operation::user-rest-controller-test/user-login-fail-not-valid-email[snippets='h
 operation::user-rest-controller-test/user-login-fail-not-valid-password[snippets='http-request,request-body,request-fields,http-response']
 
 [[JWT-응답-정보]]
-== *2. JWT 응답 정보*
+== *2. JWT 재발급 API*
 
-=== *2-1* ACCESS TOKEN 만료 시, REFRESH TOKEN 유효
+=== *2-1* 성공
 
-operation::user-rest-controller-test/reissue-access-token-expired-success[snippets='http-request,request-headers,http-response,response-headers,response-cookies,response-fields']
-
-=== *2-2* ACCESS TOKEN 없을 시, REFRESH TOKEN 유효
-
-operation::user-rest-controller-test/reissue-access-token-not-exists-success[snippets='http-request,http-response,response-headers,response-cookies,response-fields']
-
-=== *2-3* ACCESS TOKEN 유효하지 않고, REFRESH TOKEN 없을 시
-
-operation::user-rest-controller-test/reissue-access-token-not-exists-refresh-token-fail[snippets='http-request,request-headers,http-response,response-fields']
-
-=== *2-4* ACCESS TOKEN 유효하지 않고, REFRESH TOKEN 만료
-
-operation::user-rest-controller-test/reissue-access-token-expired-refresh-token-fail[snippets='http-request,request-headers,http-response,response-fields']
+operation::user-rest-controller-test/token-reissue-success[snippets='http-request,request-headers,http-response,response-fields']
 
 [[회원가입-API]]
 == *3. 회원가입 API*
