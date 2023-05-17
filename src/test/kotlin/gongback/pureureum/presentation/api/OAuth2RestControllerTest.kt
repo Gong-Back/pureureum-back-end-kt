@@ -7,6 +7,7 @@ import gongback.pureureum.application.dto.AuthenticationInfo
 import gongback.pureureum.application.dto.ErrorCode
 import gongback.pureureum.application.dto.SocialRegisterUserReq
 import gongback.pureureum.application.dto.TempSocialAuthDto
+import gongback.pureureum.application.dto.TokenRes
 import gongback.pureureum.domain.social.SocialTempGender
 import gongback.pureureum.domain.social.SocialType
 import gongback.pureureum.domain.user.UserGender
@@ -15,10 +16,6 @@ import io.mockk.just
 import io.mockk.runs
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.http.HttpHeaders
-import org.springframework.restdocs.cookies.CookieDocumentation
-import org.springframework.restdocs.headers.HeaderDocumentation.headerWithName
-import org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
@@ -31,7 +28,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import support.BIRTHDAY
 import support.NAME
 import support.PHONE_NUMBER
-import support.REFRESH_COOKIE_NAME
 import support.UserGENDER
 import support.createAccessToken
 import support.createKakaoUserInfo
@@ -80,23 +76,16 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
     @Test
     fun `OAuth 로그인 성공`() {
         val oAuth2UserInfo = createKakaoUserInfo()
-        val accessToken = createAccessToken()
-        val refreshToken = createRefreshToken()
+        val tokenRes = TokenRes(createAccessToken(), createRefreshToken())
+
         every { oAuth2Service.getKakaoUserInfo(any()) } returns oAuth2UserInfo
         every { userAuthenticationService.socialLogin(any()) } returns ErrorCode.OK
-        every { userAuthenticationService.generateAccessTokenByEmail(any()) } returns accessToken
-        every { userAuthenticationService.generateRefreshTokenByEmail(any()) } returns refreshToken
+        every { userAuthenticationService.getTokenRes(any()) } returns tokenRes
 
         mockMvc.post("/api/v1/oauth/login/kakao") {
             jsonContent(createAuthenticationInfo())
         }.andExpect {
             status { isOk() }
-            header {
-                string(HttpHeaders.AUTHORIZATION, accessToken)
-            }
-            cookie {
-                value(REFRESH_COOKIE_NAME, refreshToken)
-            }
         }.andDo {
             createDocument(
                 "oAuth-login-success",
@@ -104,11 +93,11 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
                     fieldWithPath("code").description("인가 코드"),
                     fieldWithPath("redirectUrl").description("리다이렉트 주소")
                 ),
-                responseHeaders(
-                    headerWithName(HttpHeaders.AUTHORIZATION).description("Access Token")
-                ),
-                CookieDocumentation.responseCookies(
-                    CookieDocumentation.cookieWithName(REFRESH_COOKIE_NAME).description("New Refresh Token")
+                responseFields(
+                    fieldWithPath("code").description("응답 코드"),
+                    fieldWithPath("messages").description("응답 메시지"),
+                    fieldWithPath("data.accessToken").description("AccessToken"),
+                    fieldWithPath("data.refreshToken").description("RefreshToken")
                 )
             )
         }
@@ -221,22 +210,15 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
     @Test
     fun `OAuth 회원 회원가입 성공`() {
         val socialRegisterUserReq = createSocialRegisterUserReq()
-        val accessToken = createAccessToken()
-        val refreshToken = createRefreshToken()
+        val tokenRes = TokenRes(createAccessToken(), createRefreshToken())
+
         every { userAuthenticationService.registerBySocialReq(any()) } just runs
-        every { userAuthenticationService.generateAccessTokenByEmail(any()) } returns accessToken
-        every { userAuthenticationService.generateRefreshTokenByEmail(any()) } returns refreshToken
+        every { userAuthenticationService.getTokenRes(any()) } returns tokenRes
 
         mockMvc.post("/api/v1/oauth/register") {
             jsonContent(socialRegisterUserReq)
         }.andExpect {
             status { isCreated() }
-            header {
-                string(HttpHeaders.AUTHORIZATION, accessToken)
-            }
-            cookie {
-                value(REFRESH_COOKIE_NAME, refreshToken)
-            }
         }.andDo {
             createDocument(
                 "oAuth-register-success",
@@ -248,11 +230,11 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
                     fieldWithPath("gender").description("소셜 회원 성별"),
                     fieldWithPath("socialType").description("소셜 회원 로그인 타입")
                 ),
-                responseHeaders(
-                    headerWithName(HttpHeaders.AUTHORIZATION).description("Access Token")
-                ),
-                CookieDocumentation.responseCookies(
-                    CookieDocumentation.cookieWithName(REFRESH_COOKIE_NAME).description("New Refresh Token")
+                responseFields(
+                    fieldWithPath("code").description("응답 코드"),
+                    fieldWithPath("messages").description("응답 메시지"),
+                    fieldWithPath("data.accessToken").description("AccessToken"),
+                    fieldWithPath("data.refreshToken").description("RefreshToken")
                 )
             )
         }

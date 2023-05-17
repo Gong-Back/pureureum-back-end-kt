@@ -6,6 +6,7 @@ import gongback.pureureum.application.dto.OAuthUserInfo
 import gongback.pureureum.application.dto.RegisterUserReq
 import gongback.pureureum.application.dto.SocialRegisterUserReq
 import gongback.pureureum.application.dto.TempSocialAuthDto
+import gongback.pureureum.application.dto.TokenRes
 import gongback.pureureum.application.dto.UserAccountDto
 import gongback.pureureum.domain.sms.SmsLog
 import gongback.pureureum.domain.sms.SmsLogRepository
@@ -35,9 +36,13 @@ class UserAuthenticationService(
         findUser.authenticate(loginReq.password)
     }
 
-    fun generateAccessTokenByEmail(email: String) = jwtTokenProvider.createToken(email)
+    fun getTokenRes(email: String) =
+        TokenRes(jwtTokenProvider.createToken(email), jwtTokenProvider.createRefreshToken(email))
 
-    fun generateRefreshTokenByEmail(email: String) = jwtTokenProvider.createRefreshToken(email)
+    fun reissueToken(bearerToken: String): TokenRes {
+        val email = jwtTokenProvider.getSubject(bearerToken)
+        return TokenRes(jwtTokenProvider.createToken(email), jwtTokenProvider.createRefreshToken(email))
+    }
 
     @Transactional
     fun register(registerUserReq: RegisterUserReq) {
