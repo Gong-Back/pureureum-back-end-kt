@@ -37,7 +37,7 @@ class DashboardBulletinBoard(
 ) : BaseEntity() {
     @OneToMany(cascade = [CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE], orphanRemoval = true)
     @JoinColumn(
-        name = "dashboard_id",
+        name = "dashboard_bulletin_board_id",
         nullable = false,
         updatable = false,
         foreignKey = ForeignKey(name = "fk_dashboard_bulletin_board_comment_ref_bulletin_board_id")
@@ -46,7 +46,7 @@ class DashboardBulletinBoard(
 
     @OneToMany(cascade = [CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE], orphanRemoval = true)
     @JoinColumn(
-        name = "dashboard_id",
+        name = "dashboard_bulletin_board_id",
         nullable = false,
         updatable = false,
         foreignKey = ForeignKey(name = "fk_dashboard_bulletin_board_file_ref_bulletin_board_id")

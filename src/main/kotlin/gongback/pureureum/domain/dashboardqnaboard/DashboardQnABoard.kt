@@ -37,7 +37,7 @@ class DashboardQnABoard(
 ) : BaseEntity() {
     @OneToMany(cascade = [CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE], orphanRemoval = true)
     @JoinColumn(
-        name = "dashboard_id",
+        name = "dashboard_qna_board_id",
         nullable = false,
         updatable = false,
         foreignKey = ForeignKey(name = "fk_dashboard_qna_board_comment_ref_dashboard_qna_board_id")
@@ -46,7 +46,7 @@ class DashboardQnABoard(
 
     @OneToMany(cascade = [CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE], orphanRemoval = true)
     @JoinColumn(
-        name = "dashboard_id",
+        name = "dashboard_qna_board_id",
         nullable = false,
         updatable = false,
         foreignKey = ForeignKey(name = "fk_dashboard_qna_board_file_ref_dashboard_qna_board_id")
