@@ -23,7 +23,6 @@ class LoginEmailResolver(
         binderFactory: WebDataBinderFactory?
     ): String {
         val bearerToken = webRequest.getHeader(HttpHeaders.AUTHORIZATION) ?: throw JwtNotExistsException()
-        val accessToken = jwtTokenProvider.extractToken(bearerToken)
-        return jwtTokenProvider.getSubject(accessToken)
+        return jwtTokenProvider.getSubject(bearerToken)
     }
 }

@@ -37,10 +37,7 @@ class UserRestController(
     ): ResponseEntity<ApiResponse<TokenRes>> {
         userAuthenticationService.validateAuthentication(loginReq)
 
-        val accessToken = userAuthenticationService.generateAccessTokenByEmail(loginReq.email)
-        val refreshToken = userAuthenticationService.generateRefreshTokenByEmail(loginReq.email)
-
-        return ResponseEntity.ok().body(ApiResponse.ok(TokenRes(accessToken, refreshToken)))
+        return ResponseEntity.ok().body(ApiResponse.ok(userAuthenticationService.getTokenRes(loginReq.email)))
     }
 
     @PostMapping("/register")
@@ -85,7 +82,7 @@ class UserRestController(
         return ResponseEntity.ok().build()
     }
 
-    @PostMapping("/reissue/token")
+    @PostMapping("/reissue-token")
     fun reissueToken(
         httpServletRequest: HttpServletRequest
     ): ResponseEntity<ApiResponse<TokenRes>> {

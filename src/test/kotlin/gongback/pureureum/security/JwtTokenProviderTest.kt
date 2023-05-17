@@ -6,8 +6,7 @@ import io.kotest.matchers.shouldBe
 private const val KEY: String = "testKeytestKeytestKeytestKeytestKeytestKeytestKeytestKey"
 private const val EXPIRED_TIME_MS: Long = 10000L
 private const val REFRESH_EXPIRED_TIME_MS: Long = 100000L
-private const val NEGATIVE_TIME_MS: Long = -10L
-private const val NOT_VALID_TOKEN: String = ""
+private const val TYPE: String = "Bearer "
 
 class JwtTokenProviderTest : StringSpec({
     val jwtProperties = JwtProperties(KEY, EXPIRED_TIME_MS, REFRESH_EXPIRED_TIME_MS)
@@ -16,7 +15,7 @@ class JwtTokenProviderTest : StringSpec({
         val jwtTokenProvider = JwtTokenProvider(jwtProperties)
         val email: String = "testEmail1"
 
-        val token = jwtTokenProvider.createToken(email)
+        val token = TYPE + jwtTokenProvider.createToken(email)
         jwtTokenProvider.getSubject(token) shouldBe email
     }
 
@@ -24,7 +23,7 @@ class JwtTokenProviderTest : StringSpec({
         val jwtTokenProvider = JwtTokenProvider(jwtProperties)
         val email: String = "testEmail1"
 
-        val refreshToken = jwtTokenProvider.createRefreshToken(email)
+        val refreshToken = TYPE + jwtTokenProvider.createRefreshToken(email)
         jwtTokenProvider.getSubject(refreshToken) shouldBe email
     }
 })

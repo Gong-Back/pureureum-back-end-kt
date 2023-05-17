@@ -88,12 +88,10 @@ class UserRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `로그인 성공`() {
-        val accessToken = createAccessToken()
-        val refreshToken = createRefreshToken()
+        val tokenRes = TokenRes(createAccessToken(), createRefreshToken())
 
         every { userAuthenticationService.validateAuthentication(any()) } just runs
-        every { userAuthenticationService.generateAccessTokenByEmail(any()) } returns accessToken
-        every { userAuthenticationService.generateRefreshTokenByEmail(any()) } returns refreshToken
+        every { userAuthenticationService.getTokenRes(any()) } returns tokenRes
 
         mockMvc.post("/api/v1/users/login") {
             jsonContent(createLoginReq())
@@ -246,7 +244,7 @@ class UserRestControllerTest : ControllerTestHelper() {
         val tokenRes = TokenRes(ACCESS_TOKEN, REFRESH_TOKEN)
         every { userAuthenticationService.reissueToken(any()) } returns tokenRes
 
-        mockMvc.post("/api/v1/users/reissue/token") {
+        mockMvc.post("/api/v1/users/reissue-token") {
             header(HttpHeaders.AUTHORIZATION, TOKEN_TYPE + REFRESH_TOKEN)
         }.andExpect {
             status { isOk() }

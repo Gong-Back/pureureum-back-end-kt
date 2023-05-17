@@ -7,6 +7,7 @@ import gongback.pureureum.application.dto.AuthenticationInfo
 import gongback.pureureum.application.dto.ErrorCode
 import gongback.pureureum.application.dto.SocialRegisterUserReq
 import gongback.pureureum.application.dto.TempSocialAuthDto
+import gongback.pureureum.application.dto.TokenRes
 import gongback.pureureum.domain.social.SocialTempGender
 import gongback.pureureum.domain.social.SocialType
 import gongback.pureureum.domain.user.UserGender
@@ -75,12 +76,11 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
     @Test
     fun `OAuth 로그인 성공`() {
         val oAuth2UserInfo = createKakaoUserInfo()
-        val accessToken = createAccessToken()
-        val refreshToken = createRefreshToken()
+        val tokenRes = TokenRes(createAccessToken(), createRefreshToken())
+
         every { oAuth2Service.getKakaoUserInfo(any()) } returns oAuth2UserInfo
         every { userAuthenticationService.socialLogin(any()) } returns ErrorCode.OK
-        every { userAuthenticationService.generateAccessTokenByEmail(any()) } returns accessToken
-        every { userAuthenticationService.generateRefreshTokenByEmail(any()) } returns refreshToken
+        every { userAuthenticationService.getTokenRes(any()) } returns tokenRes
 
         mockMvc.post("/api/v1/oauth/login/kakao") {
             jsonContent(createAuthenticationInfo())
@@ -210,11 +210,10 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
     @Test
     fun `OAuth 회원 회원가입 성공`() {
         val socialRegisterUserReq = createSocialRegisterUserReq()
-        val accessToken = createAccessToken()
-        val refreshToken = createRefreshToken()
+        val tokenRes = TokenRes(createAccessToken(), createRefreshToken())
+
         every { userAuthenticationService.registerBySocialReq(any()) } just runs
-        every { userAuthenticationService.generateAccessTokenByEmail(any()) } returns accessToken
-        every { userAuthenticationService.generateRefreshTokenByEmail(any()) } returns refreshToken
+        every { userAuthenticationService.getTokenRes(any()) } returns tokenRes
 
         mockMvc.post("/api/v1/oauth/register") {
             jsonContent(socialRegisterUserReq)

@@ -68,7 +68,7 @@ class OAuth2RestController(
     ): ResponseEntity<ApiResponse<TokenRes>> {
         userAuthenticationService.registerBySocialReq(socialRegisterUserReq)
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(ApiResponse.ok(createTokenRes(socialRegisterUserReq.email)))
+            .body(ApiResponse.ok(userAuthenticationService.getTokenRes(socialRegisterUserReq.email)))
     }
 
     private fun login(
@@ -95,14 +95,9 @@ class OAuth2RestController(
             }
 
             else -> {
-                ResponseEntity.ok().body(ApiResponse.ok(createTokenRes(oAuthUserInfo.clientEmail)))
+                ResponseEntity.ok()
+                    .body(ApiResponse.ok(userAuthenticationService.getTokenRes(oAuthUserInfo.clientEmail)))
             }
         }
-    }
-
-    private fun createTokenRes(email: String): TokenRes {
-        val accessToken = userAuthenticationService.generateAccessTokenByEmail(email)
-        val refreshToken = userAuthenticationService.generateRefreshTokenByEmail(email)
-        return TokenRes(accessToken, refreshToken)
     }
 }

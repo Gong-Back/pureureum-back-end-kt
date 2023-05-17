@@ -36,13 +36,11 @@ class UserAuthenticationService(
         findUser.authenticate(loginReq.password)
     }
 
-    fun generateAccessTokenByEmail(email: String) = jwtTokenProvider.createToken(email)
-
-    fun generateRefreshTokenByEmail(email: String) = jwtTokenProvider.createRefreshToken(email)
+    fun getTokenRes(email: String) =
+        TokenRes(jwtTokenProvider.createToken(email), jwtTokenProvider.createRefreshToken(email))
 
     fun reissueToken(bearerToken: String): TokenRes {
-        val token = jwtTokenProvider.extractToken(bearerToken)
-        val email = jwtTokenProvider.getSubject(token)
+        val email = jwtTokenProvider.getSubject(bearerToken)
         return TokenRes(jwtTokenProvider.createToken(email), jwtTokenProvider.createRefreshToken(email))
     }
 

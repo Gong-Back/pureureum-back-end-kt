@@ -46,7 +46,6 @@ import support.ACCESS_TOKEN
 import support.EMAIL
 import support.NOT_VALID_ACCESS_TOKEN
 import support.REFRESH_TOKEN
-import support.TOKEN_TYPE
 import support.test.BaseTests.TestEnvironment
 
 @TestEnvironment
@@ -104,8 +103,6 @@ abstract class ControllerTestHelper {
             }
         }
 
-        every { jwtTokenProvider.extractToken(TOKEN_TYPE + ACCESS_TOKEN) } returns ACCESS_TOKEN
-        every { jwtTokenProvider.extractToken(TOKEN_TYPE + REFRESH_TOKEN) } returns REFRESH_TOKEN
         every { jwtTokenProvider.getSubject(ACCESS_TOKEN) } returns EMAIL
         every { jwtTokenProvider.getSubject(REFRESH_TOKEN) } returns EMAIL
         every { jwtTokenProvider.createRefreshToken(EMAIL) } returns REFRESH_TOKEN

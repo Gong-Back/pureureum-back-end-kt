@@ -2,7 +2,7 @@
 = *Overview*
 
 [[overview-http-status-codes]]
-=== HTTP status codes
+== HTTP status codes
 
 |===
 | ResponseCode | Message
@@ -61,7 +61,7 @@
 |===
 
 [[overview-error-response]]
-=== *Success Response Data*
+== *Success Response Data*
 
 |===
 | Field Name | Type | Description
@@ -81,7 +81,7 @@
 |===
 
 [[overview-error-response]]
-=== *Error Response Data*
+== *Error Response Data*
 
 |===
 | Field Name | Type | Description

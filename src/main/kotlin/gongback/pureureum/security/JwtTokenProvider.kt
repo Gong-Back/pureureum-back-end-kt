@@ -43,16 +43,11 @@ class JwtTokenProvider(
             .compact()
     }
 
-    fun getSubject(token: String): String = getClaimsJws(token)
+    fun getSubject(bearerToken: String): String = getClaimsJws(extractToken(bearerToken))
         .body
         .subject
 
-    private fun getClaimsJws(token: String) = Jwts.parserBuilder()
-        .setSigningKey(key)
-        .build()
-        .parseClaimsJws(token)
-
-    fun extractToken(bearerToken: String): String {
+    private fun extractToken(bearerToken: String): String {
         val (tokenType, token) = splitToTokenFormat(bearerToken)
         if (tokenType != BEARER || !isValidToken(token)) {
             throw JwtNotValidException()
@@ -70,6 +65,11 @@ class JwtTokenProvider(
     } catch (e: IllegalArgumentException) {
         false
     }
+
+    private fun getClaimsJws(token: String) = Jwts.parserBuilder()
+        .setSigningKey(key)
+        .build()
+        .parseClaimsJws(token)
 
     private fun splitToTokenFormat(authorization: String): Pair<String, String> = try {
         val tokenFormat = authorization.split(" ")
