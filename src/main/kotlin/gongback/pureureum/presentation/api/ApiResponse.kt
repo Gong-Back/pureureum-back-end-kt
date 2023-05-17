@@ -9,8 +9,8 @@ data class ApiResponse<T>(
     val data: T? = null
 ) {
     companion object {
-        fun error(code: Int, message: String): ApiResponse<Unit> =
-            ApiResponse(code = code, messages = listOf(message))
+        fun error(code: Int, message: String?): ApiResponse<Unit> =
+            ApiResponse(code = code, messages = message?.let { listOf(message) })
 
         fun error(code: Int, messages: List<String>): ApiResponse<Unit> =
             ApiResponse(code = code, messages = messages)

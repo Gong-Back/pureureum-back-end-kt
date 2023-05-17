@@ -51,9 +51,6 @@ class ProjectRestController(
         return ResponseEntity.ok().build()
     }
 
-    /**
-     * 메인 페이지에서 인기 순으로 프로젝트 페이지 조회
-     */
     @GetMapping
     fun getPopularProjectPage(
         @RequestParam(value = "searchType") searchType: SearchType,
@@ -69,4 +66,9 @@ class ProjectRestController(
                 )
             )
         )
+
+    @PostMapping("/apply")
+    fun projectApply() {
+        // TODO: 1:다로 프로젝트 신청 정보 관리해야 할 듯...?
+    }
 }

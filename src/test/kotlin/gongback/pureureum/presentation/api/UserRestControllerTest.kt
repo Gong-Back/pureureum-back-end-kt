@@ -3,11 +3,9 @@ package gongback.pureureum.presentation.api
 import com.ninjasquad.springmockk.MockkBean
 import gongback.pureureum.application.UserAuthenticationService
 import gongback.pureureum.application.UserService
+import gongback.pureureum.application.dto.TokenRes
 import gongback.pureureum.domain.user.Password
 import gongback.pureureum.domain.user.UserGender
-import gongback.pureureum.security.JWT_INVALID_CODE
-import gongback.pureureum.security.JWT_REISSUE_CODE
-import gongback.pureureum.security.JwtResponse
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -15,11 +13,8 @@ import io.mockk.runs
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.HttpHeaders
-import org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName
-import org.springframework.restdocs.cookies.CookieDocumentation.responseCookies
 import org.springframework.restdocs.headers.HeaderDocumentation.headerWithName
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
-import org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders
 import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
@@ -31,18 +26,16 @@ import org.springframework.test.web.servlet.multipart
 import org.springframework.test.web.servlet.post
 import support.ACCESS_TOKEN
 import support.PHONE_NUMBER
-import support.REFRESH_COOKIE_NAME
-import support.accessToken
+import support.REFRESH_TOKEN
+import support.TOKEN_TYPE
 import support.createAccessToken
 import support.createLocalDate
 import support.createMockProfileFile
-import support.createNotValidAccessToken
-import support.createNotValidRefreshToken
 import support.createRefreshToken
 import support.createUser
 import support.createUserInfoRes
-import support.refreshToken
 import support.test.ControllerTestHelper
+import support.token
 import java.time.LocalDate
 
 private const val EMAIL = "test@test.com"
@@ -95,23 +88,15 @@ class UserRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `로그인 성공`() {
-        val accessToken = createAccessToken()
-        val refreshToken = createRefreshToken()
+        val tokenRes = TokenRes(createAccessToken(), createRefreshToken())
 
         every { userAuthenticationService.validateAuthentication(any()) } just runs
-        every { userAuthenticationService.generateAccessTokenByEmail(any()) } returns accessToken
-        every { userAuthenticationService.generateRefreshTokenByEmail(any()) } returns refreshToken
+        every { userAuthenticationService.getTokenRes(any()) } returns tokenRes
 
         mockMvc.post("/api/v1/users/login") {
             jsonContent(createLoginReq())
         }.andExpect {
             status { isOk() }
-            header {
-                string(HttpHeaders.AUTHORIZATION, accessToken)
-            }
-            cookie {
-                value(REFRESH_COOKIE_NAME, refreshToken)
-            }
         }.andDo {
             createDocument(
                 "user-login-success",
@@ -119,11 +104,11 @@ class UserRestControllerTest : ControllerTestHelper() {
                     fieldWithPath("email").description("아이디").attributes(Attributes.Attribute(LENGTH, "8-15")),
                     fieldWithPath("password").description("비밀번호")
                 ),
-                responseHeaders(
-                    headerWithName(HttpHeaders.AUTHORIZATION).description("Access Token")
-                ),
-                responseCookies(
-                    cookieWithName(REFRESH_COOKIE_NAME).description("Refresh Token")
+                responseFields(
+                    fieldWithPath("code").description("응답 코드"),
+                    fieldWithPath("messages").description("응답 메시지"),
+                    fieldWithPath("data.accessToken").description("AccessToken"),
+                    fieldWithPath("data.refreshToken").description("RefreshToken")
                 )
             )
         }
@@ -255,103 +240,25 @@ class UserRestControllerTest : ControllerTestHelper() {
     }
 
     @Test
-    fun `ACCESS TOKEN 만료 시 - 재발급 성공`() {
-        val notValidAccessToken = createNotValidAccessToken()
-        val refreshToken = createRefreshToken()
+    fun `Token 재발급 - 성공`() {
+        val tokenRes = TokenRes(ACCESS_TOKEN, REFRESH_TOKEN)
+        every { userAuthenticationService.reissueToken(any()) } returns tokenRes
 
-        mockMvc.get("/api/v1/users/me") {
-            accessToken(notValidAccessToken)
-            refreshToken(refreshToken)
+        mockMvc.post("/api/v1/users/reissue-token") {
+            header(HttpHeaders.AUTHORIZATION, TOKEN_TYPE + REFRESH_TOKEN)
         }.andExpect {
-            status { isBadRequest() }
-            header { string(HttpHeaders.AUTHORIZATION, ACCESS_TOKEN) }
-            content { JwtResponse(JWT_REISSUE_CODE) }
+            status { isOk() }
         }.andDo {
             createDocument(
-                "reissue-access-token-expired-success",
+                "token-reissue-success",
                 requestHeaders(
-                    headerWithName(HttpHeaders.AUTHORIZATION).description("Not-Valid-Access-token")
-                ),
-                responseHeaders(
-                    headerWithName(HttpHeaders.AUTHORIZATION).description("New Access Token")
-                ),
-                responseCookies(
-                    cookieWithName(REFRESH_COOKIE_NAME).description("New Refresh Token")
+                    headerWithName(HttpHeaders.AUTHORIZATION).description("RefreshToken")
                 ),
                 responseFields(
-                    fieldWithPath("code").description("응답 코드")
-                )
-            )
-        }
-    }
-
-    @Test
-    fun `ACCESS TOKEN 없을 시 - 재발급 성공`() {
-        val refreshToken = createRefreshToken()
-
-        mockMvc.get("/api/v1/users/me") {
-            refreshToken(refreshToken)
-        }.andExpect {
-            status { isBadRequest() }
-            header { string(HttpHeaders.AUTHORIZATION, ACCESS_TOKEN) }
-            content { JwtResponse(JWT_REISSUE_CODE) }
-        }.andDo {
-            createDocument(
-                "reissue-access-token-not-exists-success",
-                responseHeaders(
-                    headerWithName(HttpHeaders.AUTHORIZATION).description("New Access Token")
-                ),
-                responseCookies(
-                    cookieWithName(REFRESH_COOKIE_NAME).description("New Refresh Token")
-                ),
-                responseFields(
-                    fieldWithPath("code").description("응답 코드")
-                )
-            )
-        }
-    }
-
-    @Test
-    fun `ACCESS TOKEN 유효하지 않고, REFRESH TOKEN 없을 시 - 재발급 실패`() {
-        val noValidAccessToken = createNotValidAccessToken()
-
-        mockMvc.get("/api/v1/users/me") {
-            accessToken(noValidAccessToken)
-        }.andExpect {
-            status { isUnauthorized() }
-            content { JwtResponse(JWT_INVALID_CODE) }
-        }.andDo {
-            createDocument(
-                "reissue-access-token-not-exists-refresh-token-fail",
-                requestHeaders(
-                    headerWithName(HttpHeaders.AUTHORIZATION).description("Not-Valid-Access-token")
-                ),
-                responseFields(
-                    fieldWithPath("code").description("응답 코드")
-                )
-            )
-        }
-    }
-
-    @Test
-    fun `ACCESS TOKEN 유효하지 않고, REFRESH TOKEN 만료 시 - 재발급 실패`() {
-        val noValidAccessToken = createNotValidAccessToken()
-        val notValidRefreshToken = createNotValidRefreshToken()
-
-        mockMvc.get("/api/v1/users/me") {
-            accessToken(noValidAccessToken)
-            refreshToken(notValidRefreshToken)
-        }.andExpect {
-            status { isUnauthorized() }
-            content { JwtResponse(JWT_INVALID_CODE) }
-        }.andDo {
-            createDocument(
-                "reissue-access-token-expired-refresh-token-fail",
-                requestHeaders(
-                    headerWithName(HttpHeaders.AUTHORIZATION).description("Not-Valid-Access-token")
-                ),
-                responseFields(
-                    fieldWithPath("code").description("응답 코드")
+                    fieldWithPath("code").description("응답 코드"),
+                    fieldWithPath("messages").description("응답 메시지"),
+                    fieldWithPath("data.accessToken").description("재발급된 AccessToken"),
+                    fieldWithPath("data.refreshToken").description("재발급된 RefreshToken")
                 )
             )
         }
@@ -364,7 +271,7 @@ class UserRestControllerTest : ControllerTestHelper() {
         every { userService.getUserInfoWithProfileUrl(any()) } returns userInfo
 
         mockMvc.get("/api/v1/users/me") {
-            accessToken(createAccessToken())
+            token(createAccessToken())
         }.andExpect {
             status { isOk() }
             content { ApiResponse.ok(userInfo) }
@@ -391,7 +298,7 @@ class UserRestControllerTest : ControllerTestHelper() {
         every { userService.updateUserInfo(any(), any()) } just runs
 
         mockMvc.post("/api/v1/users/update/info") {
-            accessToken(createAccessToken())
+            token(createAccessToken())
             jsonContent(createUserInfoReq())
         }.andExpect {
             status { isOk() }
@@ -414,7 +321,7 @@ class UserRestControllerTest : ControllerTestHelper() {
         every { userService.updateUserInfo(any(), any()) } throws IllegalArgumentException("이미 존재하는 닉네임입니다")
 
         mockMvc.post("/api/v1/users/update/info") {
-            accessToken(createAccessToken())
+            token(createAccessToken())
             jsonContent(mapOf("nickname" to "duplicatedName"))
         }.andExpect {
             status { isBadRequest() }
@@ -468,7 +375,7 @@ class UserRestControllerTest : ControllerTestHelper() {
         val profile = createMockProfileFile()
 
         mockMvc.multipart("/api/v1/users/update/profile") {
-            accessToken(createAccessToken())
+            token(createAccessToken())
             file(profile)
         }.andExpect {
             status { isOk() }
@@ -492,7 +399,7 @@ class UserRestControllerTest : ControllerTestHelper() {
         )
 
         mockMvc.multipart("/api/v1/users/update/profile") {
-            accessToken(createAccessToken())
+            token(createAccessToken())
             file(profile)
         }.andExpect {
             status { isBadRequest() }
@@ -515,7 +422,7 @@ class UserRestControllerTest : ControllerTestHelper() {
         )
 
         mockMvc.multipart("/api/v1/users/update/profile") {
-            accessToken(createAccessToken())
+            token(createAccessToken())
             file(profile)
         }.andExpect {
             status { isBadRequest() }

@@ -28,7 +28,6 @@ import org.springframework.test.web.servlet.multipart
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import support.PROJECT_CATEGORY
 import support.SEARCH_TYPE_POPULAR
-import support.accessToken
 import support.createAccessToken
 import support.createDifferentCategoryProject
 import support.createMockProjectFile
@@ -38,6 +37,7 @@ import support.createProjectResWithPayment
 import support.createProjectResWithoutPayment
 import support.createSameCategoryProject
 import support.test.ControllerTestHelper
+import support.token
 import java.nio.charset.StandardCharsets
 
 @WebMvcTest(ProjectRestController::class)
@@ -62,7 +62,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
         val projectFile2 = createMockProjectFile("COMMON", "test1", "image/png", "sample")
 
         mockMvc.multipart("/api/v1/projects") {
-            accessToken(createAccessToken())
+            token(createAccessToken())
             file(projectRegisterInfo)
             file(projectFile1)
             file(projectFile2)
@@ -219,7 +219,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
         every { projectService.deleteProject(any(), any()) } just runs
 
         mockMvc.delete("/api/v1/projects/{id}", 1L) {
-            accessToken(createAccessToken())
+            token(createAccessToken())
         }.andExpect {
             status { isOk() }
         }.andDo {
@@ -237,7 +237,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
         every { projectService.deleteProject(any(), any()) } throws PureureumException(errorCode = ErrorCode.FORBIDDEN)
 
         mockMvc.delete("/api/v1/projects/{id}", 1L) {
-            accessToken(createAccessToken())
+            token(createAccessToken())
         }.andExpect {
             status { isForbidden() }
         }.andDo {
@@ -263,7 +263,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
         every { projectService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
 
         mockMvc.get("/api/v1/projects") {
-            accessToken(createAccessToken())
+            token(createAccessToken())
             param("searchType", SEARCH_TYPE_POPULAR.name)
             param("category", PROJECT_CATEGORY.name)
             param("page", "0")
@@ -316,7 +316,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
         every { projectService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
 
         mockMvc.get("/api/v1/projects") {
-            accessToken(createAccessToken())
+            token(createAccessToken())
             param("searchType", SEARCH_TYPE_POPULAR.name)
         }.andExpect {
             status { isOk() }
