@@ -1,5 +1,6 @@
 package gongback.pureureum.presentation.api
 
+import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import gongback.pureureum.application.PureureumException
 import gongback.pureureum.application.S3Exception
 import gongback.pureureum.application.dto.ErrorCode
@@ -7,12 +8,11 @@ import gongback.pureureum.security.JwtException
 import gongback.pureureum.security.JwtExpiredException
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.core.Ordered
-import org.springframework.core.annotation.Order
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -21,7 +21,6 @@ import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 
 @RestControllerAdvice
-@Order(Ordered.LOWEST_PRECEDENCE)
 class ExceptionHandler : ResponseEntityExceptionHandler() {
     override fun handleMethodArgumentNotValid(
         ex: MethodArgumentNotValidException,
@@ -32,6 +31,22 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         logger.error("[MethodArgumentNotValidException] ${ex.messages()}")
         return ResponseEntity.status(ErrorCode.REQUEST_RESOURCE_NOT_VALID.httpStatus)
             .body(ApiResponse.error(ErrorCode.REQUEST_RESOURCE_NOT_VALID.code, ex.messages()))
+    }
+
+    override fun handleHttpMessageNotReadable(
+        ex: HttpMessageNotReadableException,
+        headers: HttpHeaders,
+        status: HttpStatusCode,
+        request: WebRequest
+    ): ResponseEntity<Any>? {
+        logger.error("[HttpMessageNotReadableException] ${ex.message}")
+        val errorMessage = when (val cause = ex.cause) {
+            is MissingKotlinParameterException -> "${cause.parameter.name} is null"
+
+            else -> "유효하지 않은 요청입니다"
+        }
+        return ResponseEntity.status(ErrorCode.REQUEST_RESOURCE_NOT_VALID.httpStatus)
+            .body(ApiResponse.error(ErrorCode.REQUEST_RESOURCE_NOT_VALID.code, errorMessage))
     }
 
     override fun handleHttpRequestMethodNotSupported(

@@ -5,14 +5,12 @@ import gongback.pureureum.domain.facility.FacilityAddress
 import gongback.pureureum.domain.facility.FacilityProgress
 import gongback.pureureum.support.constant.Category
 import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 
 data class FacilityReq(
-    @NotNull
     val category: Category,
 
-    @NotBlank
+    @field:NotBlank
     val name: String,
 
     @field:NotBlank
