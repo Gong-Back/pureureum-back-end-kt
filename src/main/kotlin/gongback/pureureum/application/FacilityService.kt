@@ -26,7 +26,7 @@ import org.springframework.web.multipart.MultipartFile
 class FacilityService(
     private val facilityRepository: FacilityRepository,
     private val userRepository: UserRepository,
-    private val uploadService: UploadService
+    private val fileService: FileService
 ) {
 
     @Transactional
@@ -36,9 +36,9 @@ class FacilityService(
 
         certificationDoc?.let {
             it.forEach { file ->
-                val originalFileName = uploadService.validateFileName(file)
-                val contentType = uploadService.getImageType(file)
-                val fileKey = uploadService.uploadFile(file, FileType.FACILITY_CERTIFICATION, originalFileName)
+                val originalFileName = fileService.validateFileName(file)
+                val contentType = fileService.getImageType(file)
+                val fileKey = fileService.uploadFile(file, FileType.FACILITY_CERTIFICATION, originalFileName)
                 val facilityCertificationDoc = FacilityCertificationDoc(fileKey, contentType, originalFileName)
                 facility.addCertificationDoc(facilityCertificationDoc)
             }
@@ -65,7 +65,7 @@ class FacilityService(
 
     fun getCertificationDocDownloadPath(id: Long, docId: Long): String {
         val fileKey = facilityRepository.getDocFileKeyByDocId(id, docId)
-        return uploadService.getFileUrl(fileKey)
+        return fileService.getFileUrl(fileKey)
     }
 
     fun getNotApprovedFacilitiesByCategory(category: String): List<FacilityRes> {

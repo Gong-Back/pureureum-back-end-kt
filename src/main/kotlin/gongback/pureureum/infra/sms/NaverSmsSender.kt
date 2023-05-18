@@ -1,16 +1,11 @@
-package gongback.pureureum.application
+package gongback.pureureum.infra.sms
 
+import gongback.pureureum.application.SmsSendException
+import gongback.pureureum.application.SmsSender
 import gongback.pureureum.application.dto.MessageDto
 import gongback.pureureum.application.dto.NaverSendMessageDto
-import gongback.pureureum.application.dto.PhoneNumberReq
-import gongback.pureureum.application.dto.SmsSendResponse
-import gongback.pureureum.application.properties.NaverSmsProperties
-import gongback.pureureum.domain.sms.SmsLog
-import gongback.pureureum.domain.sms.SmsLogRepository
-import gongback.pureureum.domain.sms.getLastSmsLog
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.client.WebClient
 import java.util.*
 import javax.crypto.Mac
@@ -21,30 +16,19 @@ private const val CHARSET_NAME = "UTF-8"
 private const val SENDING_LIMIT = 50
 
 @Service
-class NaverSmsService(
+class NaverSmsSender(
     private val webClient: WebClient,
-    private val smsLogRepository: SmsLogRepository,
     private val naverSmsProperties: NaverSmsProperties
-) : SmsService {
+) : SmsSender {
 
     private val SEND_URI = "/sms/v2/services/${naverSmsProperties.serviceId}/messages"
 
-    override fun sendSmsCertification(phoneNumberReq: PhoneNumberReq): SmsSendResponse {
-        if (smsLogRepository.getTotalSize() > SENDING_LIMIT) {
-            throw SmsOverRequestException()
+    override fun send(receiver: String, certificationNumber: String, monthCounts: Long) {
+        if (monthCounts > SENDING_LIMIT) {
+            throw IllegalArgumentException("월 메시지 전송 한도를 초과했습니다")
         }
 
-        val certificationNumber = getCertificationNumber()
-        smsLogRepository.save(SmsLog(phoneNumberReq.phoneNumber))
-
-        sendMessage(phoneNumberReq.receiver, certificationNumber)
-
-        return SmsSendResponse(certificationNumber = certificationNumber)
-    }
-
-    @Transactional
-    override fun completeCertification(phoneNumberReq: PhoneNumberReq) {
-        smsLogRepository.getLastSmsLog(phoneNumberReq.phoneNumber).completeCertification()
+        sendMessage(receiver, certificationNumber)
     }
 
     private fun sendMessage(receiver: String, randomNumber: String) {
@@ -77,15 +61,6 @@ class NaverSmsService(
             }
             .bodyToMono(String::class.java)
             .block()
-    }
-
-    private fun getCertificationNumber(): String {
-        val randomCertificationNumber = StringBuilder()
-        var size = naverSmsProperties.size
-        while (size-- > 0) {
-            randomCertificationNumber.append((0..9).random())
-        }
-        return randomCertificationNumber.toString()
     }
 
     private fun makeSignature(
