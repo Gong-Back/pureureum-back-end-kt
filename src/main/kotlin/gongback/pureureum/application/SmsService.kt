@@ -17,7 +17,7 @@ class SmsService(
     private val smsSender: SmsSender
 ) {
 
-    private val numberSize: Int = 6;
+    private val numberSize: Int = 6
 
     fun sendSmsCertification(phoneNumberReq: PhoneNumberReq): SmsSendResponse {
         val certificationNumber = generateCertificationNumber()
