@@ -1,16 +1,13 @@
 package gongback.pureureum.domain.dashboard
 
 import gongback.pureureum.domain.dashboardbulletinboard.DashboardBulletinBoard
-import gongback.pureureum.domain.dashboardgallery.DashboardGallery
 import gongback.pureureum.domain.dashboardcalendar.DashboardCalendar
+import gongback.pureureum.domain.dashboardgallery.DashboardGallery
 import gongback.pureureum.domain.dashboardnotice.DashboardNotice
-import gongback.pureureum.support.constant.FlagYn
 import gongback.pureureum.support.domain.BaseEntity
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.ForeignKey
 import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
@@ -25,8 +22,7 @@ class Dashboard(
     val projectId: Long,
 
     @Column(nullable = false, length = 1)
-    @Enumerated(EnumType.STRING)
-    val isDeleted: FlagYn,
+    val isDeleted: Boolean,
 
     members: List<DashboardMember> = emptyList(),
 
