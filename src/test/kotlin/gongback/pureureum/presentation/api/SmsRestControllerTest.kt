@@ -6,6 +6,7 @@ import gongback.pureureum.application.SmsService
 import gongback.pureureum.application.UserAuthenticationService
 import gongback.pureureum.application.dto.ErrorCode
 import gongback.pureureum.application.dto.SmsSendResponse
+import gongback.pureureum.infra.sms.SmsOverRequestException
 import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
@@ -109,7 +110,7 @@ class SmsRestControllerTest : ControllerTestHelper() {
     @Test
     fun `전화번호 인증 전송 실패 - 50건 초과`() {
         every { userAuthenticationService.checkDuplicatedPhoneNumber(any()) } just runs
-        every { smsService.sendSmsCertification(any()) } throws IllegalArgumentException("월 메시지 전송 한도를 초과했습니다")
+        every { smsService.sendSmsCertification(any()) } throws SmsOverRequestException()
 
         mockMvc.post("/api/v1/sms/send/certification") {
             jsonContent(createPhoneNumber())

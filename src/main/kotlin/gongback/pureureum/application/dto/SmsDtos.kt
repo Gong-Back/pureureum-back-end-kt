@@ -10,6 +10,12 @@ data class PhoneNumberReq(
         get() = phoneNumber.replace("-", "")
 }
 
+data class SmsRequestDto(
+    val receiver: String,
+    val certificationNumber: String,
+    val monthlySmsCount: Long
+)
+
 /**
  * subject(제목): LMS, MMS에서만 사용 가능
  */

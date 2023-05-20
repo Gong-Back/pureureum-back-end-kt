@@ -4,8 +4,9 @@ import gongback.pureureum.application.SmsSendException
 import gongback.pureureum.application.SmsSender
 import gongback.pureureum.application.dto.MessageDto
 import gongback.pureureum.application.dto.NaverSendMessageDto
+import gongback.pureureum.application.dto.SmsRequestDto
 import org.springframework.http.MediaType
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import java.util.*
 import javax.crypto.Mac
@@ -15,20 +16,20 @@ private const val ALGORITHM = "HmacSHA256"
 private const val CHARSET_NAME = "UTF-8"
 private const val SENDING_LIMIT = 50
 
-@Service
+@Component
 class NaverSmsSender(
     private val webClient: WebClient,
     private val naverSmsProperties: NaverSmsProperties
 ) : SmsSender {
 
-    private val SEND_URI = "/sms/v2/services/${naverSmsProperties.serviceId}/messages"
+    private val sendUrl = "/sms/v2/services/${naverSmsProperties.serviceId}/messages"
 
-    override fun send(receiver: String, certificationNumber: String, monthCounts: Long) {
-        if (monthCounts > SENDING_LIMIT) {
-            throw IllegalArgumentException("월 메시지 전송 한도를 초과했습니다")
+    override fun send(smsRequestDto: SmsRequestDto) {
+        if (smsRequestDto.monthlySmsCount > SENDING_LIMIT) {
+            throw SmsOverRequestException()
         }
 
-        sendMessage(receiver, certificationNumber)
+        sendMessage(smsRequestDto.receiver, smsRequestDto.certificationNumber)
     }
 
     private fun sendMessage(receiver: String, randomNumber: String) {
@@ -36,7 +37,7 @@ class NaverSmsSender(
 
         webClient
             .post()
-            .uri(naverSmsProperties.domain + SEND_URI)
+            .uri(naverSmsProperties.domain + sendUrl)
             .headers {
                 it.contentType = MediaType.APPLICATION_JSON
                 it.set("x-ncp-apigw-timestamp", currentTimeMillis.toString())
@@ -70,7 +71,7 @@ class NaverSmsSender(
         val message = StringBuilder()
             .append("POST")
             .append(" ")
-            .append(SEND_URI)
+            .append(sendUrl)
             .append(newLine)
             .append(currentTimeMillis)
             .append(newLine)

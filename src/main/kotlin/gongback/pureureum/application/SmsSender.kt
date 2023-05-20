@@ -1,5 +1,7 @@
 package gongback.pureureum.application
 
+import gongback.pureureum.application.dto.SmsRequestDto
+
 interface SmsSender {
-    fun send(receiver: String, certificationNumber: String, monthCounts: Long)
+    fun send(smsRequestDto: SmsRequestDto)
 }
