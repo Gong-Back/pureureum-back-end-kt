@@ -9,13 +9,12 @@ import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.ForeignKey
-import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 
 @Entity
-@Table(name = "dashboard", indexes = [Index(name = "idx_project_dashboard_project_id", columnList = "project_id")])
+@Table(name = "dashboard")
 class Dashboard(
 
     @Column(nullable = false, name = "project_id")

@@ -5,11 +5,10 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
-import jakarta.persistence.Index
 import jakarta.persistence.Table
 
 @Entity
-@Table(name = "dashboard_member", indexes = [Index(name = "idx_dashboard_member_user_id", columnList = "user_id")])
+@Table(name = "dashboard_member")
 class DashboardMember(
 
     @Column(nullable = false, name = "user_id")

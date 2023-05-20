@@ -3,18 +3,11 @@ package gongback.pureureum.domain.dashboardcalendar
 import gongback.pureureum.support.domain.BaseEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.Index
 import jakarta.persistence.Table
 import java.time.LocalDateTime
 
 @Entity
-@Table(
-    name = "dashboard_calendar",
-    indexes = [
-        Index(name = "idx_dashboard_calendar_start_date", columnList = "start_date"),
-        Index(name = "idx_dashboard_calendar_end_date", columnList = "end_date")
-    ]
-)
+@Table(name = "dashboard_calendar")
 class DashboardCalendar(
     @Column(nullable = false)
     val userId: Long,

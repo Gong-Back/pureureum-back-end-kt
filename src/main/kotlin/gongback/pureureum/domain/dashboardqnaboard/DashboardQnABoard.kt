@@ -5,20 +5,13 @@ import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.ForeignKey
-import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.Lob
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 
 @Entity
-@Table(
-    name = "dashboard_qna_board",
-    indexes = [
-        Index(name = "idx_dashboard_qna_board_user_id", columnList = "user_id"),
-        Index(name = "idx_dashboard_qna_board_title", columnList = "title")
-    ]
-)
+@Table(name = "dashboard_qna_board")
 class DashboardQnABoard(
     @Column(nullable = false, name = "user_id")
     val userId: Long,
