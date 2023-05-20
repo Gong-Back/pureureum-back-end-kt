@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile
 @Service
 @Transactional(readOnly = true)
 class UserService(
-    private val uploadService: UploadService,
+    private val fileService: FileService,
     private val userRepository: UserRepository,
     private val smsLogRepository: SmsLogRepository
 ) {
@@ -43,14 +43,14 @@ class UserService(
     @Transactional
     fun updatedProfile(email: String, updateProfile: MultipartFile?) {
         updateProfile?.apply {
-            val originalFileName = uploadService.validateFileName(updateProfile)
-            val contentType = uploadService.getImageType(updateProfile)
+            val originalFileName = fileService.validateFileName(updateProfile)
+            val contentType = fileService.getImageType(updateProfile)
 
             val findUser = userRepository.getUserByEmail(email)
             if (findUser.profile.originalFileName != "default_profile.png") {
-                uploadService.deleteFile(findUser.profile.fileKey)
+                fileService.deleteFile(findUser.profile.fileKey)
             }
-            val fileKey = uploadService.uploadFile(updateProfile, FileType.PROFILE, originalFileName)
+            val fileKey = fileService.uploadFile(updateProfile, FileType.PROFILE, originalFileName)
 
             findUser.profile.updateProfile(fileKey, contentType, originalFileName)
             userRepository.save(findUser)
@@ -59,7 +59,7 @@ class UserService(
 
     fun getUserInfoWithProfileUrl(email: String): UserInfoRes {
         val user = userRepository.getUserByEmail(email)
-        val profileUrl = uploadService.getFileUrl(user.profile.fileKey)
+        val profileUrl = fileService.getFileUrl(user.profile.fileKey)
         return UserInfoRes.toUserWithProfileUrl(user, profileUrl)
     }
 

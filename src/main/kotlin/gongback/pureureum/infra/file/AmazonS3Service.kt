@@ -1,10 +1,11 @@
-package gongback.pureureum.application
+package gongback.pureureum.infra.file
 
 import com.amazonaws.HttpMethod.GET
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
 import com.amazonaws.services.s3.model.ObjectMetadata
-import gongback.pureureum.application.properties.S3Properties
+import gongback.pureureum.application.S3Exception
+import gongback.pureureum.application.StorageService
 import gongback.pureureum.support.constant.FileType
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile

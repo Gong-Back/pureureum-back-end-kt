@@ -8,9 +8,6 @@ open class PureureumException(message: String? = null, cause: Throwable? = null,
 class SmsSendException(cause: Throwable? = null) :
     PureureumException(cause = cause, errorCode = ErrorCode.SMS_SEND_FAILED)
 
-class SmsOverRequestException(cause: Throwable? = null) :
-    PureureumException(cause = cause, errorCode = ErrorCode.SMS_OVER_SENDING_REQUEST)
-
 class OAuthAuthenticationException(cause: Throwable? = null) :
     PureureumException(cause = cause, errorCode = ErrorCode.OAUTH_AUTHENTICATION_FAIL)
 

@@ -33,8 +33,8 @@ import support.createUser
 class FacilityServiceTest : BehaviorSpec({
     val facilityRepository = mockk<FacilityRepository>()
     val userRepository = mockk<UserRepository>()
-    val uploadService = mockk<UploadService>()
-    val facilityService = FacilityService(facilityRepository, userRepository, uploadService)
+    val fileService = mockk<FileService>()
+    val facilityService = FacilityService(facilityRepository, userRepository, fileService)
 
     Given("사용자 이메일과 시설 정보") {
         val user = createUser()
@@ -44,7 +44,7 @@ class FacilityServiceTest : BehaviorSpec({
             val facilityReq = createFacilityReq()
             val certificationDoc = listOf(createMockCertificationDoc(originalFileName = null))
             every { userRepository.getUserByEmail(any()) } returns user
-            every { uploadService.validateFileName(any()) } throws IllegalArgumentException("원본 파일 이름이 존재하지 않습니다")
+            every { fileService.validateFileName(any()) } throws IllegalArgumentException("원본 파일 이름이 존재하지 않습니다")
 
             Then("예외가 발생한다.") {
                 shouldThrow<IllegalArgumentException> {
@@ -63,7 +63,7 @@ class FacilityServiceTest : BehaviorSpec({
             val certificationDoc = listOf(createMockCertificationDoc(originalFileName = ""))
 
             every { userRepository.getUserByEmail(any()) } returns user
-            every { uploadService.validateFileName(any()) } throws IllegalArgumentException("원본 파일 이름이 비어있습니다")
+            every { fileService.validateFileName(any()) } throws IllegalArgumentException("원본 파일 이름이 비어있습니다")
 
             Then("예외가 발생한다.") {
                 shouldThrow<IllegalArgumentException> {
@@ -82,8 +82,8 @@ class FacilityServiceTest : BehaviorSpec({
             val certificationDoc = listOf(createMockCertificationDoc(contentType = null))
 
             every { userRepository.getUserByEmail(any()) } returns user
-            every { uploadService.validateFileName(any()) } returns CERTIFICATION_DOC_NAME
-            every { uploadService.getImageType(any()) } throws IllegalArgumentException("파일 형식이 유효하지 않습니다")
+            every { fileService.validateFileName(any()) } returns CERTIFICATION_DOC_NAME
+            every { fileService.getImageType(any()) } throws IllegalArgumentException("파일 형식이 유효하지 않습니다")
 
             Then("예외가 발생한다.") {
                 shouldThrow<IllegalArgumentException> {
@@ -104,9 +104,9 @@ class FacilityServiceTest : BehaviorSpec({
             val fileKey = CERTIFICATION_DOC_FILE_KEY
 
             every { userRepository.getUserByEmail(any()) } returns user
-            every { uploadService.uploadFile(any(), any(), any()) } returns fileKey
-            every { uploadService.validateFileName(any()) } returns CERTIFICATION_DOC_NAME
-            every { uploadService.getImageType(any()) } returns CERTIFICATION_DOC_TYPE
+            every { fileService.uploadFile(any(), any(), any()) } returns fileKey
+            every { fileService.validateFileName(any()) } returns CERTIFICATION_DOC_NAME
+            every { fileService.getImageType(any()) } returns CERTIFICATION_DOC_TYPE
             every { facilityRepository.save(any()) } returns facility
 
             Then("시설 정보를 등록한다.") {
@@ -125,8 +125,8 @@ class FacilityServiceTest : BehaviorSpec({
         When("올바른 카테고리라면") {
             every { userRepository.getUserByEmail(any()) } returns user
             every { facilityRepository.getApprovedByCategoryAndUserId(category, user.id) } returns facilities
-            every { uploadService.validateFileName(any()) } returns "OriginalFilename"
-            every { uploadService.getImageType(any()) } returns "image/png"
+            every { fileService.validateFileName(any()) } returns "OriginalFilename"
+            every { fileService.getImageType(any()) } returns "image/png"
 
             Then("사용자의 카테고리별 시설 정보를 반환한다.") {
                 facilityService.getApprovedFacilityByCategory(email, category.name) shouldBe facilityRes
@@ -151,8 +151,8 @@ class FacilityServiceTest : BehaviorSpec({
         When("올바른 사용자 정보라면") {
             every { userRepository.getUserByEmail(any()) } returns user
             every { facilityRepository.getByUserId(user.id) } returns facilities
-            every { uploadService.validateFileName(any()) } returns "OriginalFilename"
-            every { uploadService.getImageType(any()) } returns "image/png"
+            every { fileService.validateFileName(any()) } returns "OriginalFilename"
+            every { fileService.getImageType(any()) } returns "image/png"
 
             Then("사용자의 시설 정보를 반환한다.") {
                 facilityService.getAllFacilities(email) shouldBe facilityResWithProgress
@@ -167,9 +167,9 @@ class FacilityServiceTest : BehaviorSpec({
 
         When("올바른 인증 서류 아이디라면") {
             every { facilityRepository.getDocFileKeyByDocId(any(), any()) } returns fileKey
-            every { uploadService.getFileUrl(any()) } returns fileUrl
-            every { uploadService.validateFileName(any()) } returns "OriginalFilename"
-            every { uploadService.getImageType(any()) } returns "image/png"
+            every { fileService.getFileUrl(any()) } returns fileUrl
+            every { fileService.validateFileName(any()) } returns "OriginalFilename"
+            every { fileService.getImageType(any()) } returns "image/png"
 
             Then("인증 서류의 다운로드 URL을 반환한다") {
                 facilityService.getCertificationDocDownloadPath(1L, docId) shouldBe fileUrl

@@ -6,6 +6,7 @@ import gongback.pureureum.application.SmsService
 import gongback.pureureum.application.UserAuthenticationService
 import gongback.pureureum.application.dto.ErrorCode
 import gongback.pureureum.application.dto.SmsSendResponse
+import gongback.pureureum.infra.sms.SmsOverRequestException
 import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
@@ -36,8 +37,8 @@ class SmsRestControllerTest : ControllerTestHelper() {
     @Test
     fun `전화번호 인증 전송 성공`() {
         val smsSendResponse = SmsSendResponse("000000")
-        every { smsService.sendSmsCertification(any()) } returns smsSendResponse
         every { userAuthenticationService.checkDuplicatedPhoneNumber(any()) } just runs
+        every { smsService.sendSmsCertification(any()) } returns smsSendResponse
 
         mockMvc.post("/api/v1/sms/send/certification") {
             jsonContent(createPhoneNumber())
@@ -60,7 +61,6 @@ class SmsRestControllerTest : ControllerTestHelper() {
     @Test
     fun `전화번호 인증 전송 실패 - 이미 존재하는 전화번호`() {
         val userAccountDto = createUserAccountDto()
-        every { smsService.sendSmsCertification(any()) } throws SmsSendException()
         every { userAuthenticationService.checkDuplicatedPhoneNumber(any()) } throws IllegalArgumentException("이미 가입된 전화번호입니다")
         every { userAuthenticationService.getUserAccountDto(any()) } returns userAccountDto
 
@@ -91,8 +91,8 @@ class SmsRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `전화번호 인증 전송 실패 - 서버 오류`() {
-        every { smsService.sendSmsCertification(any()) } throws SmsSendException()
         every { userAuthenticationService.checkDuplicatedPhoneNumber(any()) } just runs
+        every { smsService.sendSmsCertification(any()) } throws SmsSendException()
 
         mockMvc.post("/api/v1/sms/send/certification") {
             jsonContent(createPhoneNumber())
@@ -109,8 +109,8 @@ class SmsRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `전화번호 인증 전송 실패 - 50건 초과`() {
-        every { smsService.sendSmsCertification(any()) } throws SmsSendException()
         every { userAuthenticationService.checkDuplicatedPhoneNumber(any()) } just runs
+        every { smsService.sendSmsCertification(any()) } throws SmsOverRequestException()
 
         mockMvc.post("/api/v1/sms/send/certification") {
             jsonContent(createPhoneNumber())
@@ -133,7 +133,6 @@ class SmsRestControllerTest : ControllerTestHelper() {
     @Test
     fun `전화번호 인증 완료`() {
         every { smsService.completeCertification(any()) } just runs
-        every { userAuthenticationService.checkDuplicatedPhoneNumber(any()) } just runs
 
         mockMvc.post("/api/v1/sms/complete/certification") {
             jsonContent(createPhoneNumber())
@@ -151,9 +150,8 @@ class SmsRestControllerTest : ControllerTestHelper() {
     fun `전화번호 인증 실패 - 기록이 없을 때`() {
         val req = createPhoneNumber()
 
-        val errorMessage: String = " receiver: ${req.get("phoneNumber")}"
-        every { smsService.completeCertification(any()) } throws IllegalArgumentException(errorMessage)
-        every { userAuthenticationService.checkDuplicatedPhoneNumber(any()) } just runs
+        val errorMessage = " receiver: ${req.get("phoneNumber")}"
+        every { smsService.completeCertification(any()) } throws IllegalArgumentException("본인 인증 요청을 하지 않은 사용자입니다, $errorMessage")
 
         mockMvc.post("/api/v1/sms/complete/certification") {
             jsonContent(req)

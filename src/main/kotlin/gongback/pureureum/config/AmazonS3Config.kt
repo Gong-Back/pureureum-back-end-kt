@@ -8,7 +8,7 @@ import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3Client
-import gongback.pureureum.application.properties.S3Properties
+import gongback.pureureum.infra.file.S3Properties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
