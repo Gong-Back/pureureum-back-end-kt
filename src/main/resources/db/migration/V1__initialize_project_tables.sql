@@ -121,17 +121,15 @@ create table temp_social_auth
     created_date date         not null,
     birthday     varchar(255) null,
     email        varchar(255) not null,
-    gender       smallint     null,
+    gender       smallint null,
     name         varchar(255) null,
     phone_number varchar(255) null,
-    social_type  varchar(255) null,
-    constraint UK_llr78woo32d1c5kr2p88f5olu
-        unique (email)
+    social_type  varchar(255) null
 );
 
 alter table temp_social_auth
     add index idx_email (email),
-    add unique UK_llr78woo32d1c5kr2p88f5olu (email);
+    add unique uk_temp_social_auth_email (email);
 
 create table user
 (
@@ -151,10 +149,10 @@ create table user
 );
 
 alter table user
-    add constraint FKof44u64o1d7scaukghm9veo23
+    add constraint fk_user_profile_id_ref_profile_id
         foreign key (profile_id)
             references profile (id),
-    add unique UK_1mcjtpxmwom9h9bf2q0k412e0 (profile_id),
-    add unique UK_4bgmpi98dylab6qdvf9xyaxu4 (phone_number),
-    add unique UK_n4swgcf30j6bmtb4l4cjryuym (nickname),
-    add unique UK_ob8kqyqqgmefl0aco34akdtpe (email);
+    add unique uk_user_profile_id (profile_id),
+    add unique uk_user_phone_number (phone_number),
+    add unique uk_user_nickname (nickname),
+    add unique uk_user_email (email);
