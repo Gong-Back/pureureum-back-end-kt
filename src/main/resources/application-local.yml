@@ -1,10 +1,13 @@
 spring:
   config:
     import: secret.yml
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
   
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     open-in-view: false
     properties:
       hibernate:

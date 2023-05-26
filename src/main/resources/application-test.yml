@@ -4,6 +4,8 @@ server:
 spring:
   datasource:
     url: jdbc:h2:~/test;MODE=MariaDB;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+  flyway:
+    enabled: false
 
   jpa:
     hibernate:
