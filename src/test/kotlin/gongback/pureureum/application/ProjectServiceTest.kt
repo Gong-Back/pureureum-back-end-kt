@@ -94,7 +94,7 @@ class ProjectServiceTest : BehaviorSpec({
             val facility = createFacility()
             val projectRes = createProjectResWithoutPayment(project, facility.address)
             every { projectRepository.getProjectById(projectId) } returns project
-            every { facilityRepository.getReferenceById(project.facilityId) } returns facility
+            every { facilityRepository.findFacilityById(project.facilityId) } returns facility
             every { fileService.getFileUrl(any()) } returns "signedUrl"
 
             Then("정상적으로 조회된다.") {

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import java.net.URI
 
 @RestController
 @RequestMapping("/api/v1/projects")
@@ -33,8 +34,8 @@ class ProjectRestController(
         @RequestPart(required = false) projectFiles: List<MultipartFile>?,
         @LoginEmail email: String
     ): ResponseEntity<ApiResponse<Unit>> {
-        projectService.registerProject(email, projectRegisterReq, projectFiles)
-        return ResponseEntity.ok().build()
+        val savedProjectId = projectService.registerProject(email, projectRegisterReq, projectFiles)
+        return ResponseEntity.created(URI.create("/api/v1/projects/$savedProjectId")).build()
     }
 
     @GetMapping("/{id}")
@@ -48,7 +49,7 @@ class ProjectRestController(
         @LoginEmail email: String
     ): ResponseEntity<Unit> {
         projectService.deleteProject(id, email)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.noContent().build()
     }
 
     @GetMapping

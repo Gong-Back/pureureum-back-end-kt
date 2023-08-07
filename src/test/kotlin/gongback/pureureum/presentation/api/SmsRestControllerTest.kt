@@ -67,7 +67,7 @@ class SmsRestControllerTest : ControllerTestHelper() {
         mockMvc.post("/api/v1/sms/send/certification") {
             jsonContent(createPhoneNumber())
         }.andExpect {
-            status { isBadRequest() }
+            status { isConflict() }
             content {
                 ApiResponse.error(
                     ErrorCode.REQUEST_RESOURCE_ALREADY_EXISTS.code,
@@ -137,7 +137,7 @@ class SmsRestControllerTest : ControllerTestHelper() {
         mockMvc.post("/api/v1/sms/complete/certification") {
             jsonContent(createPhoneNumber())
         }.andExpect {
-            status { isOk() }
+            status { isNoContent() }
         }.andDo {
             createDocument(
                 "sms-complete-success",

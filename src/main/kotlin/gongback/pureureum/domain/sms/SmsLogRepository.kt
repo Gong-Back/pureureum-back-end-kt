@@ -8,7 +8,7 @@ import java.time.LocalDate
 
 fun SmsLogRepository.getLastSmsLog(receiver: String): SmsLog =
     findFirstByReceiverOrderByIdDesc(receiver)
-        ?: throw IllegalArgumentException("본인 인증 요청을 하지 않은 사용자입니다, receiver: $receiver")
+        ?: throw NoSuchElementException("본인 인증 요청을 하지 않은 사용자입니다, receiver: $receiver")
 
 interface SmsLogRepository : JpaRepository<SmsLog, Long> {
     @Query("select count(sl) from SmsLog sl where sl.createdDate between :startDate and :endDate")

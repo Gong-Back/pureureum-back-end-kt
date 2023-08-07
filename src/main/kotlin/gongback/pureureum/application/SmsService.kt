@@ -45,7 +45,7 @@ class SmsService(
     }
 
     private fun getDaysByMonth(year: Int, month: Int): Int = when (month) {
-        FIRST_DAY_OF_MONTH, 3, 5, 7, 8, 10, 12 -> 31
+        1, 3, 5, 7, 8, 10, 12 -> 31
         2 -> if (isLeapYear(year)) 29 else 28
         else -> 30
     }

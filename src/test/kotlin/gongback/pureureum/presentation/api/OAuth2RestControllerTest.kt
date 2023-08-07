@@ -140,7 +140,7 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
         mockMvc.post("/api/v1/oauth/login/kakao") {
             jsonContent(createAuthenticationInfo())
         }.andExpect {
-            status { isBadRequest() }
+            status { isConflict() }
         }.andDo {
             createDocument(
                 "oAuth-login-fail-exists-user",

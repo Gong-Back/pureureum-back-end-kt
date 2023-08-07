@@ -51,7 +51,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
             file(facilityInfo)
             file(certificationDoc)
         }.andExpect {
-            status { isOk() }
+            status { isCreated() }
         }.andDo {
             createDocument(
                 "register-facility-success",

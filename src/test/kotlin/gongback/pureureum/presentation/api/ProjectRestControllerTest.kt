@@ -47,7 +47,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `프로젝트 등록 성공`() {
-        every { projectService.registerProject(any(), any(), any()) } just runs
+        every { projectService.registerProject(any(), any(), any()) } returns 1L
 
         val projectRegisterReq = createProjectRegisterReq()
         val projectRegisterReqStr = objectToString(projectRegisterReq)
@@ -67,7 +67,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
             file(projectFile1)
             file(projectFile2)
         }.andExpect {
-            status { isOk() }
+            status { isCreated() }
         }.andDo {
             createDocument(
                 "register-project-success",
@@ -221,7 +221,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
         mockMvc.delete("/api/v1/projects/{id}", 1L) {
             token(createAccessToken())
         }.andExpect {
-            status { isOk() }
+            status { isNoContent() }
         }.andDo {
             createDocument(
                 "delete-project-success",
