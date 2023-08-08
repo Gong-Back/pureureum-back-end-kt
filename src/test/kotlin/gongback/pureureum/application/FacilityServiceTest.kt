@@ -129,15 +129,7 @@ class FacilityServiceTest : BehaviorSpec({
             every { fileService.getImageType(any()) } returns "image/png"
 
             Then("사용자의 카테고리별 시설 정보를 반환한다.") {
-                facilityService.getApprovedFacilityByCategory(email, category.name) shouldBe facilityRes
-            }
-        }
-
-        When("올바르지 않은 카테고리라면") {
-            val invalidCategory = "invalidCategory"
-
-            Then("예외가 발생한다") {
-                shouldThrow<PureureumException> { facilityService.getApprovedFacilityByCategory(email, invalidCategory) }
+                facilityService.getApprovedFacilityByCategory(email, category) shouldBe facilityRes
             }
         }
     }
@@ -185,15 +177,7 @@ class FacilityServiceTest : BehaviorSpec({
             every { facilityRepository.getAllNotApprovedByCategory(any()) } returns facilities
 
             Then("해당하는 카테고리의 승인받지 않은 시설 리스트를 반환한다") {
-                facilityService.getNotApprovedFacilitiesByCategory(FACILITY_CATEGORY.name) shouldBe facilitiesRes
-            }
-        }
-
-        When("올바르지 않은 카테고리라면") {
-            val invalidCategory = "invalidCategory"
-
-            Then("예외가 발생한다") {
-                shouldThrow<PureureumException> { facilityService.getNotApprovedFacilitiesByCategory(invalidCategory) }
+                facilityService.getNotApprovedFacilitiesByCategory(FACILITY_CATEGORY) shouldBe facilitiesRes
             }
         }
     }

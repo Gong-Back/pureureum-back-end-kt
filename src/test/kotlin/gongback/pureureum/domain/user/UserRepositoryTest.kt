@@ -54,7 +54,7 @@ class UserRepositoryTest(
         }
 
         expect("이메일 조회 실패") {
-            shouldThrow<IllegalArgumentException> { userRepository.getUserByEmail("otherEmail") }
+            shouldThrow<NoSuchElementException> { userRepository.getUserByEmail("otherEmail") }
         }
 
         expect("전화번호 조회 성공") {
@@ -63,7 +63,7 @@ class UserRepositoryTest(
         }
 
         expect("전화번호 조회 실패") {
-            shouldThrow<IllegalArgumentException> { userRepository.getUserByPhoneNumber("otherEmail") }
+            shouldThrow<NoSuchElementException> { userRepository.getUserByPhoneNumber("otherEmail") }
         }
     }
 

@@ -33,7 +33,7 @@ class ProjectService(
 ) {
 
     @Transactional
-    fun registerProject(email: String, projectRegisterReq: ProjectRegisterReq, projectFiles: List<MultipartFile>?) {
+    fun registerProject(email: String, projectRegisterReq: ProjectRegisterReq, projectFiles: List<MultipartFile>?): Long {
         val findUser = userRepository.getUserByEmail(email)
 
         // ProjectFileUpload
@@ -53,7 +53,7 @@ class ProjectService(
             productFiles,
             findUser.id
         )
-        projectRepository.save(project)
+        return projectRepository.save(project).id
     }
 
     fun getProject(id: Long): ProjectRes {
@@ -90,7 +90,7 @@ class ProjectService(
     }
 
     private fun projectToDto(project: Project): ProjectRes {
-        val findFacility = facilityRepository.getReferenceById(project.facilityId)
+        val findFacility = facilityRepository.getFacilityById(project.facilityId)
 
         val projectFileResList = project.projectFiles.map { projectFile ->
             val projectFileUrl = fileService.getFileUrl(projectFile.fileKey)

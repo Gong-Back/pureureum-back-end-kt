@@ -36,7 +36,6 @@ class UserRestController(
         response: HttpServletResponse
     ): ResponseEntity<ApiResponse<TokenRes>> {
         userAuthenticationService.validateAuthentication(loginReq)
-
         return ResponseEntity.ok().body(ApiResponse.ok(userAuthenticationService.getTokenRes(loginReq.email)))
     }
 
@@ -53,7 +52,7 @@ class UserRestController(
         @RequestBody @Valid emailReq: EmailReq
     ): ResponseEntity<Unit> {
         userAuthenticationService.checkDuplicatedEmailOrNickname(emailReq.email)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/me")
@@ -70,7 +69,7 @@ class UserRestController(
         @LoginEmail email: String
     ): ResponseEntity<Unit> {
         userService.updateUserInfo(email, userInfoReq)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/update/profile")
@@ -79,7 +78,7 @@ class UserRestController(
         @LoginEmail email: String
     ): ResponseEntity<Unit> {
         userService.updatedProfile(email, profile)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/reissue-token")

@@ -210,7 +210,7 @@ class UserRestControllerTest : ControllerTestHelper() {
         mockMvc.post("/api/v1/users/validate/email") {
             jsonContent(mapOf("email" to "testEmail123"))
         }.andExpect {
-            status { isOk() }
+            status { isNoContent() }
         }.andDo {
             createDocument(
                 "user-checkEmail-success",
@@ -223,7 +223,7 @@ class UserRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `이메일 중복 확인 실패`() {
-        every { userAuthenticationService.checkDuplicatedEmailOrNickname(any()) } throws IllegalStateException("이미 가입된 이메일입니다")
+        every { userAuthenticationService.checkDuplicatedEmailOrNickname(any()) } throws IllegalArgumentException("이미 가입된 이메일입니다")
 
         mockMvc.post("/api/v1/users/validate/email") {
             jsonContent(mapOf("email" to "testEmail123"))
@@ -301,7 +301,7 @@ class UserRestControllerTest : ControllerTestHelper() {
             token(createAccessToken())
             jsonContent(createUserInfoReq())
         }.andExpect {
-            status { isOk() }
+            status { isNoContent() }
         }.andDo {
             createDocument(
                 "update-user-info-success",
@@ -378,7 +378,7 @@ class UserRestControllerTest : ControllerTestHelper() {
             token(createAccessToken())
             file(profile)
         }.andExpect {
-            status { isOk() }
+            status { isNoContent() }
         }.andDo {
             createDocument(
                 "update-profile-success",

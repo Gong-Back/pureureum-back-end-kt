@@ -28,7 +28,7 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         status: HttpStatusCode,
         request: WebRequest
     ): ResponseEntity<Any>? {
-        logger.error("[MethodArgumentNotValidException] ${ex.messages()}")
+        logger.warn("[MethodArgumentNotValidException] ${ex.messages()}")
         return ResponseEntity.status(ErrorCode.REQUEST_RESOURCE_NOT_VALID.httpStatus)
             .body(ApiResponse.error(ErrorCode.REQUEST_RESOURCE_NOT_VALID.code, ex.messages()))
     }
@@ -39,10 +39,9 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         status: HttpStatusCode,
         request: WebRequest
     ): ResponseEntity<Any>? {
-        logger.error("[HttpMessageNotReadableException] ${ex.message}")
+        logger.warn("[HttpMessageNotReadableException] ${ex.message}")
         val errorMessage = when (val cause = ex.cause) {
             is MissingKotlinParameterException -> "${cause.parameter.name} is null"
-
             else -> "유효하지 않은 요청입니다"
         }
         return ResponseEntity.status(ErrorCode.REQUEST_RESOURCE_NOT_VALID.httpStatus)
@@ -55,23 +54,15 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         status: HttpStatusCode,
         request: WebRequest
     ): ResponseEntity<Any>? {
-        logger.error("[HttpRequestMethodNotSupportedException] ${ex.messages()}")
+        logger.warn("[HttpRequestMethodNotSupportedException] ${ex.messages()}")
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
             .body(ApiResponse.error(ErrorCode.METHOD_NOT_ALLOWED.code, ex.messages()))
     }
 
-    private fun MethodArgumentNotValidException.messages(): List<String> {
-        return bindingResult.fieldErrors.map { "${it.field}: ${it.defaultMessage.orEmpty()}" }
-    }
-
-    private fun HttpRequestMethodNotSupportedException.messages(): String {
-        return "${body.title}: ${body.detail}"
-    }
-
-    @ExceptionHandler(IllegalStateException::class)
-    fun handleIllegalStateException(ex: IllegalStateException): ResponseEntity<ApiResponse<Unit>> {
-        logger.error("[IllegalStateException] ${ex.message}")
-        return ResponseEntity.badRequest()
+    @ExceptionHandler(NoSuchElementException::class)
+    fun handleNoSuchElementException(ex: NoSuchElementException): ResponseEntity<ApiResponse<Unit>> {
+        logger.warn("[NoSuchElementException] ${ex.message}")
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(
                 ApiResponse.error(
                     ErrorCode.REQUEST_RESOURCE_NOT_VALID.code,
@@ -82,7 +73,7 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
 
     @ExceptionHandler(IllegalArgumentException::class)
     fun handleIllegalArgumentException(ex: IllegalArgumentException): ResponseEntity<ApiResponse<Unit>> {
-        logger.error("[IllegalArgumentException] ${ex.message}")
+        logger.warn("[IllegalArgumentException] ${ex.message}")
         return ResponseEntity.badRequest()
             .body(
                 ApiResponse.error(
@@ -92,17 +83,17 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
             )
     }
 
-    @ExceptionHandler(PureureumException::class)
-    fun handlePureureumException(ex: PureureumException): ResponseEntity<ApiResponse<Unit>> {
-        logger.error("[PureureumException] ${ex.message}")
-        return ResponseEntity.status(ex.errorCode.httpStatus)
-            .body(ApiResponse.error(ex.errorCode.code, ex.message ?: ex.errorCode.message))
-    }
-
     @ExceptionHandler(S3Exception::class)
     fun handleS3Exception(ex: S3Exception): ResponseEntity<ApiResponse<Unit>> {
         logger.error("[S3Exception] ", ex)
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(ApiResponse.error(ex.errorCode.code, ex.message ?: ex.errorCode.message))
+    }
+
+    @ExceptionHandler(PureureumException::class)
+    fun handlePureureumException(ex: PureureumException): ResponseEntity<ApiResponse<Unit>> {
+        logger.warn("[PureureumException] ${ex.message}")
+        return ResponseEntity.status(ex.errorCode.httpStatus)
             .body(ApiResponse.error(ex.errorCode.code, ex.message ?: ex.errorCode.message))
     }
 
@@ -112,7 +103,7 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         httpServletRequest: HttpServletRequest,
         httpServletResponse: HttpServletResponse
     ): ResponseEntity<Any> {
-        logger.error("[JwtException] ", ex)
+        logger.warn("[JwtException] ", ex)
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(ApiResponse.error(ex.code, ex.message))
     }
@@ -123,7 +114,7 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         httpServletRequest: HttpServletRequest,
         httpServletResponse: HttpServletResponse
     ): ResponseEntity<Any> {
-        logger.error("[JwtExpiredException] ", ex)
+        logger.warn("[JwtExpiredException] ", ex)
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(ApiResponse.error(ex.code, ex.message))
@@ -134,5 +125,13 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         logger.error("[Exception] ", ex)
         return ResponseEntity.internalServerError()
             .body(ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.message ?: ""))
+    }
+
+    private fun MethodArgumentNotValidException.messages(): List<String> {
+        return bindingResult.fieldErrors.map { "${it.field}: ${it.defaultMessage.orEmpty()}" }
+    }
+
+    private fun HttpRequestMethodNotSupportedException.messages(): String {
+        return "${body.title}: ${body.detail}"
     }
 }

@@ -5,6 +5,7 @@ import gongback.pureureum.application.dto.FacilityRes
 import gongback.pureureum.application.dto.FacilityWithDocIds
 import gongback.pureureum.domain.facility.FacilityProgress
 import gongback.pureureum.presentation.api.ApiResponse
+import gongback.pureureum.support.constant.Category
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -32,7 +33,7 @@ class AdminFacilityController(
 
     @GetMapping("/all")
     fun getNotApprovedFacility(
-        @RequestParam("category") category: String
+        @RequestParam("category") category: Category
     ): ResponseEntity<ApiResponse<List<FacilityRes>>> {
         val facilityRes = facilityService.getNotApprovedFacilitiesByCategory(category)
         return ResponseEntity.ok(ApiResponse.ok(facilityRes))
@@ -52,7 +53,7 @@ class AdminFacilityController(
         @RequestParam("progress") progress: FacilityProgress
     ): ResponseEntity<Unit> {
         facilityService.updateFacilityProgress(id, progress)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/update")
@@ -61,6 +62,6 @@ class AdminFacilityController(
         @RequestParam("progress") progress: FacilityProgress
     ): ResponseEntity<Unit> {
         facilityService.updateFacilitiesProgress(ids, progress)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.noContent().build()
     }
 }

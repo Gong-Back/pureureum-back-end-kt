@@ -1,6 +1,5 @@
 package gongback.pureureum.application
 
-import gongback.pureureum.application.dto.ErrorCode
 import gongback.pureureum.application.dto.FacilityReq
 import gongback.pureureum.application.dto.FacilityRes
 import gongback.pureureum.application.dto.FacilityResWithProgress
@@ -46,10 +45,9 @@ class FacilityService(
         facilityRepository.save(facility)
     }
 
-    fun getApprovedFacilityByCategory(userEmail: String, category: String): List<FacilityRes> {
-        val facilityCategory = validateCategory(category)
+    fun getApprovedFacilityByCategory(userEmail: String, category: Category): List<FacilityRes> {
         val user = userRepository.getUserByEmail(userEmail)
-        val facilities = facilityRepository.getApprovedByCategoryAndUserId(facilityCategory, user.id)
+        val facilities = facilityRepository.getApprovedByCategoryAndUserId(category, user.id)
         return facilities.map {
             FacilityRes.fromFacility(it)
         }
@@ -68,9 +66,8 @@ class FacilityService(
         return fileService.getFileUrl(fileKey)
     }
 
-    fun getNotApprovedFacilitiesByCategory(category: String): List<FacilityRes> {
-        val facilityCategory = validateCategory(category)
-        val facilities = facilityRepository.getAllNotApprovedByCategory(facilityCategory)
+    fun getNotApprovedFacilitiesByCategory(category: Category): List<FacilityRes> {
+        val facilities = facilityRepository.getAllNotApprovedByCategory(category)
         return facilities.map {
             FacilityRes.fromFacility(it)
         }
@@ -95,13 +92,5 @@ class FacilityService(
     @Transactional
     fun updateFacilitiesProgress(ids: List<Long>, progress: FacilityProgress) {
         facilityRepository.updateProgressByIds(ids, progress)
-    }
-
-    private fun validateCategory(category: String): Category {
-        return try {
-            Category.valueOf(category)
-        } catch (e: IllegalArgumentException) {
-            throw PureureumException(errorCode = ErrorCode.ENUM_VALUE_INVALID)
-        }
     }
 }
