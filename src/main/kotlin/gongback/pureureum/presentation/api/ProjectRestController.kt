@@ -22,8 +22,10 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import java.net.URI
 
+private const val BASE_URL = "/api/v1/projects/"
+
 @RestController
-@RequestMapping("/api/v1/projects")
+@RequestMapping(BASE_URL)
 class ProjectRestController(
     private val projectService: ProjectService
 ) {
@@ -35,7 +37,7 @@ class ProjectRestController(
         @LoginEmail email: String
     ): ResponseEntity<ApiResponse<Unit>> {
         val savedProjectId = projectService.registerProject(email, projectRegisterReq, projectFiles)
-        return ResponseEntity.created(URI.create("/api/v1/projects/$savedProjectId")).build()
+        return ResponseEntity.created(URI.create(BASE_URL + "$savedProjectId")).build()
     }
 
     @GetMapping("/{id}")
