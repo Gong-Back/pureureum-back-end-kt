@@ -124,7 +124,7 @@ fun createProjectPartPageRes(projects: List<Project>): ProjectPartPageRes {
     val facility = createFacility()
     val projectPartResList = projects.map { createProjectPartRes(it, facility.address) }.toList()
 
-    return ProjectPartPageRes(0, 1, 3, projectPartResList)
+    return ProjectPartPageRes(0, 1, projectPartResList.size, projectPartResList)
 }
 
 fun createProjectPartRes(project: Project, facilityAddress: FacilityAddress) =
