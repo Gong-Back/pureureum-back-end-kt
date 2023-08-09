@@ -263,7 +263,6 @@ class ProjectRestControllerTest : ControllerTestHelper() {
         every { projectService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
 
         mockMvc.get("/api/v1/projects") {
-            token(createAccessToken())
             param("searchType", SEARCH_TYPE_POPULAR.name)
             param("category", PROJECT_CATEGORY.name)
             param("page", "0")
@@ -275,10 +274,10 @@ class ProjectRestControllerTest : ControllerTestHelper() {
             createDocument(
                 "get-page-project-part-success",
                 queryParameters(
-                    parameterWithName("searchType").description("검색 타입"),
+                    parameterWithName("searchType").description("검색 타입 (POPULAR: 인기순, LATEST: 최신순)"),
                     parameterWithName("category").description("카테고리").optional(),
-                    parameterWithName("page").description("페이지 사이즈").optional(),
-                    parameterWithName("size").description("사이즈 크기").optional()
+                    parameterWithName("page").description("페이지 값").optional(),
+                    parameterWithName("size").description("한 페이지에서 받을 데이터 개수").optional()
                 ),
                 responseFields(
                     fieldWithPath("code").description("응답 코드"),
@@ -316,7 +315,6 @@ class ProjectRestControllerTest : ControllerTestHelper() {
         every { projectService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
 
         mockMvc.get("/api/v1/projects") {
-            token(createAccessToken())
             param("searchType", SEARCH_TYPE_POPULAR.name)
         }.andExpect {
             status { isOk() }
@@ -325,10 +323,10 @@ class ProjectRestControllerTest : ControllerTestHelper() {
             createDocument(
                 "get-page-project-part-only-search-type-success",
                 queryParameters(
-                    parameterWithName("searchType").description("검색 타입"),
+                    parameterWithName("searchType").description("검색 타입 (POPULAR: 인기순, LATEST: 최신순)"),
                     parameterWithName("category").description("카테고리").optional(),
-                    parameterWithName("page").description("페이지 사이즈").optional(),
-                    parameterWithName("size").description("사이즈 크기").optional()
+                    parameterWithName("page").description("페이지 값").optional(),
+                    parameterWithName("size").description("한 페이지에서 받을 데이터 개수").optional()
                 ),
                 responseFields(
                     fieldWithPath("code").description("응답 코드"),
