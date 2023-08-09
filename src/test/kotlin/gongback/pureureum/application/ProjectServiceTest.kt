@@ -34,8 +34,8 @@ class ProjectServiceTest : BehaviorSpec({
     val projectRepository = mockk<ProjectRepository>()
     val facilityRepository = mockk<FacilityRepository>()
     val userRepository = mockk<UserRepository>()
-    val uploadService = mockk<UploadService>()
-    val projectService = ProjectService(userRepository, projectRepository, facilityRepository, uploadService)
+    val fileService = mockk<FileService>()
+    val projectService = ProjectService(userRepository, projectRepository, facilityRepository, fileService)
 
     Given("사용자 이메일과 프로젝트 정보") {
         val user = createUser()
@@ -70,9 +70,9 @@ class ProjectServiceTest : BehaviorSpec({
             )
 
             every { userRepository.getUserByEmail(any()) } returns user
-            every { uploadService.validateFileName(any()) } returns "OriginalFilename"
-            every { uploadService.getAnyContentType(any()) } returns "image/png"
-            every { uploadService.uploadFile(any(), FileType.PROJECT, any()) } returns fileKey
+            every { fileService.validateFileName(any()) } returns "OriginalFilename"
+            every { fileService.getAnyContentType(any()) } returns "image/png"
+            every { fileService.uploadFile(any(), FileType.PROJECT, any()) } returns fileKey
             every { projectRepository.save(any()) } returns project
             Then("정상적으로 저장된다.") {
                 shouldNotThrowAnyUnit {
@@ -94,8 +94,8 @@ class ProjectServiceTest : BehaviorSpec({
             val facility = createFacility()
             val projectRes = createProjectResWithoutPayment(project, facility.address)
             every { projectRepository.getProjectById(projectId) } returns project
-            every { facilityRepository.getReferenceById(project.facilityId) } returns facility
-            every { uploadService.getFileUrl(any()) } returns "signedUrl"
+            every { facilityRepository.findFacilityById(project.facilityId) } returns facility
+            every { fileService.getFileUrl(any()) } returns "signedUrl"
 
             Then("정상적으로 조회된다.") {
                 projectService.getProject(projectId) shouldBe projectRes
@@ -112,7 +112,7 @@ class ProjectServiceTest : BehaviorSpec({
             val project = createProject()
             every { userRepository.getUserByEmail(email) } returns user
             every { projectRepository.getProjectById(projectId) } returns project
-            every { uploadService.deleteFile(any()) } just runs
+            every { fileService.deleteFile(any()) } just runs
             every { projectRepository.delete(project) } just runs
 
             Then("정상적으로 삭제") {
@@ -125,7 +125,7 @@ class ProjectServiceTest : BehaviorSpec({
             val project = createProject(userId = 1L)
             every { userRepository.getUserByEmail(email) } returns user
             every { projectRepository.getProjectById(projectId) } returns project
-            every { uploadService.deleteFile(any()) } just runs
+            every { fileService.deleteFile(any()) } just runs
             every { projectRepository.delete(project) } just runs
 
             Then("예외 발생") {
@@ -153,7 +153,7 @@ class ProjectServiceTest : BehaviorSpec({
 
             every { facilityRepository.getFacilityById(any()) } returns facility
 
-            every { uploadService.getFileUrl(any()) } returns PROJECT_THUMBNAIL_KEY
+            every { fileService.getFileUrl(any()) } returns PROJECT_THUMBNAIL_KEY
 
             Then("모든 카테고리의 프로젝트 Page 조회 성공") {
                 projectService.getRunningProjectPartsByTypeAndCategory(searchType, category, pageable).size shouldBe 3
@@ -171,7 +171,7 @@ class ProjectServiceTest : BehaviorSpec({
 
             every { facilityRepository.getFacilityById(any()) } returns facility
 
-            every { uploadService.getFileUrl(any()) } returns PROJECT_THUMBNAIL_KEY
+            every { fileService.getFileUrl(any()) } returns PROJECT_THUMBNAIL_KEY
 
             Then("같은 카테고리의 프로젝트 Page 조회 성공") {
                 projectService.getRunningProjectPartsByTypeAndCategory(searchType, category, pageable)

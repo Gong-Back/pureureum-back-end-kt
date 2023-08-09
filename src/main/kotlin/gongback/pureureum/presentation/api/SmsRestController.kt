@@ -6,6 +6,7 @@ import gongback.pureureum.application.dto.ErrorCode
 import gongback.pureureum.application.dto.PhoneNumberReq
 import gongback.pureureum.application.dto.SmsSendResponse
 import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -27,7 +28,7 @@ class SmsRestController(
             val smsSendResponse = smsService.sendSmsCertification(phoneNumberReq)
             ResponseEntity.ok().body(ApiResponse.ok(smsSendResponse))
         } catch (e: IllegalArgumentException) {
-            return ResponseEntity.badRequest().body(
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(
                 ApiResponse.error(
                     ErrorCode.REQUEST_RESOURCE_ALREADY_EXISTS.code,
                     ErrorCode.REQUEST_RESOURCE_ALREADY_EXISTS.message,
@@ -42,6 +43,6 @@ class SmsRestController(
         @RequestBody @Valid phoneNumberReq: PhoneNumberReq
     ): ResponseEntity<ApiResponse<SmsSendResponse>> {
         smsService.completeCertification(phoneNumberReq)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.noContent().build()
     }
 }

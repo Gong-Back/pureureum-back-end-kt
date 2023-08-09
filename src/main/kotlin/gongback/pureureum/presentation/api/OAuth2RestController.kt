@@ -86,7 +86,7 @@ class OAuth2RestController(
 
             ErrorCode.REQUEST_RESOURCE_ALREADY_EXISTS -> {
                 val userAccountDto = userAuthenticationService.getUserAccountDto(oAuthUserInfo.phoneNumber)
-                ResponseEntity.badRequest().body(
+                ResponseEntity.status(HttpStatus.CONFLICT).body(
                     ApiResponse.error(
                         code,
                         userAccountDto

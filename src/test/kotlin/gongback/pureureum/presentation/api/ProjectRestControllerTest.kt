@@ -47,7 +47,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `프로젝트 등록 성공`() {
-        every { projectService.registerProject(any(), any(), any()) } just runs
+        every { projectService.registerProject(any(), any(), any()) } returns 1L
 
         val projectRegisterReq = createProjectRegisterReq()
         val projectRegisterReqStr = objectToString(projectRegisterReq)
@@ -67,7 +67,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
             file(projectFile1)
             file(projectFile2)
         }.andExpect {
-            status { isOk() }
+            status { isCreated() }
         }.andDo {
             createDocument(
                 "register-project-success",
@@ -221,7 +221,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
         mockMvc.delete("/api/v1/projects/{id}", 1L) {
             token(createAccessToken())
         }.andExpect {
-            status { isOk() }
+            status { isNoContent() }
         }.andDo {
             createDocument(
                 "delete-project-success",
@@ -263,7 +263,6 @@ class ProjectRestControllerTest : ControllerTestHelper() {
         every { projectService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
 
         mockMvc.get("/api/v1/projects") {
-            token(createAccessToken())
             param("searchType", SEARCH_TYPE_POPULAR.name)
             param("category", PROJECT_CATEGORY.name)
             param("page", "0")
@@ -277,8 +276,8 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                 queryParameters(
                     parameterWithName("searchType").description("검색 타입"),
                     parameterWithName("category").description("카테고리").optional(),
-                    parameterWithName("page").description("페이지 사이즈").optional(),
-                    parameterWithName("size").description("사이즈 크기").optional()
+                    parameterWithName("page").description("페이지 값").optional(),
+                    parameterWithName("size").description("한 페이지에서 받을 데이터 개수").optional()
                 ),
                 responseFields(
                     fieldWithPath("code").description("응답 코드"),
@@ -316,7 +315,6 @@ class ProjectRestControllerTest : ControllerTestHelper() {
         every { projectService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
 
         mockMvc.get("/api/v1/projects") {
-            token(createAccessToken())
             param("searchType", SEARCH_TYPE_POPULAR.name)
         }.andExpect {
             status { isOk() }
@@ -327,8 +325,8 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                 queryParameters(
                     parameterWithName("searchType").description("검색 타입"),
                     parameterWithName("category").description("카테고리").optional(),
-                    parameterWithName("page").description("페이지 사이즈").optional(),
-                    parameterWithName("size").description("사이즈 크기").optional()
+                    parameterWithName("page").description("페이지 값").optional(),
+                    parameterWithName("size").description("한 페이지에서 받을 데이터 개수").optional()
                 ),
                 responseFields(
                     fieldWithPath("code").description("응답 코드"),

@@ -91,7 +91,7 @@ class AdminFacilityControllerTest : ControllerTestHelper() {
         mockMvc.post("/admin/facility/update/{id}", 1L) {
             param("progress", FacilityProgress.REJECTED.name)
         }.andExpect {
-            status { isOk() }
+            status { isNoContent() }
         }.andDo {
             createDocument(
                 "update-facility-progress-success"
@@ -107,7 +107,7 @@ class AdminFacilityControllerTest : ControllerTestHelper() {
             param("ids", "1,2,3")
             param("progress", FacilityProgress.APPROVED.name)
         }.andExpect {
-            status { isOk() }
+            status { isNoContent() }
         }.andDo {
             createDocument(
                 "update-facilities-progress-success"

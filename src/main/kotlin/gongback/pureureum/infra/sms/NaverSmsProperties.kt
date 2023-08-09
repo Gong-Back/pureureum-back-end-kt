@@ -1,4 +1,4 @@
-package gongback.pureureum.application.properties
+package gongback.pureureum.infra.sms
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 

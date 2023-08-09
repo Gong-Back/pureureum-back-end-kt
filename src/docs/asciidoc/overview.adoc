@@ -60,6 +60,19 @@
 
 |===
 
+== *Search Type*
+
+|===
+| status | value
+
+| `POPULAR `
+| 인기순
+
+| `LATEST `
+| 최신순
+
+|===
+
 [[overview-error-response]]
 == *Success Response Data*
 
@@ -99,3 +112,4 @@
 | 에러 데이터
 
 |===
+

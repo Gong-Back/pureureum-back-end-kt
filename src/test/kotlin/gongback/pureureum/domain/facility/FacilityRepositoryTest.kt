@@ -63,7 +63,7 @@ class FacilityRepositoryTest(
         }
 
         expect("인증 서류가 존재하지 않는다") {
-            shouldThrow<IllegalArgumentException> { facilityRepository.getDocFileKeyByDocId(1L, 2L) }
+            shouldThrow<NoSuchElementException> { facilityRepository.getDocFileKeyByDocId(1L, 2L) }
         }
     }
 
@@ -77,7 +77,7 @@ class FacilityRepositoryTest(
         }
 
         expect("시설이 존재하지 않는다") {
-            shouldThrow<IllegalArgumentException> { facilityRepository.getFacilityById(2L) }
+            shouldThrow<NoSuchElementException> { facilityRepository.getFacilityById(2L) }
         }
     }
 

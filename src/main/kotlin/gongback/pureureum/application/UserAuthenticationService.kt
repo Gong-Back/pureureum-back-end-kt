@@ -118,10 +118,6 @@ class UserAuthenticationService(
         require(smsLogRepository.getLastSmsLog(phoneNumber).isSuccess) { "본인 인증되지 않은 정보입니다" }
     }
 
-    fun deleteByPhoneNumber(phoneNumber: String) {
-        smsLogRepository.deleteByReceiver(phoneNumber)
-    }
-
     private fun existsPhoneNumber(phoneNumber: String) = userRepository.existsByPhoneNumber(phoneNumber)
 
     private fun existsUserByEmail(email: String) = userRepository.existsEmail(email)

@@ -61,7 +61,7 @@ class TempSocialAuthRepositoryTest(
         }
 
         expect("이메일 조회 실패") {
-            shouldThrow<IllegalArgumentException> { tempSocialAuthRepository.getTempByEmail("otherEmail") }
+            shouldThrow<NoSuchElementException> { tempSocialAuthRepository.getTempByEmail("otherEmail") }
         }
     }
 })

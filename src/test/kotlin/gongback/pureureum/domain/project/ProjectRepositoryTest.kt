@@ -27,7 +27,7 @@ class ProjectRepositoryTest(
         }
 
         expect("프로젝트가 존재하지 않는다") {
-            shouldThrow<IllegalArgumentException> { projectRepository.getProjectById(100L) }
+            shouldThrow<NoSuchElementException> { projectRepository.getProjectById(100L) }
         }
     }
 

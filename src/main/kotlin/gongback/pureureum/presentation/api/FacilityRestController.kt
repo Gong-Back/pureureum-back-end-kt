@@ -5,7 +5,9 @@ import gongback.pureureum.application.dto.FacilityReq
 import gongback.pureureum.application.dto.FacilityRes
 import gongback.pureureum.application.dto.FacilityResWithProgress
 import gongback.pureureum.security.LoginEmail
+import gongback.pureureum.support.constant.Category
 import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -27,23 +29,23 @@ class FacilityRestController(
         @LoginEmail userEmail: String
     ): ResponseEntity<Unit> {
         facilityService.registerFacility(userEmail, facilityReq, certificationDoc)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
     @GetMapping("/me")
     fun getApprovedFacilitiesByCategory(
-        @RequestParam("category") category: String,
+        @RequestParam("category") category: Category,
         @LoginEmail userEmail: String
     ): ResponseEntity<ApiResponse<List<FacilityRes>>> {
-        val facilityInfo = facilityService.getApprovedFacilityByCategory(userEmail, category)
-        return ResponseEntity.ok().body(ApiResponse.ok(facilityInfo))
+        val facilityRes = facilityService.getApprovedFacilityByCategory(userEmail, category)
+        return ResponseEntity.ok().body(ApiResponse.ok(facilityRes))
     }
 
     @GetMapping("/all")
     fun getAllFacilities(
         @LoginEmail userEmail: String
     ): ResponseEntity<ApiResponse<List<FacilityResWithProgress>>> {
-        val facilityInfo = facilityService.getAllFacilities(userEmail)
-        return ResponseEntity.ok().body(ApiResponse.ok(facilityInfo))
+        val facilityRes = facilityService.getAllFacilities(userEmail)
+        return ResponseEntity.ok().body(ApiResponse.ok(facilityRes))
     }
 }

@@ -29,18 +29,18 @@ class ProjectService(
     private val userRepository: UserRepository,
     private val projectRepository: ProjectRepository,
     private val facilityRepository: FacilityRepository,
-    private val uploadService: UploadService
+    private val fileService: FileService
 ) {
 
     @Transactional
-    fun registerProject(email: String, projectRegisterReq: ProjectRegisterReq, projectFiles: List<MultipartFile>?) {
+    fun registerProject(email: String, projectRegisterReq: ProjectRegisterReq, projectFiles: List<MultipartFile>?): Long {
         val findUser = userRepository.getUserByEmail(email)
 
         // ProjectFileUpload
         val productFiles = projectFiles?.mapIndexed { index, multipartFile ->
-            val originalFileName = uploadService.validateFileName(multipartFile)
-            val contentType = uploadService.getAnyContentType(multipartFile)
-            val fileKey = uploadService.uploadFile(multipartFile, FileType.PROJECT, originalFileName)
+            val originalFileName = fileService.validateFileName(multipartFile)
+            val contentType = fileService.getAnyContentType(multipartFile)
+            val fileKey = fileService.uploadFile(multipartFile, FileType.PROJECT, originalFileName)
             when (index) {
                 0 -> ProjectFile(fileKey, contentType, originalFileName, ProjectFileType.THUMBNAIL)
                 else -> ProjectFile(fileKey, contentType, originalFileName)
@@ -53,7 +53,7 @@ class ProjectService(
             productFiles,
             findUser.id
         )
-        projectRepository.save(project)
+        return projectRepository.save(project).id
     }
 
     fun getProject(id: Long): ProjectRes {
@@ -70,7 +70,7 @@ class ProjectService(
             throw PureureumException(errorCode = ErrorCode.FORBIDDEN)
         }
 
-        findProject.projectFiles.forEach { uploadService.deleteFile(it.fileKey) }
+        findProject.projectFiles.forEach { fileService.deleteFile(it.fileKey) }
         projectRepository.delete(findProject)
     }
 
@@ -90,10 +90,10 @@ class ProjectService(
     }
 
     private fun projectToDto(project: Project): ProjectRes {
-        val findFacility = facilityRepository.getReferenceById(project.facilityId)
+        val findFacility = facilityRepository.getFacilityById(project.facilityId)
 
         val projectFileResList = project.projectFiles.map { projectFile ->
-            val projectFileUrl = uploadService.getFileUrl(projectFile.fileKey)
+            val projectFileUrl = fileService.getFileUrl(projectFile.fileKey)
             ProjectFileRes(projectFileUrl, projectFile.projectFileType)
         }
 
@@ -105,7 +105,7 @@ class ProjectService(
 
         return try {
             val thumbnailFile = project.projectFiles.first { it.projectFileType == ProjectFileType.THUMBNAIL }
-            val thumbnailFileUrl = uploadService.getFileUrl(thumbnailFile.fileKey)
+            val thumbnailFileUrl = fileService.getFileUrl(thumbnailFile.fileKey)
             val thumbnailFileRes = ProjectFileRes(thumbnailFileUrl, thumbnailFile.projectFileType)
             ProjectPartRes(project, findFacility.address, thumbnailFileRes)
         } catch (e: NoSuchElementException) {
