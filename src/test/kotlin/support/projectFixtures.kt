@@ -5,6 +5,7 @@ import gongback.pureureum.application.dto.ProjectPartPageRes
 import gongback.pureureum.application.dto.ProjectPartRes
 import gongback.pureureum.application.dto.ProjectRegisterReq
 import gongback.pureureum.application.dto.ProjectRes
+import gongback.pureureum.domain.facility.Facility
 import gongback.pureureum.domain.facility.FacilityAddress
 import gongback.pureureum.domain.project.Project
 import gongback.pureureum.domain.project.ProjectFile
@@ -13,6 +14,8 @@ import gongback.pureureum.domain.project.ProjectInformation
 import gongback.pureureum.domain.project.ProjectPayment
 import gongback.pureureum.domain.project.ProjectPaymentType
 import gongback.pureureum.domain.project.ProjectStatus
+import gongback.pureureum.domain.user.User
+import gongback.pureureum.domain.user.UserInformation
 import gongback.pureureum.support.constant.Category
 import gongback.pureureum.support.constant.SearchType
 import org.springframework.mock.web.MockMultipartFile
@@ -32,7 +35,8 @@ const val PROJECT_THUMBNAIL_KEY = "profile/thumbnail-key"
 fun createProject(
     userId: Long = 0L,
     title: String = PROJECT_TITLE,
-    category: Category = PROJECT_CATEGORY
+    category: Category = PROJECT_CATEGORY,
+    facilityId: Long = 0L
 ): Project {
     return Project(
         ProjectInformation(
@@ -45,7 +49,7 @@ fun createProject(
         ),
         ProjectStatus.RUNNING,
         userId,
-        0L,
+        facilityId,
         ProjectPaymentType.NONE,
         category,
         listOf(
@@ -120,29 +124,57 @@ fun createMockProjectFile(
     content: String
 ): MockMultipartFile = MockMultipartFile(name, originalFilename, contentType, content.toByteArray())
 
-fun createProjectPartPageRes(projects: List<Project>): ProjectPartPageRes {
+fun createProjectPartPageRes(projects: List<Project>, projectOwner: User): ProjectPartPageRes {
     val facility = createFacility()
-    val projectPartResList = projects.map { createProjectPartRes(it, facility.address) }.toList()
+    val projectPartResList =
+        projects.map { createProjectPartRes(it, facility.address, projectOwner.information) }
+            .toList()
 
     return ProjectPartPageRes(0, 1, projectPartResList.size, projectPartResList)
 }
 
-fun createProjectPartRes(project: Project, facilityAddress: FacilityAddress) =
-    ProjectPartRes(project, facilityAddress, ProjectFileRes("signedUrl", ProjectFileType.THUMBNAIL))
+fun createProjectPartRes(
+    project: Project,
+    facilityAddress: FacilityAddress,
+    projectOwner: UserInformation
+) =
+    ProjectPartRes(
+        project,
+        facilityAddress,
+        ProjectFileRes("signedUrl", ProjectFileType.THUMBNAIL),
+        projectOwner
+    )
 
-fun createSameCategoryProject(): List<Project> {
+fun createSameCategoryProject(facility: Facility, projectOwner: User): List<Project> {
     val project1 =
-        createProject(title = "testTitle1").apply { IntStream.rangeClosed(0, 10).forEach { _ -> this.addLikeCount() } }
+        createProject(
+            title = "testTitle1",
+            facilityId = facility.id,
+            userId = projectOwner.id
+        ).apply { IntStream.rangeClosed(0, 10).forEach { _ -> this.addLikeCount() } }
     val project2 =
-        createProject(title = "testTitle2").apply { IntStream.rangeClosed(0, 5).forEach { _ -> this.addLikeCount() } }
+        createProject(
+            title = "testTitle2",
+            facilityId = facility.id,
+            userId = projectOwner.id
+        ).apply { IntStream.rangeClosed(0, 5).forEach { _ -> this.addLikeCount() } }
     return listOf(project1, project2)
 }
 
-fun createDifferentCategoryProject(): List<Project> {
+fun createDifferentCategoryProject(facility: Facility, projectOwner: User): List<Project> {
     val project1 =
-        createProject(title = "testTitle1").apply { IntStream.rangeClosed(0, 10).forEach { _ -> this.addLikeCount() } }
+        createProject(
+            title = "testTitle1",
+            facilityId = facility.id,
+            userId = projectOwner.id
+        ).apply { IntStream.rangeClosed(0, 10).forEach { _ -> this.addLikeCount() } }
     val project2 =
-        createProject(title = "testTitle2", category = Category.ETC).apply {
+        createProject(
+            title = "testTitle2",
+            facilityId = facility.id,
+            userId = projectOwner.id,
+            category = Category.ETC
+        ).apply {
             IntStream.rangeClosed(0, 5).forEach { _ -> this.addLikeCount() }
         }
     val project3 = createProject(title = "testTitle3", category = Category.FARMING_EXPERIENCE)
