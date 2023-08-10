@@ -30,12 +30,14 @@ import support.PROJECT_CATEGORY
 import support.SEARCH_TYPE_POPULAR
 import support.createAccessToken
 import support.createDifferentCategoryProject
+import support.createFacility
 import support.createMockProjectFile
 import support.createProjectPartPageRes
 import support.createProjectRegisterReq
 import support.createProjectResWithPayment
 import support.createProjectResWithoutPayment
 import support.createSameCategoryProject
+import support.createUser
 import support.test.ControllerTestHelper
 import support.token
 import java.nio.charset.StandardCharsets
@@ -83,7 +85,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                                 "content: 프로젝트 내용\n" +
                                 "projectStartDate: 프로젝트 시작 시간\n" +
                                 "projectEndDate: 프로젝트 종료 시간\n" +
-                                "totalRecruits : 프로젝트 최대 모집 인원\n" +
+                                "totalRecruits : 프로젝트 최대 모집 인원 (제한 없는 경우 -1)\n" +
                                 "minAge : 나이 제한(최소) (Optional)\n" +
                                 "maxAge : 나이 제한(최대) (Optional)\n" +
                                 "guide : 찾아오시는 길 안내(Optional)\n" +
@@ -257,8 +259,10 @@ class ProjectRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `메인 페이지에서 페이지 조건과 검색 조건에 따른 프로젝트 페이지 조회 - 성공`() {
-        val projects = createSameCategoryProject()
-        val response = createProjectPartPageRes(projects)
+        val facility = createFacility()
+        val projectOwner = createUser()
+        val projects = createSameCategoryProject(facility, projectOwner)
+        val response = createProjectPartPageRes(projects, projectOwner)
 
         every { projectService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
 
@@ -299,6 +303,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                     fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.detail").description("시설 주소 (상세 정보)"),
                     fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.longitude").description("시설 주소 (경도)"),
                     fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.latitude").description("시설 주소 (위도)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.ownerName").description("소유주 이름"),
                     fieldWithPath("data.projectList[0].projectCategory").description("프로젝트 카테고리"),
                     fieldWithPath("data.projectList[0].thumbnailFileRes.projectFileUrl").description("썸네일 URL"),
                     fieldWithPath("data.projectList[0].thumbnailFileRes.projectFileType").description("파일 타입")
@@ -309,8 +314,10 @@ class ProjectRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `메인 페이지에서 검색 조건으로만 프로젝트 페이지 조회 - 성공`() {
-        val projects = createDifferentCategoryProject()
-        val response = createProjectPartPageRes(projects)
+        val facility = createFacility()
+        val projectOwner = createUser()
+        val projects = createDifferentCategoryProject(facility, projectOwner)
+        val response = createProjectPartPageRes(projects, projectOwner)
 
         every { projectService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
 
@@ -348,6 +355,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                     fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.detail").description("시설 주소 (상세 정보)"),
                     fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.longitude").description("시설 주소 (경도)"),
                     fieldWithPath("data.projectList[0].projectPartInformation.facilityAddress.latitude").description("시설 주소 (위도)"),
+                    fieldWithPath("data.projectList[0].projectPartInformation.ownerName").description("소유주 이름"),
                     fieldWithPath("data.projectList[0].projectCategory").description("프로젝트 카테고리"),
                     fieldWithPath("data.projectList[0].thumbnailFileRes.projectFileUrl").description("썸네일 URL"),
                     fieldWithPath("data.projectList[0].thumbnailFileRes.projectFileType").description("파일 타입")

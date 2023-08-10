@@ -15,6 +15,7 @@ import gongback.pureureum.domain.project.ProjectRepository
 import gongback.pureureum.domain.project.getProjectById
 import gongback.pureureum.domain.user.UserRepository
 import gongback.pureureum.domain.user.getUserByEmail
+import gongback.pureureum.domain.user.getUserById
 import gongback.pureureum.support.constant.Category
 import gongback.pureureum.support.constant.FileType
 import gongback.pureureum.support.constant.SearchType
@@ -102,14 +103,15 @@ class ProjectService(
 
     private fun convertProjectToPartRes(project: Project): ProjectPartRes {
         val findFacility = facilityRepository.getFacilityById(project.facilityId)
+        val projectOwner = userRepository.getUserById(project.userId)
 
         return try {
             val thumbnailFile = project.projectFiles.first { it.projectFileType == ProjectFileType.THUMBNAIL }
             val thumbnailFileUrl = fileService.getFileUrl(thumbnailFile.fileKey)
             val thumbnailFileRes = ProjectFileRes(thumbnailFileUrl, thumbnailFile.projectFileType)
-            ProjectPartRes(project, findFacility.address, thumbnailFileRes)
+            ProjectPartRes(project, findFacility.address, thumbnailFileRes, projectOwner.information)
         } catch (e: NoSuchElementException) {
-            ProjectPartRes(project, findFacility.address, null)
+            ProjectPartRes(project, findFacility.address, null, projectOwner.information)
         }
     }
 }

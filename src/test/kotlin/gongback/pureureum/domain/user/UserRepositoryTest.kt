@@ -46,24 +46,33 @@ class UserRepositoryTest(
 
     context("회원 조회") {
         val user = createUser()
-        userRepository.save(user)
+        val savedUser = userRepository.save(user)
 
-        expect("이메일 조회 성공") {
+        expect("이메일로 조회 성공") {
             val result = userRepository.getUserByEmail(user.email)
             result.email shouldBe user.email
         }
 
-        expect("이메일 조회 실패") {
+        expect("이메일로 조회 실패") {
             shouldThrow<NoSuchElementException> { userRepository.getUserByEmail("otherEmail") }
         }
 
-        expect("전화번호 조회 성공") {
+        expect("전화번호로 조회 성공") {
             val result = userRepository.getUserByPhoneNumber(user.phoneNumber)
             result.phoneNumber shouldBe user.phoneNumber
         }
 
-        expect("전화번호 조회 실패") {
+        expect("전화번호로 조회 실패") {
             shouldThrow<NoSuchElementException> { userRepository.getUserByPhoneNumber("otherEmail") }
+        }
+
+        expect("아이디로 조회 성공") {
+            val result = userRepository.getUserById(user.id)
+            result.id shouldBe savedUser.id
+        }
+
+        expect("아이디로 조회 실패") {
+            shouldThrow<NoSuchElementException> { userRepository.getUserById(2L) }
         }
     }
 

@@ -8,10 +8,10 @@ import gongback.pureureum.domain.project.ProjectInformation
 import gongback.pureureum.domain.project.ProjectPayment
 import gongback.pureureum.domain.project.ProjectPaymentType
 import gongback.pureureum.domain.project.ProjectStatus
+import gongback.pureureum.domain.user.UserInformation
 import gongback.pureureum.support.constant.Category
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
-import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.Size
 import org.springframework.data.domain.Page
 import java.time.LocalDate
@@ -36,7 +36,6 @@ data class ProjectRegisterReq(
     val projectEndDate: LocalDate,
 
     @field:NotNull
-    @field:Positive
     val totalRecruits: Int,
 
     val minAge: Int = -1,
@@ -178,7 +177,8 @@ data class ProjectPartInformationRes(
     val projectEndDate: LocalDate,
     val recruits: Int = 0,
     val totalRecruits: Int,
-    val facilityAddress: FacilityAddress
+    val facilityAddress: FacilityAddress,
+    val ownerName: String
 )
 
 data class ProjectPaymentRes(
@@ -223,7 +223,8 @@ data class ProjectPartRes(
     constructor(
         project: Project,
         address: FacilityAddress,
-        thumbnailFileRes: ProjectFileRes?
+        thumbnailFileRes: ProjectFileRes?,
+        owner: UserInformation
     ) : this(
         ProjectPartInformationRes(
             project.id,
@@ -233,7 +234,8 @@ data class ProjectPartRes(
             project.projectEndDate,
             project.recruits,
             project.totalRecruits,
-            address
+            address,
+            owner.name
         ),
         project.projectCategory,
         thumbnailFileRes
