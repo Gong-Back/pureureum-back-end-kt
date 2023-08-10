@@ -52,7 +52,7 @@ class UserServiceTest : BehaviorSpec({
         val userInfoReq = createUserInfoReq()
 
         When("이미 존재하는 핸드폰 정보라면") {
-            every { userRepository.getReferenceById(any()) } returns user
+            every { userRepository.getUserByEmail(any()) } returns user
             every {
                 userRepository.existsByPhoneNumber(any())
             } throws IllegalArgumentException("이미 가입된 전화번호입니다")
@@ -61,7 +61,7 @@ class UserServiceTest : BehaviorSpec({
             }
         }
         When("인증되지 않은 핸드폰 정보라면") {
-            every { userRepository.getReferenceById(any()) } returns user
+            every { userRepository.getUserByEmail(any()) } returns user
             every {
                 smsLogRepository.getLastSmsLog(any())
             } throws IllegalArgumentException("본인 인증되지 않은 정보입니다")
@@ -70,7 +70,7 @@ class UserServiceTest : BehaviorSpec({
             }
         }
         When("이미 존재하는 닉네임이라면") {
-            every { userRepository.getReferenceById(any()) } returns user
+            every { userRepository.getUserByEmail(any()) } returns user
             every { userRepository.existsNickname(any()) } returns true
             Then("예외가 발생한다") {
                 shouldThrow<IllegalArgumentException> { userService.updateUserInfo(EMAIL, userInfoReq) }

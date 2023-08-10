@@ -6,6 +6,7 @@ import gongback.pureureum.domain.project.ProjectRepository
 import gongback.pureureum.domain.project.getProjectById
 import gongback.pureureum.domain.user.UserRepository
 import gongback.pureureum.domain.user.getUserByEmail
+import gongback.pureureum.domain.user.getUserById
 import gongback.pureureum.support.constant.Category
 import gongback.pureureum.support.constant.FileType
 import io.kotest.assertions.throwables.shouldNotThrowAnyUnit
@@ -140,8 +141,9 @@ class ProjectServiceTest : BehaviorSpec({
 
         When("모든 프로젝트에 대한 페이지 조회 일 경우") {
             val category = null
-            val projects = createDifferentCategoryProject()
             val facility = createFacility()
+            val projectOwner = createUser()
+            val projects = createDifferentCategoryProject(facility, projectOwner)
 
             every {
                 projectRepository.getRunningProjectsByCategoryOrderedSearchType(
@@ -153,6 +155,8 @@ class ProjectServiceTest : BehaviorSpec({
 
             every { facilityRepository.getFacilityById(any()) } returns facility
 
+            every { userRepository.getUserById(any()) } returns projectOwner
+
             every { fileService.getFileUrl(any()) } returns PROJECT_THUMBNAIL_KEY
 
             Then("모든 카테고리의 프로젝트 Page 조회 성공") {
@@ -162,14 +166,17 @@ class ProjectServiceTest : BehaviorSpec({
 
         When("카테고리가 지정된 경우") {
             val category = PROJECT_CATEGORY
-            val projects = createSameCategoryProject()
             val facility = createFacility()
+            val projectOwner = createUser()
+            val projects = createSameCategoryProject(facility, projectOwner)
 
             every {
                 projectRepository.getRunningProjectsByCategoryOrderedSearchType(searchType, category, pageable)
             } returns PageImpl(projects, pageable, projects.size.toLong())
 
             every { facilityRepository.getFacilityById(any()) } returns facility
+
+            every { userRepository.getUserById(any()) } returns projectOwner
 
             every { fileService.getFileUrl(any()) } returns PROJECT_THUMBNAIL_KEY
 
