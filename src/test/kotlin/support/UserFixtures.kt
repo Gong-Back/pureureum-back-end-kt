@@ -12,8 +12,8 @@ import gongback.pureureum.domain.user.Profile
 import gongback.pureureum.domain.user.User
 import gongback.pureureum.domain.user.UserGender
 import gongback.pureureum.domain.user.UserRole
-import org.springframework.mock.web.MockMultipartFile
 import java.time.LocalDate
+import org.springframework.mock.web.MockMultipartFile
 
 const val NAME: String = "회원"
 const val EMAIL: String = "testEmail"
@@ -83,6 +83,7 @@ fun createUserInfoReq(
 ): UserInfoReq {
     return UserInfoReq(password, phoneNumber, nickname)
 }
+
 fun createUserInfoRes(
     user: User
 ): UserInfoRes {

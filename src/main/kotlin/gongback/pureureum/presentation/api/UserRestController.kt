@@ -1,7 +1,8 @@
 package gongback.pureureum.presentation.api
 
 import gongback.pureureum.application.UserAuthenticationService
-import gongback.pureureum.application.UserService
+import gongback.pureureum.application.UserReadService
+import gongback.pureureum.application.UserWriteService
 import gongback.pureureum.application.dto.EmailReq
 import gongback.pureureum.application.dto.LoginReq
 import gongback.pureureum.application.dto.RegisterUserReq
@@ -27,7 +28,8 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @RequestMapping("/api/v1/users")
 class UserRestController(
-    private val userService: UserService,
+    private val userReadService: UserReadService,
+    private val userWriteService: UserWriteService,
     private val userAuthenticationService: UserAuthenticationService
 ) {
     @PostMapping("/login")
@@ -59,7 +61,7 @@ class UserRestController(
     fun getUserInfo(
         @LoginEmail email: String
     ): ResponseEntity<ApiResponse<UserInfoRes>> {
-        val userInfo = userService.getUserInfoWithProfileUrl(email)
+        val userInfo = userReadService.getUserInfoWithProfileUrl(email)
         return ResponseEntity.ok().body(ApiResponse.ok(userInfo))
     }
 
@@ -68,7 +70,7 @@ class UserRestController(
         @RequestBody @Valid userInfoReq: UserInfoReq,
         @LoginEmail email: String
     ): ResponseEntity<Unit> {
-        userService.updateUserInfo(email, userInfoReq)
+        userWriteService.updateUserInfo(email, userInfoReq)
         return ResponseEntity.noContent().build()
     }
 
@@ -77,7 +79,7 @@ class UserRestController(
         @RequestPart profile: MultipartFile?,
         @LoginEmail email: String
     ): ResponseEntity<Unit> {
-        userService.updatedProfile(email, profile)
+        userWriteService.updatedProfile(email, profile)
         return ResponseEntity.noContent().build()
     }
 

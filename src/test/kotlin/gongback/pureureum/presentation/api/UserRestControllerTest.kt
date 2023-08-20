@@ -2,7 +2,8 @@ package gongback.pureureum.presentation.api
 
 import com.ninjasquad.springmockk.MockkBean
 import gongback.pureureum.application.UserAuthenticationService
-import gongback.pureureum.application.UserService
+import gongback.pureureum.application.UserReadService
+import gongback.pureureum.application.UserWriteService
 import gongback.pureureum.application.dto.TokenRes
 import gongback.pureureum.domain.user.Password
 import gongback.pureureum.domain.user.UserGender
@@ -10,6 +11,7 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
+import java.time.LocalDate
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.HttpHeaders
@@ -36,7 +38,6 @@ import support.createUser
 import support.createUserInfoRes
 import support.test.ControllerTestHelper
 import support.token
-import java.time.LocalDate
 
 private const val EMAIL = "test@test.com"
 private const val PASSWORD = "password"
@@ -81,7 +82,10 @@ private fun createUserInfoReq(
 @WebMvcTest(UserRestController::class)
 class UserRestControllerTest : ControllerTestHelper() {
     @MockkBean
-    private lateinit var userService: UserService
+    private lateinit var userReadService: UserReadService
+
+    @MockkBean
+    private lateinit var userWriteService: UserWriteService
 
     @MockkBean
     private lateinit var userAuthenticationService: UserAuthenticationService
@@ -268,7 +272,7 @@ class UserRestControllerTest : ControllerTestHelper() {
     fun `사용자 정보 조회 성공`() {
         val userInfo = createUserInfoRes(createUser())
 
-        every { userService.getUserInfoWithProfileUrl(any()) } returns userInfo
+        every { userReadService.getUserInfoWithProfileUrl(any()) } returns userInfo
 
         mockMvc.get("/api/v1/users/me") {
             token(createAccessToken())
@@ -295,7 +299,7 @@ class UserRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `회원 정보 수정 성공`() {
-        every { userService.updateUserInfo(any(), any()) } just runs
+        every { userWriteService.updateUserInfo(any(), any()) } just runs
 
         mockMvc.post("/api/v1/users/update/info") {
             token(createAccessToken())
@@ -318,7 +322,7 @@ class UserRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `회원 정보 수정 실패 - 중복된 닉네임이 들어왔을 때`() {
-        every { userService.updateUserInfo(any(), any()) } throws IllegalArgumentException("이미 존재하는 닉네임입니다")
+        every { userWriteService.updateUserInfo(any(), any()) } throws IllegalArgumentException("이미 존재하는 닉네임입니다")
 
         mockMvc.post("/api/v1/users/update/info") {
             token(createAccessToken())
@@ -371,7 +375,7 @@ class UserRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `프로필 이미지 업데이트 성공`() {
-        every { userService.updatedProfile(any(), any()) } just runs
+        every { userWriteService.updatedProfile(any(), any()) } just runs
         val profile = createMockProfileFile()
 
         mockMvc.multipart("/api/v1/users/update/profile") {
@@ -393,7 +397,7 @@ class UserRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `프로필 이미지 업데이트 실패 - 원본 파일 이름이 비어있을 경우`() {
-        every { userService.updatedProfile(any(), any()) } throws IllegalArgumentException("원본 파일 이름이 비어있습니다")
+        every { userWriteService.updatedProfile(any(), any()) } throws IllegalArgumentException("원본 파일 이름이 비어있습니다")
         val profile = createMockProfileFile(
             originalFileName = ""
         )
@@ -416,7 +420,7 @@ class UserRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `프로필 이미지 업데이트 실패 - 파일 형식이 이미지가 아닐 경우`() {
-        every { userService.updatedProfile(any(), any()) } throws IllegalArgumentException("이미지 형식의 파일만 가능합니다")
+        every { userWriteService.updatedProfile(any(), any()) } throws IllegalArgumentException("이미지 형식의 파일만 가능합니다")
         val profile = createMockProfileFile(
             contentType = "text/html"
         )
