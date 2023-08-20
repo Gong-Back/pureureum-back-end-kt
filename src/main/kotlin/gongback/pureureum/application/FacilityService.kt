@@ -4,9 +4,10 @@ import gongback.pureureum.application.dto.FacilityReq
 import gongback.pureureum.application.dto.FacilityRes
 import gongback.pureureum.application.dto.FacilityResWithProgress
 import gongback.pureureum.application.dto.FacilityWithDocIds
-import gongback.pureureum.domain.facility.FacilityCertificationDoc
+import gongback.pureureum.application.dto.FileReq
 import gongback.pureureum.domain.facility.FacilityProgress
 import gongback.pureureum.domain.facility.FacilityRepository
+import gongback.pureureum.domain.facility.event.FacilityCreateEvent
 import gongback.pureureum.domain.facility.getAllNotApprovedByCategory
 import gongback.pureureum.domain.facility.getApprovedByCategoryAndUserId
 import gongback.pureureum.domain.facility.getByUserId
@@ -15,35 +16,18 @@ import gongback.pureureum.domain.facility.getFacilityById
 import gongback.pureureum.domain.user.UserRepository
 import gongback.pureureum.domain.user.getUserByEmail
 import gongback.pureureum.support.constant.Category
-import gongback.pureureum.support.constant.FileType
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 
 @Service
 @Transactional(readOnly = true)
-class FacilityService(
-    private val facilityRepository: FacilityRepository,
+class FacilityReadService(
+    private val fileService: FileService,
     private val userRepository: UserRepository,
-    private val fileService: FileService
+    private val facilityRepository: FacilityRepository
 ) {
-
-    @Transactional
-    fun registerFacility(userEmail: String, facilityReq: FacilityReq, certificationDoc: List<MultipartFile>?) {
-        val user = userRepository.getUserByEmail(userEmail)
-        val facility = facilityReq.toFacility(user.id)
-
-        certificationDoc?.let {
-            it.forEach { file ->
-                val originalFileName = fileService.validateFileName(file)
-                val contentType = fileService.getImageType(file)
-                val fileKey = fileService.uploadFile(file, FileType.FACILITY_CERTIFICATION, originalFileName)
-                val facilityCertificationDoc = FacilityCertificationDoc(fileKey, contentType, originalFileName)
-                facility.addCertificationDoc(facilityCertificationDoc)
-            }
-        }
-        facilityRepository.save(facility)
-    }
 
     fun getApprovedFacilityByCategory(userEmail: String, category: Category): List<FacilityRes> {
         val user = userRepository.getUserByEmail(userEmail)
@@ -80,6 +64,32 @@ class FacilityService(
         }
         return facility.let {
             FacilityWithDocIds.fromFacility(it, docIds)
+        }
+    }
+}
+
+@Service
+class FacilityWriteService(
+    private val userRepository: UserRepository,
+    private val facilityRepository: FacilityRepository,
+    private val applicationEventPublisher: ApplicationEventPublisher
+) {
+
+    @Transactional
+    fun registerFacility(
+        userEmail: String,
+        facilityReq: FacilityReq,
+        certificationDoc: List<MultipartFile>?
+    ) {
+        val user = userRepository.getUserByEmail(userEmail)
+        val facility = facilityReq.toFacility(user.id)
+        val savedFacility = facilityRepository.save(facility)
+        certificationDoc?.let { file ->
+            val fileReqs = file.map {
+                FileReq(it.size, it.inputStream, it.contentType, it.originalFilename)
+            }
+            val facilityCreateEvent = FacilityCreateEvent(savedFacility.id, fileReqs)
+            applicationEventPublisher.publishEvent(facilityCreateEvent)
         }
     }
 

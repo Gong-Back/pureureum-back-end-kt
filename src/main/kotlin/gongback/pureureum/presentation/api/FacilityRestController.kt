@@ -1,6 +1,7 @@
 package gongback.pureureum.presentation.api
 
-import gongback.pureureum.application.FacilityService
+import gongback.pureureum.application.FacilityReadService
+import gongback.pureureum.application.FacilityWriteService
 import gongback.pureureum.application.dto.FacilityReq
 import gongback.pureureum.application.dto.FacilityRes
 import gongback.pureureum.application.dto.FacilityResWithProgress
@@ -20,7 +21,8 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @RequestMapping("/api/v1/facilities")
 class FacilityRestController(
-    private val facilityService: FacilityService
+    private val facilityReadService: FacilityReadService,
+    private val facilityWriteService: FacilityWriteService
 ) {
     @PostMapping("/register")
     fun registerFacility(
@@ -28,7 +30,7 @@ class FacilityRestController(
         @RequestPart(required = false) certificationDoc: List<MultipartFile>?,
         @LoginEmail userEmail: String
     ): ResponseEntity<Unit> {
-        facilityService.registerFacility(userEmail, facilityReq, certificationDoc)
+        facilityWriteService.registerFacility(userEmail, facilityReq, certificationDoc)
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
@@ -37,7 +39,7 @@ class FacilityRestController(
         @RequestParam("category") category: Category,
         @LoginEmail userEmail: String
     ): ResponseEntity<ApiResponse<List<FacilityRes>>> {
-        val facilityRes = facilityService.getApprovedFacilityByCategory(userEmail, category)
+        val facilityRes = facilityReadService.getApprovedFacilityByCategory(userEmail, category)
         return ResponseEntity.ok().body(ApiResponse.ok(facilityRes))
     }
 
@@ -45,7 +47,7 @@ class FacilityRestController(
     fun getAllFacilities(
         @LoginEmail userEmail: String
     ): ResponseEntity<ApiResponse<List<FacilityResWithProgress>>> {
-        val facilityRes = facilityService.getAllFacilities(userEmail)
+        val facilityRes = facilityReadService.getAllFacilities(userEmail)
         return ResponseEntity.ok().body(ApiResponse.ok(facilityRes))
     }
 }

@@ -2,10 +2,12 @@ package gongback.pureureum.presentation.api
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ninjasquad.springmockk.MockkBean
-import gongback.pureureum.application.FacilityService
+import gongback.pureureum.application.FacilityReadService
+import gongback.pureureum.application.FacilityWriteService
 import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
+import java.nio.charset.StandardCharsets
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.mock.web.MockMultipartFile
@@ -24,16 +26,18 @@ import support.createFacilityResWithProgress
 import support.createMockCertificationDoc
 import support.test.ControllerTestHelper
 import support.token
-import java.nio.charset.StandardCharsets
 
 @WebMvcTest(FacilityRestController::class)
 class FacilityRestControllerTest : ControllerTestHelper() {
     @MockkBean
-    private lateinit var facilityService: FacilityService
+    private lateinit var facilityReadService: FacilityReadService
+
+    @MockkBean
+    private lateinit var facilityWriteService: FacilityWriteService
 
     @Test
     fun `시설 정보 등록 성공`() {
-        every { facilityService.registerFacility(any(), any(), any()) } just runs
+        every { facilityWriteService.registerFacility(any(), any(), any()) } just runs
 
         val facilityReq = createFacilityReq()
         val facilityReqStr = jacksonObjectMapper().writeValueAsString(facilityReq)
@@ -173,7 +177,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `시설 정보 등록 실패 - 원본 파일 이름이 비어있을 경우`() {
-        every { facilityService.registerFacility(any(), any(), any()) } throws IllegalArgumentException("원본 파일 이름이 비어있습니다")
+        every { facilityWriteService.registerFacility(any(), any(), any()) } throws IllegalArgumentException("원본 파일 이름이 비어있습니다")
 
         val facilityReq = createFacilityReq()
         val facilityReqStr = jacksonObjectMapper().writeValueAsString(facilityReq)
@@ -242,7 +246,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
     @Test
     fun `시설 정보 조회 성공 - 카테고리별 조회`() {
         val facilityRes = listOf(createFacilityRes())
-        every { facilityService.getApprovedFacilityByCategory(any(), any()) } returns facilityRes
+        every { facilityReadService.getApprovedFacilityByCategory(any(), any()) } returns facilityRes
 
         mockMvc.get("/api/v1/facilities/me") {
             token(createAccessToken())
@@ -274,7 +278,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
     @Test
     fun `시설 정보 조회 성공 - 진행 정보 포함 조회`() {
         val facilityResWithProgress = listOf(createFacilityResWithProgress())
-        every { facilityService.getAllFacilities(any()) } returns facilityResWithProgress
+        every { facilityReadService.getAllFacilities(any()) } returns facilityResWithProgress
 
         mockMvc.get("/api/v1/facilities/all") {
             token(createAccessToken())

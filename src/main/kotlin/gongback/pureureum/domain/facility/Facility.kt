@@ -12,7 +12,6 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
-import java.util.*
 
 @Entity
 class Facility(
@@ -32,7 +31,7 @@ class Facility(
     @Enumerated(EnumType.STRING)
     var progress: FacilityProgress,
 
-    certificationDoc: MutableList<FacilityCertificationDoc> = Collections.emptyList()
+    certificationDocs: List<FacilityCertificationDoc> = emptyList()
 ) : BaseEntity() {
     @OneToMany(
         fetch = FetchType.LAZY,
@@ -41,12 +40,14 @@ class Facility(
     )
     @JoinColumn(
         name = "facility_id",
-        foreignKey = ForeignKey(name = "fk_facility_certification_document_id_ref_facility_id")
+        foreignKey = ForeignKey(name = "fk_facility_certification_document_id_ref_facility_id"),
+        updatable = false,
+        nullable = false
     )
-    val certificationDoc: MutableList<FacilityCertificationDoc> = certificationDoc.toMutableList()
+    val certificationDoc: MutableList<FacilityCertificationDoc> = certificationDocs.toMutableList()
 
-    fun addCertificationDoc(facilityCertificationDoc: FacilityCertificationDoc) {
-        certificationDoc.add(facilityCertificationDoc)
+    fun addCertificationDocs(facilityCertificationDocs: List<FacilityCertificationDoc>) {
+        certificationDoc.addAll(facilityCertificationDocs)
     }
 
     fun updateProgress(progress: FacilityProgress) {

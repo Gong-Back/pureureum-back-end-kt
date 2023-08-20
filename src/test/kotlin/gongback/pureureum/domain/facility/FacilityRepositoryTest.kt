@@ -11,7 +11,6 @@ import support.createCertificationDoc
 import support.createFacility
 import support.createUser
 import support.test.BaseTests.RepositoryTest
-import java.util.*
 
 @RepositoryTest
 class FacilityRepositoryTest(
@@ -31,13 +30,13 @@ class FacilityRepositoryTest(
 
         expect("시설이 존재하지 않는다") {
             val result = facilityRepository.getApprovedByCategoryAndUserId(Category.FARMING_HEALING, user.id)
-            result shouldBe Collections.emptyList()
+            result shouldBe emptyList()
         }
     }
 
     context("사용자별 시설 조회") {
         val user = createUser()
-        val facility = createFacility(user = user, certificationDoc = Collections.emptyList())
+        val facility = createFacility(user = user, certificationDoc = emptyList())
         facilityRepository.save(facility)
 
         expect("시설이 존재한다") {
@@ -47,7 +46,7 @@ class FacilityRepositoryTest(
 
         expect("시설이 존재하지 않는다") {
             val result = facilityRepository.getByUserId(2L)
-            result shouldBe Collections.emptyList()
+            result shouldBe emptyList()
         }
     }
 

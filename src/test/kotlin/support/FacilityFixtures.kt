@@ -4,6 +4,8 @@ import gongback.pureureum.application.dto.FacilityReq
 import gongback.pureureum.application.dto.FacilityRes
 import gongback.pureureum.application.dto.FacilityResWithProgress
 import gongback.pureureum.application.dto.FacilityWithDocIds
+import gongback.pureureum.application.dto.FileInfo
+import gongback.pureureum.application.dto.FileReq
 import gongback.pureureum.domain.facility.Facility
 import gongback.pureureum.domain.facility.FacilityAddress
 import gongback.pureureum.domain.facility.FacilityCertificationDoc
@@ -11,7 +13,6 @@ import gongback.pureureum.domain.facility.FacilityProgress
 import gongback.pureureum.domain.user.User
 import gongback.pureureum.support.constant.Category
 import org.springframework.mock.web.MockMultipartFile
-import java.util.*
 
 const val FACILITY_ID: Long = 1L
 const val FACILITY_NAME: String = "test_name"
@@ -43,7 +44,7 @@ fun createFacility(
     latitude: String = FACILITY_LATITUDE,
     user: User = createUser(),
     progress: FacilityProgress = FACILITY_PROGRESS,
-    certificationDoc: MutableList<FacilityCertificationDoc> = Collections.emptyList()
+    certificationDoc: List<FacilityCertificationDoc> = emptyList()
 ): Facility {
     return Facility(
         name,
@@ -104,6 +105,26 @@ fun createCertificationDoc(
         originalFileName
     )
 }
+
+fun createFileReq(
+    files: List<MockMultipartFile>
+): List<FileReq> = files.map {
+    FileReq(
+        it.size,
+        it.inputStream,
+        it.contentType,
+        it.originalFilename
+    )
+}
+
+fun createFileInfo(
+    file: MockMultipartFile
+): FileInfo = FileInfo(
+    file.size,
+    file.inputStream,
+    file.contentType!!,
+    file.originalFilename
+)
 
 fun createFacilityRes(
     id: Long = 0L,
@@ -170,7 +191,7 @@ fun createFacilityWithDocIds(
     detail: String = FACILITY_DETAIL,
     longitude: String = FACILITY_LONGITUDE,
     latitude: String = FACILITY_LATITUDE,
-    fileIds: List<Long> = Collections.emptyList()
+    fileIds: List<Long> = emptyList()
 ): FacilityWithDocIds {
     return FacilityWithDocIds(
         id,
