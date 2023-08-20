@@ -8,7 +8,7 @@ import gongback.pureureum.application.S3Exception
 import gongback.pureureum.application.StorageService
 import gongback.pureureum.application.dto.FileInfo
 import gongback.pureureum.support.constant.FileType
-import java.util.*
+import java.util.Date
 import org.springframework.stereotype.Service
 
 @Service
