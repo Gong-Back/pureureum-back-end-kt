@@ -1,21 +1,24 @@
 package gongback.pureureum.application.dto
 
-import gongback.pureureum.domain.user.Profile
+import java.io.InputStream
 
-data class FileDto(
-    val fileKey: String,
-    val contentType: String,
-    val originalFileName: String
+data class FileReq(
+    val size: Long,
+    val inputStream: InputStream,
+    val contentType: String?,
+    val originalFileName: String?
 ) {
-    fun toProfile(): Profile {
-        return Profile(
-            fileKey = fileKey,
-            contentType = contentType,
-            originalFileName = originalFileName
-        )
-    }
+    fun toFileInfo(contentType: String, originalFileName: String): FileInfo = FileInfo(
+        size,
+        inputStream,
+        contentType,
+        originalFileName
+    )
 }
 
-data class FileRes(
-    val fileUrl: String
+data class FileInfo(
+    val size: Long,
+    val inputStream: InputStream,
+    val contentType: String,
+    val originalFileName: String
 )

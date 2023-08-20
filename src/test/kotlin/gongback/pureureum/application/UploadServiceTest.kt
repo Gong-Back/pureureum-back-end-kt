@@ -9,8 +9,8 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
-import support.PROFILE_SERVER_FILE_NAME
 import support.PROFILE_URL
+import support.createFileInfo
 import support.createMockProfileFile
 import support.createProfile
 
@@ -27,13 +27,14 @@ class UploadServiceTest : BehaviorSpec({
 
     Given("파일과 파일 타입, 서버 저장 파일 이름") {
         val file = createMockProfileFile()
+        val fileInfo = createFileInfo(file)
         val profile = createProfile()
         val fileKey = profile.fileKey
         val fileType = FileType.PROFILE
         When("정상적인 프로필 이미지 파일이라면") {
             every { storageService.uploadFile(any(), any(), any()) } returns fileKey
             Then("업로드를 진행한다") {
-                fileService.uploadFile(file, fileType, PROFILE_SERVER_FILE_NAME) shouldBe fileKey
+                fileService.uploadFile(fileInfo, fileType) shouldBe fileKey
             }
         }
     }

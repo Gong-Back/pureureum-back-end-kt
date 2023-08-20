@@ -1,9 +1,9 @@
 package gongback.pureureum.application
 
+import gongback.pureureum.application.dto.FileInfo
 import gongback.pureureum.application.util.NameGenerator
 import gongback.pureureum.support.constant.FileType
 import org.springframework.stereotype.Service
-import org.springframework.web.multipart.MultipartFile
 
 @Service
 class FileService(
@@ -11,8 +11,8 @@ class FileService(
     private val fileNameGenerator: NameGenerator
 ) {
 
-    fun uploadFile(file: MultipartFile, fileType: FileType, originalFileName: String): String {
-        val serverFileName = fileNameGenerator.generate() + "." + getExt(originalFileName)
+    fun uploadFile(file: FileInfo, fileType: FileType): String {
+        val serverFileName = fileNameGenerator.generate() + "." + getExt(file.originalFileName)
         return storageService.uploadFile(file, fileType, serverFileName)
     }
 
@@ -24,24 +24,24 @@ class FileService(
         storageService.deleteFile(fileKey)
     }
 
-    private fun getExt(fileName: String): String {
-        return fileName.substring(fileName.lastIndexOf(".") + 1)
-    }
-
-    fun validateFileName(file: MultipartFile): String {
-        val originalFileName = (file.originalFilename ?: throw IllegalArgumentException("원본 파일 이름이 존재하지 않습니다"))
+    fun validateFileName(fileName: String?): String {
+        val originalFileName = (fileName ?: throw IllegalArgumentException("원본 파일 이름이 존재하지 않습니다"))
         require(originalFileName.isNotBlank()) { throw IllegalArgumentException("원본 파일 이름이 비어있습니다") }
         return originalFileName
     }
 
-    fun getImageType(file: MultipartFile): String {
-        val contentType = file.contentType ?: throw IllegalArgumentException("파일 형식이 유효하지 않습니다")
+    fun getImageType(fileContentType: String?): String {
+        val contentType = fileContentType ?: throw IllegalArgumentException("파일 형식이 유효하지 않습니다")
         validateImageType(contentType)
         return contentType
     }
 
-    fun getAnyContentType(file: MultipartFile): String {
-        return file.contentType ?: throw IllegalArgumentException("파일 형식이 유효하지 않습니다")
+    fun getAnyContentType(fileContentType: String?): String {
+        return fileContentType ?: throw IllegalArgumentException("파일 형식이 유효하지 않습니다")
+    }
+
+    private fun getExt(fileName: String): String {
+        return fileName.substring(fileName.lastIndexOf(".") + 1)
     }
 
     private fun validateImageType(contentType: String) {
