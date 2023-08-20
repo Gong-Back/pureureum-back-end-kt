@@ -1,12 +1,14 @@
 package gongback.pureureum.presentation.api
 
 import com.ninjasquad.springmockk.MockkBean
-import gongback.pureureum.application.ProjectService
+import gongback.pureureum.application.ProjectReadService
+import gongback.pureureum.application.ProjectWriteService
 import gongback.pureureum.application.PureureumException
 import gongback.pureureum.application.dto.ErrorCode
 import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
+import java.nio.charset.StandardCharsets
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.HttpHeaders
@@ -40,16 +42,18 @@ import support.createSameCategoryProject
 import support.createUser
 import support.test.ControllerTestHelper
 import support.token
-import java.nio.charset.StandardCharsets
 
 @WebMvcTest(ProjectRestController::class)
 class ProjectRestControllerTest : ControllerTestHelper() {
     @MockkBean
-    private lateinit var projectService: ProjectService
+    private lateinit var projectReadService: ProjectReadService
+
+    @MockkBean
+    private lateinit var projectWriteService: ProjectWriteService
 
     @Test
     fun `프로젝트 등록 성공`() {
-        every { projectService.registerProject(any(), any(), any()) } returns 1L
+        every { projectWriteService.registerProject(any(), any(), any()) } returns 1L
 
         val projectRegisterReq = createProjectRegisterReq()
         val projectRegisterReqStr = objectToString(projectRegisterReq)
@@ -60,8 +64,8 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                 "application/json",
                 projectRegisterReqStr.toByteArray(StandardCharsets.UTF_8)
             )
-        val projectFile1 = createMockProjectFile("THUMBNAIL", "test1", "image/png", "sample")
-        val projectFile2 = createMockProjectFile("COMMON", "test1", "image/png", "sample")
+        val projectFile1 = createMockProjectFile("projectFiles", "test1", "image/png", "sample")
+        val projectFile2 = createMockProjectFile("projectFiles", "test1", "image/png", "sample")
 
         mockMvc.multipart("/api/v1/projects") {
             token(createAccessToken())
@@ -111,11 +115,8 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                                     "content - 길이 제한 (1~65535)"
                             )
                         ),
-                    partWithName("THUMBNAIL")
-                        .description("썸네일")
-                        .optional(),
-                    partWithName("COMMON")
-                        .description("기본 이미지")
+                    partWithName("projectFiles")
+                        .description("프로젝트 파일 - 썸네일 이미지의 경우 가장 처음으로 전송 (0번 인덱스로)")
                         .optional()
                 )
             )
@@ -125,7 +126,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
     @Test
     fun `프로젝트 정보 조회 성공 - 단일 조회 (참여 금액 정보가 없을 때)`() {
         val projectRes = createProjectResWithoutPayment()
-        every { projectService.getProject(any()) } returns projectRes
+        every { projectReadService.getProject(any()) } returns projectRes
 
         mockMvc.perform(get("/api/v1/projects/{id}", 1L))
             .andExpect(status().isOk)
@@ -171,7 +172,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
     @Test
     fun `프로젝트 정보 조회 성공 - 단일 조회 (참여 금액 정보가 있을 때)`() {
         val projectRes = createProjectResWithPayment()
-        every { projectService.getProject(any()) } returns projectRes
+        every { projectReadService.getProject(any()) } returns projectRes
 
         mockMvc.perform(get("/api/v1/projects/{id}", 1L))
             .andExpect(status().isOk)
@@ -218,7 +219,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `프로젝트 삭제 성공`() {
-        every { projectService.deleteProject(any(), any()) } just runs
+        every { projectWriteService.deleteProject(any(), any()) } just runs
 
         mockMvc.delete("/api/v1/projects/{id}", 1L) {
             token(createAccessToken())
@@ -236,7 +237,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `프로젝트 삭제 실패 - 권한이 없을 때`() {
-        every { projectService.deleteProject(any(), any()) } throws PureureumException(errorCode = ErrorCode.FORBIDDEN)
+        every { projectWriteService.deleteProject(any(), any()) } throws PureureumException(errorCode = ErrorCode.FORBIDDEN)
 
         mockMvc.delete("/api/v1/projects/{id}", 1L) {
             token(createAccessToken())
@@ -264,7 +265,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
         val projects = createSameCategoryProject(facility, projectOwner)
         val response = createProjectPartPageRes(projects, projectOwner)
 
-        every { projectService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
+        every { projectReadService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
 
         mockMvc.get("/api/v1/projects") {
             param("searchType", SEARCH_TYPE_POPULAR.name)
@@ -319,7 +320,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
         val projects = createDifferentCategoryProject(facility, projectOwner)
         val response = createProjectPartPageRes(projects, projectOwner)
 
-        every { projectService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
+        every { projectReadService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
 
         mockMvc.get("/api/v1/projects") {
             param("searchType", SEARCH_TYPE_POPULAR.name)

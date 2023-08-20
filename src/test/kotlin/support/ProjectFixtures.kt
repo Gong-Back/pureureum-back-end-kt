@@ -18,9 +18,9 @@ import gongback.pureureum.domain.user.User
 import gongback.pureureum.domain.user.UserInformation
 import gongback.pureureum.support.constant.Category
 import gongback.pureureum.support.constant.SearchType
-import org.springframework.mock.web.MockMultipartFile
 import java.time.LocalDate
 import java.util.stream.IntStream
+import org.springframework.mock.web.MockMultipartFile
 
 const val PROJECT_TITLE = "testTitle"
 const val PROJECT_INTRODUCTION = "testIntroduction"
@@ -31,6 +31,12 @@ const val PROJECT_TOTAL_RECRUITS = 10
 val PROJECT_CATEGORY = Category.FARMING_HEALING
 val SEARCH_TYPE_POPULAR = SearchType.POPULAR
 const val PROJECT_THUMBNAIL_KEY = "profile/thumbnail-key"
+
+const val PROJECT_FILE_KEY1 = "project/test1.png"
+const val PROJECT_FILE_CONTENT_TYPE = "image/png"
+const val PROJECT_FILE_ORIGINAL_FILE_NAME1 = "test1"
+const val PROJECT_FILE_KEY2 = "project/test2.png"
+const val PROJECT_FILE_ORIGINAL_FILE_NAME2 = "test2"
 
 fun createProject(
     userId: Long = 0L,
@@ -53,8 +59,8 @@ fun createProject(
         ProjectPaymentType.NONE,
         category,
         listOf(
-            ProjectFile("project/test1.png", "png", "test1", ProjectFileType.THUMBNAIL),
-            ProjectFile("project/test2.png", "png", "test2", ProjectFileType.COMMON)
+            ProjectFile(PROJECT_FILE_KEY1, PROJECT_FILE_CONTENT_TYPE, PROJECT_FILE_ORIGINAL_FILE_NAME1, ProjectFileType.THUMBNAIL),
+            ProjectFile(PROJECT_FILE_KEY2, PROJECT_FILE_CONTENT_TYPE, PROJECT_FILE_ORIGINAL_FILE_NAME2, ProjectFileType.COMMON)
         )
     )
 }
@@ -75,8 +81,8 @@ fun createProjectWithPayment(): Project {
         ProjectPaymentType.DEPOSIT,
         PROJECT_CATEGORY,
         listOf(
-            ProjectFile("project/test1.png", "png", "test1", ProjectFileType.THUMBNAIL),
-            ProjectFile("project/test2.png", "png", "test2", ProjectFileType.COMMON)
+            ProjectFile(PROJECT_FILE_KEY1, PROJECT_FILE_CONTENT_TYPE, PROJECT_FILE_ORIGINAL_FILE_NAME1, ProjectFileType.THUMBNAIL),
+            ProjectFile(PROJECT_FILE_KEY2, PROJECT_FILE_CONTENT_TYPE, PROJECT_FILE_ORIGINAL_FILE_NAME2, ProjectFileType.COMMON)
         ),
         listOf(ProjectPayment(100000, "환불 정책", "예금주(계좌번호)"))
     )

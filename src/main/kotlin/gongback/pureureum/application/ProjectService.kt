@@ -1,6 +1,7 @@
 package gongback.pureureum.application
 
 import gongback.pureureum.application.dto.ErrorCode
+import gongback.pureureum.application.dto.FileReq
 import gongback.pureureum.application.dto.ProjectFileRes
 import gongback.pureureum.application.dto.ProjectPartPageRes
 import gongback.pureureum.application.dto.ProjectPartRes
@@ -9,16 +10,17 @@ import gongback.pureureum.application.dto.ProjectRes
 import gongback.pureureum.domain.facility.FacilityRepository
 import gongback.pureureum.domain.facility.getFacilityById
 import gongback.pureureum.domain.project.Project
-import gongback.pureureum.domain.project.ProjectFile
 import gongback.pureureum.domain.project.ProjectFileType
 import gongback.pureureum.domain.project.ProjectRepository
+import gongback.pureureum.domain.project.event.ProjectCreateEvent
+import gongback.pureureum.domain.project.event.ProjectDeleteEvent
 import gongback.pureureum.domain.project.getProjectById
 import gongback.pureureum.domain.user.UserRepository
 import gongback.pureureum.domain.user.getUserByEmail
 import gongback.pureureum.domain.user.getUserById
 import gongback.pureureum.support.constant.Category
-import gongback.pureureum.support.constant.FileType
 import gongback.pureureum.support.constant.SearchType
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -26,53 +28,16 @@ import org.springframework.web.multipart.MultipartFile
 
 @Service
 @Transactional(readOnly = true)
-class ProjectService(
+class ProjectReadService(
+    private val fileService: FileService,
     private val userRepository: UserRepository,
     private val projectRepository: ProjectRepository,
-    private val facilityRepository: FacilityRepository,
-    private val fileService: FileService
+    private val facilityRepository: FacilityRepository
 ) {
-
-    @Transactional
-    fun registerProject(email: String, projectRegisterReq: ProjectRegisterReq, projectFiles: List<MultipartFile>?): Long {
-        val findUser = userRepository.getUserByEmail(email)
-
-        // ProjectFileUpload
-        val productFiles = projectFiles?.mapIndexed { index, multipartFile ->
-            val originalFileName = fileService.validateFileName(multipartFile)
-            val contentType = fileService.getAnyContentType(multipartFile)
-            val fileKey = fileService.uploadFile(multipartFile, FileType.PROJECT, originalFileName)
-            when (index) {
-                0 -> ProjectFile(fileKey, contentType, originalFileName, ProjectFileType.THUMBNAIL)
-                else -> ProjectFile(fileKey, contentType, originalFileName)
-            }
-        } ?: emptyList()
-
-        val project = projectRegisterReq.toEntityWithInfo(
-            projectRegisterReq.facilityId,
-            projectRegisterReq.projectCategory,
-            productFiles,
-            findUser.id
-        )
-        return projectRepository.save(project).id
-    }
 
     fun getProject(id: Long): ProjectRes {
         val findProject = projectRepository.getProjectById(id)
         return projectToDto(findProject)
-    }
-
-    @Transactional
-    fun deleteProject(id: Long, email: String) {
-        val findUser = userRepository.getUserByEmail(email)
-        val findProject = projectRepository.getProjectById(id)
-
-        if (findProject.userId != findUser.id) {
-            throw PureureumException(errorCode = ErrorCode.FORBIDDEN)
-        }
-
-        findProject.projectFiles.forEach { fileService.deleteFile(it.fileKey) }
-        projectRepository.delete(findProject)
     }
 
     fun getRunningProjectPartsByTypeAndCategory(
@@ -113,5 +78,50 @@ class ProjectService(
         } catch (e: NoSuchElementException) {
             ProjectPartRes(project, findFacility.address, null, projectOwner.information)
         }
+    }
+}
+
+@Service
+class ProjectWriteService(
+    private val userRepository: UserRepository,
+    private val projectRepository: ProjectRepository,
+    private val applicationEventPublisher: ApplicationEventPublisher
+) {
+
+    @Transactional
+    fun registerProject(email: String, projectRegisterReq: ProjectRegisterReq, projectFiles: List<MultipartFile>?): Long {
+        val findUser = userRepository.getUserByEmail(email)
+
+        val project = projectRegisterReq.toEntityWithInfo(
+            projectRegisterReq.facilityId,
+            projectRegisterReq.projectCategory,
+            findUser.id
+        )
+        val savedProject = projectRepository.save(project)
+
+        projectFiles?.let { file ->
+            val fileReqs = file.map {
+                FileReq(it.size, it.inputStream, it.contentType, it.originalFilename)
+            }
+            val projectCreateEvent = ProjectCreateEvent(savedProject.id, fileReqs)
+            applicationEventPublisher.publishEvent(projectCreateEvent)
+        }
+        return savedProject.id
+    }
+
+    @Transactional
+    fun deleteProject(id: Long, email: String) {
+        val findUser = userRepository.getUserByEmail(email)
+        val findProject = projectRepository.getProjectById(id)
+
+        if (findProject.userId != findUser.id) {
+            throw PureureumException(errorCode = ErrorCode.FORBIDDEN)
+        }
+        projectRepository.delete(findProject)
+        val fileKeys = findProject.projectFiles.map {
+            it.fileKey
+        }
+        val projectDeleteEvent = ProjectDeleteEvent(fileKeys)
+        applicationEventPublisher.publishEvent(projectDeleteEvent)
     }
 }

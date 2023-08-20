@@ -1,6 +1,7 @@
 package gongback.pureureum.presentation.api
 
-import gongback.pureureum.application.ProjectService
+import gongback.pureureum.application.ProjectReadService
+import gongback.pureureum.application.ProjectWriteService
 import gongback.pureureum.application.dto.ProjectPartPageRes
 import gongback.pureureum.application.dto.ProjectRegisterReq
 import gongback.pureureum.application.dto.ProjectRes
@@ -8,6 +9,7 @@ import gongback.pureureum.security.LoginEmail
 import gongback.pureureum.support.constant.Category
 import gongback.pureureum.support.constant.SearchType
 import jakarta.validation.Valid
+import java.net.URI
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
@@ -20,14 +22,14 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
-import java.net.URI
 
 private const val BASE_URL = "/api/v1/projects"
 
 @RestController
 @RequestMapping(BASE_URL)
 class ProjectRestController(
-    private val projectService: ProjectService
+    private val projectReadService: ProjectReadService,
+    private val projectWriteService: ProjectWriteService
 ) {
 
     @PostMapping
@@ -36,21 +38,21 @@ class ProjectRestController(
         @RequestPart(required = false) projectFiles: List<MultipartFile>?,
         @LoginEmail email: String
     ): ResponseEntity<ApiResponse<Unit>> {
-        val savedProjectId = projectService.registerProject(email, projectRegisterReq, projectFiles)
+        val savedProjectId = projectWriteService.registerProject(email, projectRegisterReq, projectFiles)
         return ResponseEntity.created(URI.create("$BASE_URL/$savedProjectId")).build()
     }
 
     @GetMapping("/{id}")
     fun getProjectDetail(
         @PathVariable("id") id: Long
-    ): ResponseEntity<ApiResponse<ProjectRes>> = ResponseEntity.ok().body(ApiResponse.ok(projectService.getProject(id)))
+    ): ResponseEntity<ApiResponse<ProjectRes>> = ResponseEntity.ok().body(ApiResponse.ok(projectReadService.getProject(id)))
 
     @DeleteMapping("/{id}")
     fun deleteProject(
         @PathVariable("id") id: Long,
         @LoginEmail email: String
     ): ResponseEntity<Unit> {
-        projectService.deleteProject(id, email)
+        projectWriteService.deleteProject(id, email)
         return ResponseEntity.noContent().build()
     }
 
@@ -62,7 +64,7 @@ class ProjectRestController(
     ): ResponseEntity<ApiResponse<ProjectPartPageRes>> =
         ResponseEntity.ok(
             ApiResponse.ok(
-                projectService.getRunningProjectPartsByTypeAndCategory(
+                projectReadService.getRunningProjectPartsByTypeAndCategory(
                     searchType,
                     category,
                     pageable

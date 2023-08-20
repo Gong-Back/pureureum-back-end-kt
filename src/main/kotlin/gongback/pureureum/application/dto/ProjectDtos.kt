@@ -2,7 +2,6 @@ package gongback.pureureum.application.dto
 
 import gongback.pureureum.domain.facility.FacilityAddress
 import gongback.pureureum.domain.project.Project
-import gongback.pureureum.domain.project.ProjectFile
 import gongback.pureureum.domain.project.ProjectFileType
 import gongback.pureureum.domain.project.ProjectInformation
 import gongback.pureureum.domain.project.ProjectPayment
@@ -60,7 +59,6 @@ data class ProjectRegisterReq(
     fun toEntityWithInfo(
         facilityId: Long,
         projectCategory: Category,
-        projectFileList: List<ProjectFile> = emptyList(),
         userId: Long
     ) = Project(
         projectInformation = ProjectInformation(
@@ -80,7 +78,6 @@ data class ProjectRegisterReq(
         userId = userId,
         facilityId = facilityId,
         paymentType = paymentType,
-        projectFiles = projectFileList,
         payments = when (paymentType) {
             ProjectPaymentType.NONE -> emptyList()
             else -> listOf(ProjectPayment(amount, refundInstruction, depositInformation))
