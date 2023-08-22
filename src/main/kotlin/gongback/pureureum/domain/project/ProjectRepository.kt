@@ -60,6 +60,10 @@ internal class ProjectRepositoryImpl(private val queryFactory: QueryFactory) : C
         when (type) {
             SearchType.POPULAR -> listOf(column(Project::likeCount).desc(), column(Project::id).desc())
             SearchType.LATEST -> listOf(column(Project::id).desc())
+            SearchType.DEADLINE -> listOf(
+                column(Project::projectInformation).nested(ProjectInformation::projectEndDate).asc(),
+                column(Project::id).desc()
+            )
         }
 
     private fun <T> CriteriaQueryDsl<T>.dynamicAndProjectStatus(projectStatus: ProjectStatus?): PredicateSpec =

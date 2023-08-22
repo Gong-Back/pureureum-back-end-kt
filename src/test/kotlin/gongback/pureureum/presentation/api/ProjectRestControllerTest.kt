@@ -258,7 +258,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
     }
 
     @Test
-    fun `메인 페이지에서 페이지 조건과 검색 조건에 따른 프로젝트 페이지 조회 - 성공`() {
+    fun `페이지 조건과 검색 조건에 따른 프로젝트 페이지 조회 - 성공`() {
         val facility = createFacility()
         val projectOwner = createUser()
         val projects = createSameCategoryProject(facility, projectOwner)
@@ -278,7 +278,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
             createDocument(
                 "get-page-project-part-success",
                 queryParameters(
-                    parameterWithName("searchType").description("검색 타입"),
+                    parameterWithName("searchType").description("검색 타입 (인기순 - POPULAR, 최신순 - LATEST, 마감임박순 - DEADLINE)"),
                     parameterWithName("category").description("카테고리").optional(),
                     parameterWithName("page").description("페이지 값").optional(),
                     parameterWithName("size").description("한 페이지에서 받을 데이터 개수").optional()
@@ -313,7 +313,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
     }
 
     @Test
-    fun `메인 페이지에서 검색 조건으로만 프로젝트 페이지 조회 - 성공`() {
+    fun `검색 조건으로만 프로젝트 페이지 조회 - 성공`() {
         val facility = createFacility()
         val projectOwner = createUser()
         val projects = createDifferentCategoryProject(facility, projectOwner)
@@ -330,7 +330,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
             createDocument(
                 "get-page-project-part-only-search-type-success",
                 queryParameters(
-                    parameterWithName("searchType").description("검색 타입"),
+                    parameterWithName("searchType").description("검색 타입 (인기순 - POPULAR, 최신순 - LATEST, 마감임박순 - DEADLINE)"),
                     parameterWithName("category").description("카테고리").optional(),
                     parameterWithName("page").description("페이지 값").optional(),
                     parameterWithName("size").description("한 페이지에서 받을 데이터 개수").optional()

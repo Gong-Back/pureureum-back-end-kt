@@ -18,9 +18,9 @@ import gongback.pureureum.domain.user.User
 import gongback.pureureum.domain.user.UserInformation
 import gongback.pureureum.support.constant.Category
 import gongback.pureureum.support.constant.SearchType
-import org.springframework.mock.web.MockMultipartFile
 import java.time.LocalDate
 import java.util.stream.IntStream
+import org.springframework.mock.web.MockMultipartFile
 
 const val PROJECT_TITLE = "testTitle"
 const val PROJECT_INTRODUCTION = "testIntroduction"
@@ -36,6 +36,7 @@ fun createProject(
     userId: Long = 0L,
     title: String = PROJECT_TITLE,
     category: Category = PROJECT_CATEGORY,
+    projectEndDate: String = PROJECT_END_DATE,
     facilityId: Long = 0L
 ): Project {
     return Project(
@@ -44,7 +45,7 @@ fun createProject(
             introduction = PROJECT_INTRODUCTION,
             content = PROJECT_CONTENT,
             projectStartDate = LocalDate.parse(PROJECT_START_DATE),
-            projectEndDate = LocalDate.parse(PROJECT_END_DATE),
+            projectEndDate = LocalDate.parse(projectEndDate),
             totalRecruits = PROJECT_TOTAL_RECRUITS
         ),
         ProjectStatus.RUNNING,
