@@ -73,7 +73,7 @@
 
 |===
 
-[[overview-error-response]]
+[[overview-success-response]]
 == *Success Response Data*
 
 |===
