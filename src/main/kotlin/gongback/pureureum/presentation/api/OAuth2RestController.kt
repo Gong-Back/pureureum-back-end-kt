@@ -9,6 +9,7 @@ import gongback.pureureum.application.dto.SocialEmailDto
 import gongback.pureureum.application.dto.SocialRegisterUserReq
 import gongback.pureureum.application.dto.TempSocialAuthDto
 import gongback.pureureum.application.dto.TokenRes
+import gongback.pureureum.presentation.api.CookieProvider.Companion.addTokenToSecureCookie
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -29,28 +30,28 @@ class OAuth2RestController(
     @PostMapping("/login/kakao")
     fun kakaoLoginProcess(
         @RequestBody @Valid authenticationInfo: AuthenticationInfo,
-        response: HttpServletResponse
+        servletResponse: HttpServletResponse
     ): ResponseEntity<ApiResponse<Any>> {
         val oAuthUserInfo = oAuth2Service.getKakaoUserInfo(authenticationInfo)
-        return login(oAuthUserInfo)
+        return login(oAuthUserInfo, servletResponse)
     }
 
     @PostMapping("/login/google")
     fun googleLoginProcess(
         @RequestBody @Valid authenticationInfo: AuthenticationInfo,
-        response: HttpServletResponse
+        servletResponse: HttpServletResponse
     ): ResponseEntity<ApiResponse<Any>> {
         val oAuthUserInfo = oAuth2Service.getGoogleUserInfo(authenticationInfo)
-        return login(oAuthUserInfo)
+        return login(oAuthUserInfo, servletResponse)
     }
 
     @PostMapping("/login/naver")
     fun naverLoginProcess(
         @RequestBody @Valid authenticationInfo: AuthenticationInfo,
-        response: HttpServletResponse
+        servletResponse: HttpServletResponse
     ): ResponseEntity<ApiResponse<Any>> {
         val oAuthUserInfo = oAuth2Service.getNaverUserInfo(authenticationInfo)
-        return login(oAuthUserInfo)
+        return login(oAuthUserInfo, servletResponse)
     }
 
     @GetMapping("/temp/{email}")
@@ -72,7 +73,8 @@ class OAuth2RestController(
     }
 
     private fun login(
-        oAuthUserInfo: OAuthUserInfo
+        oAuthUserInfo: OAuthUserInfo,
+        servletResponse: HttpServletResponse
     ): ResponseEntity<ApiResponse<Any>> {
         return when (val code = userAuthenticationService.socialLogin(oAuthUserInfo)) {
             ErrorCode.REQUEST_RESOURCE_NOT_ENOUGH -> {
@@ -95,8 +97,9 @@ class OAuth2RestController(
             }
 
             else -> {
-                ResponseEntity.ok()
-                    .body(ApiResponse.ok(userAuthenticationService.getTokenRes(oAuthUserInfo.clientEmail)))
+                val tokenRes = userAuthenticationService.getTokenRes(oAuthUserInfo.clientEmail)
+                addTokenToSecureCookie(tokenRes, servletResponse)
+                ResponseEntity.noContent().build()
             }
         }
     }

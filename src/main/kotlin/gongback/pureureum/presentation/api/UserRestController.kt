@@ -5,9 +5,9 @@ import gongback.pureureum.application.UserService
 import gongback.pureureum.application.dto.EmailReq
 import gongback.pureureum.application.dto.LoginReq
 import gongback.pureureum.application.dto.RegisterUserReq
-import gongback.pureureum.application.dto.TokenRes
 import gongback.pureureum.application.dto.UserInfoReq
 import gongback.pureureum.application.dto.UserInfoRes
+import gongback.pureureum.presentation.api.CookieProvider.Companion.addTokenToSecureCookie
 import gongback.pureureum.security.JwtNotExistsException
 import gongback.pureureum.security.LoginEmail
 import jakarta.servlet.http.HttpServletRequest
@@ -33,16 +33,18 @@ class UserRestController(
     @PostMapping("/login")
     fun login(
         @RequestBody @Valid loginReq: LoginReq,
-        response: HttpServletResponse
-    ): ResponseEntity<ApiResponse<TokenRes>> {
+        servletResponse: HttpServletResponse
+    ): ResponseEntity<Unit> {
         userAuthenticationService.validateAuthentication(loginReq)
-        return ResponseEntity.ok().body(ApiResponse.ok(userAuthenticationService.getTokenRes(loginReq.email)))
+        val tokenRes = userAuthenticationService.getTokenRes(loginReq.email)
+        addTokenToSecureCookie(tokenRes, servletResponse)
+        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/register")
     fun register(
         @RequestBody @Valid registerUserReq: RegisterUserReq
-    ): ResponseEntity<ApiResponse<String>> {
+    ): ResponseEntity<Unit> {
         userAuthenticationService.register(registerUserReq)
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
@@ -83,10 +85,12 @@ class UserRestController(
 
     @PostMapping("/reissue-token")
     fun reissueToken(
-        httpServletRequest: HttpServletRequest
-    ): ResponseEntity<ApiResponse<TokenRes>> {
-        val bearerToken = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION) ?: throw JwtNotExistsException()
-        return ResponseEntity.ok()
-            .body(ApiResponse.ok(userAuthenticationService.reissueToken(bearerToken)))
+        servletRequest: HttpServletRequest,
+        servletResponse: HttpServletResponse
+    ): ResponseEntity<Unit> {
+        val bearerToken = servletRequest.getHeader(HttpHeaders.AUTHORIZATION) ?: throw JwtNotExistsException()
+        val tokenRes = userAuthenticationService.reissueToken(bearerToken)
+        addTokenToSecureCookie(tokenRes, servletResponse)
+        return ResponseEntity.noContent().build()
     }
 }

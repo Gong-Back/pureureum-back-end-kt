@@ -31,14 +31,12 @@ import org.springframework.restdocs.payload.ResponseFieldsSnippet
 import org.springframework.restdocs.request.PathParametersSnippet
 import org.springframework.restdocs.request.QueryParametersSnippet
 import org.springframework.restdocs.request.RequestPartsSnippet
-import org.springframework.restdocs.snippet.Attributes.Attribute
 import org.springframework.test.web.servlet.MockHttpServletRequestDsl
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.MockMvcResultHandlersDsl
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
-import org.springframework.util.MultiValueMap
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.filter.CharacterEncodingFilter
@@ -116,10 +114,6 @@ abstract class ControllerTestHelper {
         contentType = MediaType.APPLICATION_JSON
     }
 
-    fun MockHttpServletRequestDsl.params(data: MultiValueMap<String, String>) {
-        params = data
-    }
-
     fun MockMvcResultHandlersDsl.createDocument(value: Any, responseFieldsSnippet: ResponseFieldsSnippet) {
         return handle(document("{class-name}/$value", responseFieldsSnippet))
     }
@@ -174,25 +168,17 @@ abstract class ControllerTestHelper {
     fun MockMvcResultHandlersDsl.createDocument(
         value: Any,
         requestFieldsSnippet: RequestFieldsSnippet,
-        responseHeadersSnippet: ResponseHeadersSnippet,
-        responseCookieSnippet: ResponseCookiesSnippet
+        responseFieldsSnippet: ResponseFieldsSnippet
     ) {
-        return handle(
-            document(
-                "{class-name}/$value",
-                requestFieldsSnippet,
-                responseHeadersSnippet,
-                responseCookieSnippet
-            )
-        )
+        return handle(document("{class-name}/$value", requestFieldsSnippet, responseFieldsSnippet))
     }
 
     fun MockMvcResultHandlersDsl.createDocument(
         value: Any,
         requestFieldsSnippet: RequestFieldsSnippet,
-        responseFieldsSnippet: ResponseFieldsSnippet
+        responseCookiesSnippet: ResponseCookiesSnippet
     ) {
-        return handle(document("{class-name}/$value", requestFieldsSnippet, responseFieldsSnippet))
+        return handle(document("{class-name}/$value", requestFieldsSnippet, responseCookiesSnippet))
     }
 
     fun MockMvcResultHandlersDsl.createDocument(
@@ -205,26 +191,17 @@ abstract class ControllerTestHelper {
 
     fun MockMvcResultHandlersDsl.createDocument(
         value: Any,
-        responseHeadersSnippet: ResponseHeadersSnippet,
-        responseCookiesSnippet: ResponseCookiesSnippet,
-        responseFieldsSnippet: ResponseFieldsSnippet
-    ) {
-        return handle(
-            document(
-                "{class-name}/$value",
-                responseHeadersSnippet,
-                responseCookiesSnippet,
-                responseFieldsSnippet
-            )
-        )
-    }
-
-    fun MockMvcResultHandlersDsl.createDocument(
-        value: Any,
         requestHeadersSnippet: RequestHeadersSnippet,
         responseFieldsSnippet: ResponseFieldsSnippet
     ) {
         return handle(document("{class-name}/$value", requestHeadersSnippet, responseFieldsSnippet))
+    }
+
+    fun MockMvcResultHandlersDsl.createDocument(
+        value: Any,
+        responseCookiesSnippet: ResponseCookiesSnippet
+    ) {
+        return handle(document("{class-name}/$value", responseCookiesSnippet))
     }
 
     fun createPathDocument(
@@ -233,11 +210,5 @@ abstract class ControllerTestHelper {
         responseFieldsSnippet: ResponseFieldsSnippet
     ): RestDocumentationResultHandler {
         return document("{class-name}/$value", pathParametersSnippet, responseFieldsSnippet)
-    }
-
-    companion object {
-        fun field(key: String, value: String): Attribute {
-            return Attribute(key, value)
-        }
     }
 }
