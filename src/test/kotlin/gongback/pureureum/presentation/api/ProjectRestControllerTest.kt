@@ -60,8 +60,8 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                 "application/json",
                 projectRegisterReqStr.toByteArray(StandardCharsets.UTF_8)
             )
-        val projectFile1 = createMockProjectFile("THUMBNAIL", "test1", "image/png", "sample")
-        val projectFile2 = createMockProjectFile("COMMON", "test1", "image/png", "sample")
+        val projectFile1 = createMockProjectFile("projectFiles", "test1", "image/png", "sample")
+        val projectFile2 = createMockProjectFile("projectFiles", "test1", "image/png", "sample")
 
         mockMvc.multipart("/api/v1/projects") {
             token(createAccessToken())
@@ -108,14 +108,12 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                             Attributes.Attribute(
                                 LENGTH,
                                 "title, introduction - 길이 제한 (1~200)\n" +
-                                    "content - 길이 제한 (1~65535)"
+                                    "content - 길이 제한 (1~65535)\n " +
+                                    "totalRecruits - 범위 제한 (-1, 혹은 1 이상의 양수)\n "
                             )
                         ),
-                    partWithName("THUMBNAIL")
-                        .description("썸네일")
-                        .optional(),
-                    partWithName("COMMON")
-                        .description("기본 이미지")
+                    partWithName("projectFiles")
+                        .description("프로젝트 파일 - 썸네일 이미지의 경우 가장 처음으로 전송 (0번 인덱스로)")
                         .optional()
                 )
             )
@@ -258,7 +256,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
     }
 
     @Test
-    fun `메인 페이지에서 페이지 조건과 검색 조건에 따른 프로젝트 페이지 조회 - 성공`() {
+    fun `메인 페이지에서 페이지 조건과 카테고리 조건, 검색 타입에 따른 프로젝트 페이지 조회 - 성공`() {
         val facility = createFacility()
         val projectOwner = createUser()
         val projects = createSameCategoryProject(facility, projectOwner)
