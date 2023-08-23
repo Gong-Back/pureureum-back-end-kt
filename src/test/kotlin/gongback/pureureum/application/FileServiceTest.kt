@@ -84,7 +84,7 @@ class FileServiceTest : BehaviorSpec({
             val fileContentType = "image/png"
 
             Then("올바른 파일 컨텐츠 타입을 반환한다") {
-                fileService.getImageType(fileContentType) shouldBe fileContentType
+                fileService.validateImageType(fileContentType) shouldBe fileContentType
             }
         }
 
@@ -92,11 +92,11 @@ class FileServiceTest : BehaviorSpec({
             val fileContentType = null
 
             Then("예외가 발생한다") {
-                shouldThrow<IllegalArgumentException> { fileService.getImageType(fileContentType) }
+                shouldThrow<IllegalArgumentException> { fileService.validateImageType(fileContentType) }
             }
 
             Then("예외가 발생한다") {
-                shouldThrow<IllegalArgumentException> { fileService.getAnyContentType(fileContentType) }
+                shouldThrow<IllegalArgumentException> { fileService.validateAnyContentType(fileContentType) }
             }
         }
 
@@ -104,7 +104,7 @@ class FileServiceTest : BehaviorSpec({
             val fileContentType = "application/pdf"
 
             Then("예외가 발생한다") {
-                shouldThrow<IllegalArgumentException> { fileService.getImageType(fileContentType) }
+                shouldThrow<IllegalArgumentException> { fileService.validateImageType(fileContentType) }
             }
         }
     }

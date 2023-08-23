@@ -61,7 +61,7 @@ class UserWriteService(
     fun updatedProfile(email: String, updateProfile: MultipartFile?) {
         updateProfile?.apply {
             val originalFileName = fileService.validateFileName(updateProfile.originalFilename)
-            val contentType = fileService.getImageType(updateProfile.contentType)
+            val contentType = fileService.validateImageType(updateProfile.contentType)
 
             val findUser = userRepository.getUserByEmail(email)
             if (findUser.profile.originalFileName != DEFAULT_FILE_NAME) {

@@ -30,13 +30,13 @@ class FileService(
         return originalFileName
     }
 
-    fun getImageType(fileContentType: String?): String {
+    fun validateImageType(fileContentType: String?): String {
         val contentType = fileContentType ?: throw IllegalArgumentException("파일 형식이 유효하지 않습니다")
         validateImageType(contentType)
         return contentType
     }
 
-    fun getAnyContentType(fileContentType: String?): String {
+    fun validateAnyContentType(fileContentType: String?): String {
         return fileContentType ?: throw IllegalArgumentException("파일 형식이 유효하지 않습니다")
     }
 
