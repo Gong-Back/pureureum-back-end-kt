@@ -1,23 +1,33 @@
 package gongback.pureureum.presentation.api
 
 import gongback.pureureum.application.dto.TokenRes
-import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.http.HttpHeaders
+import org.springframework.http.ResponseCookie
 
-private const val ACCESS_TOKEN = "accessToken"
-private const val REFRESH_TOKEN = "refreshToken"
+private const val ACCESS_TOKEN_COOKIE_KEY = "accessToken"
+private const val REFRESH_TOKEN_COOKIE_KEY = "refreshToken"
+private const val NONE = "None"
 
 class CookieProvider {
 
     companion object {
         fun addTokenToSecureCookie(tokenRes: TokenRes, response: HttpServletResponse) {
-            val accessTokenCookie = Cookie(ACCESS_TOKEN, tokenRes.accessToken)
-            accessTokenCookie.isHttpOnly = true
-            response.addCookie(accessTokenCookie)
+            val accessTokenCookie = ResponseCookie.from(ACCESS_TOKEN_COOKIE_KEY, tokenRes.accessToken)
+                .sameSite(NONE)
+                .httpOnly(true)
+                .secure(true)
+                .build()
+                .toString()
+            response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie)
 
-            val refreshTokenCookie = Cookie(REFRESH_TOKEN, tokenRes.refreshToken)
-            refreshTokenCookie.isHttpOnly = true
-            response.addCookie(refreshTokenCookie)
+            val refreshTokenCookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_KEY, tokenRes.refreshToken)
+                .sameSite(NONE)
+                .httpOnly(true)
+                .secure(true)
+                .build()
+                .toString()
+            response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie)
         }
     }
 }
