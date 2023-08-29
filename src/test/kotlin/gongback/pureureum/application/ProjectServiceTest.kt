@@ -4,6 +4,7 @@ import gongback.pureureum.domain.facility.FacilityRepository
 import gongback.pureureum.domain.facility.getFacilityById
 import gongback.pureureum.domain.project.ProjectRepository
 import gongback.pureureum.domain.project.getProjectById
+import gongback.pureureum.domain.projectapply.ProjectApplyRepository
 import gongback.pureureum.domain.user.UserRepository
 import gongback.pureureum.domain.user.getUserByEmail
 import gongback.pureureum.domain.user.getUserById
@@ -26,6 +27,7 @@ import support.createDifferentCategoryProject
 import support.createFacility
 import support.createMockProjectFile
 import support.createProject
+import support.createProjectApply
 import support.createProjectRegisterReq
 import support.createProjectResWithoutPayment
 import support.createSameCategoryProject
@@ -36,7 +38,9 @@ class ProjectServiceTest : BehaviorSpec({
     val facilityRepository = mockk<FacilityRepository>()
     val userRepository = mockk<UserRepository>()
     val fileService = mockk<FileService>()
-    val projectService = ProjectService(userRepository, projectRepository, facilityRepository, fileService)
+    val projectApplyRepository = mockk<ProjectApplyRepository>()
+    val projectService =
+        ProjectService(userRepository, projectRepository, facilityRepository, projectApplyRepository, fileService)
 
     Given("사용자 이메일과 프로젝트 정보") {
         val user = createUser()
@@ -183,6 +187,33 @@ class ProjectServiceTest : BehaviorSpec({
             Then("같은 카테고리의 프로젝트 Page 조회 성공") {
                 projectService.getRunningProjectPartsByTypeAndCategory(searchType, category, pageable)
                     .projectList[0].projectCategory shouldBe category
+            }
+        }
+    }
+
+    Given("프로젝트 아이디, 사용자 이메일") {
+        val user = createUser()
+        val project = createProject()
+        val projectApply = createProjectApply(user, project)
+
+        When("기존에 대상 프로젝트, 사용자에 대한 신청 정보가 존재하지 않는다면") {
+            every { projectRepository.getProjectById(any()) } returns project
+            every { userRepository.getUserByEmail(any()) } returns user
+            every { projectApplyRepository.findByProjectAndUserId(any(), any()) } returns null
+            every { projectApplyRepository.save(any()) } returns projectApply
+
+            Then("프로젝트 신청 정보를 저장한다") {
+                shouldNotThrowAnyUnit { projectService.applyProject(project.id, user.email) }
+            }
+        }
+
+        When("기존에 대상 프로젝트, 사용자에 대한 신청 정보가 존재한다면") {
+            every { projectRepository.getProjectById(any()) } returns project
+            every { userRepository.getUserByEmail(any()) } returns user
+            every { projectApplyRepository.findByProjectAndUserId(any(), any()) } returns projectApply
+
+            Then("예외가 발생한다") {
+                shouldThrow<PureureumException> { projectService.applyProject(project.id, user.email) }
             }
         }
     }
