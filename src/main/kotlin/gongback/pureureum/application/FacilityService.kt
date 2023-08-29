@@ -4,10 +4,10 @@ import gongback.pureureum.application.dto.FacilityReq
 import gongback.pureureum.application.dto.FacilityRes
 import gongback.pureureum.application.dto.FacilityResWithProgress
 import gongback.pureureum.application.dto.FacilityWithDocIds
-import gongback.pureureum.application.dto.FileReq
+import gongback.pureureum.application.dto.FileInfo
+import gongback.pureureum.domain.facility.FacilityCertificationDoc
 import gongback.pureureum.domain.facility.FacilityProgress
 import gongback.pureureum.domain.facility.FacilityRepository
-import gongback.pureureum.domain.facility.event.FacilityCreateEvent
 import gongback.pureureum.domain.facility.getAllNotApprovedByCategory
 import gongback.pureureum.domain.facility.getApprovedByCategoryAndUserId
 import gongback.pureureum.domain.facility.getByUserId
@@ -16,7 +16,7 @@ import gongback.pureureum.domain.facility.getFacilityById
 import gongback.pureureum.domain.user.UserRepository
 import gongback.pureureum.domain.user.getUserByEmail
 import gongback.pureureum.support.constant.Category
-import org.springframework.context.ApplicationEventPublisher
+import gongback.pureureum.support.constant.FileType
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -72,7 +72,7 @@ class FacilityReadService(
 class FacilityWriteService(
     private val userRepository: UserRepository,
     private val facilityRepository: FacilityRepository,
-    private val applicationEventPublisher: ApplicationEventPublisher
+    private val fileService: FileService
 ) {
 
     @Transactional
@@ -80,17 +80,25 @@ class FacilityWriteService(
         userEmail: String,
         facilityReq: FacilityReq,
         certificationDoc: List<MultipartFile>?
-    ) {
+    ): Long {
         val user = userRepository.getUserByEmail(userEmail)
         val facility = facilityReq.toFacility(user.id)
-        val savedFacility = facilityRepository.save(facility)
-        certificationDoc?.let { file ->
-            val fileReqs = file.map {
-                FileReq(it.size, it.inputStream, it.contentType, it.originalFilename)
+        return facilityRepository.save(facility).id
+    }
+
+    @Transactional(noRollbackFor = [FileHandlingException::class])
+    fun saveFacilityFiles(facilityId: Long, certificationDocReqs: List<MultipartFile>) {
+        deleteFacilityIfError({
+            val certificationDocs = certificationDocReqs.map { file ->
+                val contentType = fileService.validateImageType(file.contentType)
+                val originalFileName = fileService.validateFileName(file.originalFilename)
+                val fileInfo = FileInfo(file.size, file.inputStream, contentType, originalFileName)
+                val fileKey = fileService.uploadFile(fileInfo, FileType.FACILITY_CERTIFICATION)
+                FacilityCertificationDoc(fileKey, contentType, originalFileName)
             }
-            val facilityCreateEvent = FacilityCreateEvent(savedFacility.id, fileReqs)
-            applicationEventPublisher.publishEvent(facilityCreateEvent)
-        }
+            val facility = facilityRepository.getFacilityById(facilityId)
+            facility.addCertificationDocs(certificationDocs)
+        }, facilityId)
     }
 
     @Transactional
@@ -103,4 +111,12 @@ class FacilityWriteService(
     fun updateFacilitiesProgress(ids: List<Long>, progress: FacilityProgress) {
         facilityRepository.updateProgressByIds(ids, progress)
     }
+
+    private fun deleteFacilityIfError(operation: () -> Unit, facilityId: Long) =
+        runCatching {
+            operation()
+        }.onFailure {
+            facilityRepository.deleteById(facilityId)
+            throw FileHandlingException(it)
+        }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import gongback.pureureum.application.FacilityReadService
 import gongback.pureureum.application.FacilityWriteService
+import gongback.pureureum.application.FileHandlingException
 import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
@@ -37,7 +38,8 @@ class FacilityRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `시설 정보 등록 성공`() {
-        every { facilityWriteService.registerFacility(any(), any(), any()) } just runs
+        every { facilityWriteService.registerFacility(any(), any(), any()) } returns 1L
+        every { facilityWriteService.saveFacilityFiles(any(), any()) } just runs
 
         val facilityReq = createFacilityReq()
         val facilityReqStr = jacksonObjectMapper().writeValueAsString(facilityReq)
@@ -131,7 +133,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
             status { isBadRequest() }
         }.andDo {
             createDocument(
-                "register-facility-fail",
+                "register-facility-invalid-request-fail",
                 requestParts(
                     partWithName("facilityReq")
                         .description(
@@ -176,8 +178,9 @@ class FacilityRestControllerTest : ControllerTestHelper() {
     }
 
     @Test
-    fun `시설 정보 등록 실패 - 원본 파일 이름이 비어있을 경우`() {
-        every { facilityWriteService.registerFacility(any(), any(), any()) } throws IllegalArgumentException("원본 파일 이름이 비어있습니다")
+    fun `시설 정보 등록 실패 - 파일 처리 중 오류가 발생했을 경우`() {
+        every { facilityWriteService.registerFacility(any(), any(), any()) } returns 1L
+        every { facilityWriteService.saveFacilityFiles(any(), any()) } throws FileHandlingException(null)
 
         val facilityReq = createFacilityReq()
         val facilityReqStr = jacksonObjectMapper().writeValueAsString(facilityReq)
@@ -196,10 +199,10 @@ class FacilityRestControllerTest : ControllerTestHelper() {
             file(facilityInfo)
             file(invalidCertificationDoc)
         }.andExpect {
-            status { isBadRequest() }
+            status { is5xxServerError() }
         }.andDo {
             createDocument(
-                "register-facility-original-file-name-empty-fail",
+                "register-facility-file-handling-fail",
                 requestParts(
                     partWithName("facilityReq")
                         .description(

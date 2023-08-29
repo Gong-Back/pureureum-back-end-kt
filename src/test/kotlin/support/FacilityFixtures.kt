@@ -5,7 +5,6 @@ import gongback.pureureum.application.dto.FacilityRes
 import gongback.pureureum.application.dto.FacilityResWithProgress
 import gongback.pureureum.application.dto.FacilityWithDocIds
 import gongback.pureureum.application.dto.FileInfo
-import gongback.pureureum.application.dto.FileReq
 import gongback.pureureum.domain.facility.Facility
 import gongback.pureureum.domain.facility.FacilityAddress
 import gongback.pureureum.domain.facility.FacilityCertificationDoc
@@ -103,17 +102,6 @@ fun createCertificationDoc(
         fileKey,
         contentType,
         originalFileName
-    )
-}
-
-fun createFileReq(
-    files: List<MockMultipartFile>
-): List<FileReq> = files.map {
-    FileReq(
-        it.size,
-        it.inputStream,
-        it.contentType,
-        it.originalFilename
     )
 }
 

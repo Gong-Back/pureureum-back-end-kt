@@ -30,7 +30,10 @@ class FacilityRestController(
         @RequestPart(required = false) certificationDoc: List<MultipartFile>?,
         @LoginEmail userEmail: String
     ): ResponseEntity<Unit> {
-        facilityWriteService.registerFacility(userEmail, facilityReq, certificationDoc)
+        val savedFacilityId = facilityWriteService.registerFacility(userEmail, facilityReq, certificationDoc)
+        certificationDoc?.let {
+            facilityWriteService.saveFacilityFiles(savedFacilityId, it)
+        }
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
