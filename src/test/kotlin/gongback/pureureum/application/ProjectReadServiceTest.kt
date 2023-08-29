@@ -33,12 +33,15 @@ class ProjectReadServiceTest : BehaviorSpec({
         val projectId = 0L
 
         When("프로젝트 ID에 맞는 프로젝트가 있을 경우") {
+            val owner = createUser()
             val project = createProject()
             val facility = createFacility()
             val projectRes = createProjectResWithoutPayment(project, facility.address)
+
             every { projectRepository.getProjectById(projectId) } returns project
             every { facilityRepository.findFacilityById(project.facilityId) } returns facility
             every { fileService.getFileUrl(any()) } returns "signedUrl"
+            every { userRepository.findUserById(any()) } returns owner
 
             Then("정상적으로 조회된다.") {
                 projectReadService.getProject(projectId) shouldBe projectRes

@@ -39,6 +39,9 @@ class ProjectRestController(
         @LoginEmail email: String
     ): ResponseEntity<ApiResponse<Unit>> {
         val savedProjectId = projectWriteService.registerProject(email, projectRegisterReq, projectFiles)
+        projectFiles?.let {
+            projectWriteService.saveProjectFiles(savedProjectId, it)
+        }
         return ResponseEntity.created(URI.create("$BASE_URL/$savedProjectId")).build()
     }
 
@@ -52,7 +55,8 @@ class ProjectRestController(
         @PathVariable("id") id: Long,
         @LoginEmail email: String
     ): ResponseEntity<Unit> {
-        projectWriteService.deleteProject(id, email)
+        val targetFileKeys = projectWriteService.deleteProject(id, email)
+        projectWriteService.deleteProjectFiles(targetFileKeys)
         return ResponseEntity.noContent().build()
     }
 

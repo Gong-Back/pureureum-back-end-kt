@@ -96,7 +96,8 @@ data class ProjectRes(
     constructor(
         project: Project,
         address: FacilityAddress,
-        projectFileRes: List<ProjectFileRes>
+        projectFileRes: List<ProjectFileRes>,
+        owner: UserInformation
     ) : this(
         projectInformation = ProjectInformationRes(
             project.title,
@@ -111,7 +112,8 @@ data class ProjectRes(
             project.maxAge,
             FacilityAddressRes(address),
             project.guide,
-            project.notice
+            project.notice,
+            owner.name
         ),
         projectCategory = project.projectCategory,
         projectStatus = project.projectStatus,
@@ -163,7 +165,8 @@ data class ProjectInformationRes(
     val maxAge: Int = -1,
     val facilityAddress: FacilityAddressRes,
     val guide: String?,
-    val notice: String?
+    val notice: String?,
+    val ownerName: String
 )
 
 data class ProjectPartInformationRes(

@@ -1,7 +1,7 @@
 package gongback.pureureum.application
 
 import gongback.pureureum.application.dto.ErrorCode
-import gongback.pureureum.application.dto.FileReq
+import gongback.pureureum.application.dto.FileInfo
 import gongback.pureureum.application.dto.ProjectFileRes
 import gongback.pureureum.application.dto.ProjectPartPageRes
 import gongback.pureureum.application.dto.ProjectPartRes
@@ -10,17 +10,16 @@ import gongback.pureureum.application.dto.ProjectRes
 import gongback.pureureum.domain.facility.FacilityRepository
 import gongback.pureureum.domain.facility.getFacilityById
 import gongback.pureureum.domain.project.Project
+import gongback.pureureum.domain.project.ProjectFile
 import gongback.pureureum.domain.project.ProjectFileType
 import gongback.pureureum.domain.project.ProjectRepository
-import gongback.pureureum.domain.project.event.ProjectCreateEvent
-import gongback.pureureum.domain.project.event.ProjectDeleteEvent
 import gongback.pureureum.domain.project.getProjectById
 import gongback.pureureum.domain.user.UserRepository
 import gongback.pureureum.domain.user.getUserByEmail
 import gongback.pureureum.domain.user.getUserById
 import gongback.pureureum.support.constant.Category
+import gongback.pureureum.support.constant.FileType
 import gongback.pureureum.support.constant.SearchType
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -63,7 +62,8 @@ class ProjectReadService(
             ProjectFileRes(projectFileUrl, projectFile.projectFileType)
         }
 
-        return ProjectRes(project, findFacility.address, projectFileResList)
+        val projectOwner = userRepository.getUserById(project.userId)
+        return ProjectRes(project, findFacility.address, projectFileResList, projectOwner.information)
     }
 
     private fun convertProjectToPartRes(project: Project): ProjectPartRes {
@@ -85,7 +85,7 @@ class ProjectReadService(
 class ProjectWriteService(
     private val userRepository: UserRepository,
     private val projectRepository: ProjectRepository,
-    private val applicationEventPublisher: ApplicationEventPublisher
+    private val fileService: FileService
 ) {
 
     @Transactional
@@ -97,20 +97,29 @@ class ProjectWriteService(
             projectRegisterReq.projectCategory,
             findUser.id
         )
-        val savedProject = projectRepository.save(project)
+        return projectRepository.save(project).id
+    }
 
-        projectFiles?.let { file ->
-            val fileReqs = file.map {
-                FileReq(it.size, it.inputStream, it.contentType, it.originalFilename)
+    @Transactional(noRollbackFor = [FileHandlingException::class])
+    fun saveProjectFiles(projectId: Long, projectFileReqs: List<MultipartFile>) {
+        deleteProjectIfError({
+            val projectFiles = projectFileReqs.mapIndexed { index, file ->
+                val contentType = fileService.validateAnyContentType(file.contentType)
+                val originalFileName = fileService.validateFileName(file.originalFilename)
+                val fileInfo = FileInfo(file.size, file.inputStream, contentType, originalFileName)
+                val fileKey = fileService.uploadFile(fileInfo, FileType.PROJECT)
+                when (index) {
+                    0 -> ProjectFile(fileKey, contentType, originalFileName, ProjectFileType.THUMBNAIL)
+                    else -> ProjectFile(fileKey, contentType, originalFileName)
+                }
             }
-            val projectCreateEvent = ProjectCreateEvent(savedProject.id, fileReqs)
-            applicationEventPublisher.publishEvent(projectCreateEvent)
-        }
-        return savedProject.id
+            val project = projectRepository.getProjectById(projectId)
+            project.addProjectFiles(projectFiles)
+        }, projectId)
     }
 
     @Transactional
-    fun deleteProject(id: Long, email: String) {
+    fun deleteProject(id: Long, email: String): List<String> {
         val findUser = userRepository.getUserByEmail(email)
         val findProject = projectRepository.getProjectById(id)
 
@@ -118,10 +127,22 @@ class ProjectWriteService(
             throw PureureumException(errorCode = ErrorCode.FORBIDDEN)
         }
         projectRepository.delete(findProject)
-        val fileKeys = findProject.projectFiles.map {
+        return findProject.projectFiles.map {
             it.fileKey
         }
-        val projectDeleteEvent = ProjectDeleteEvent(fileKeys)
-        applicationEventPublisher.publishEvent(projectDeleteEvent)
     }
+
+    fun deleteProjectFiles(projectFileKeys: List<String>) {
+        projectFileKeys.forEach {
+            fileService.deleteFile(it)
+        }
+    }
+
+    private fun deleteProjectIfError(operation: () -> Unit, projectId: Long) =
+        runCatching {
+            operation()
+        }.onFailure {
+            projectRepository.deleteById(projectId)
+            throw FileHandlingException(it)
+        }
 }
