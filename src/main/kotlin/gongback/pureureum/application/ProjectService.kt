@@ -15,7 +15,7 @@ import gongback.pureureum.domain.project.ProjectRepository
 import gongback.pureureum.domain.project.getProjectById
 import gongback.pureureum.domain.projectapply.ProjectApply
 import gongback.pureureum.domain.projectapply.ProjectApplyRepository
-import gongback.pureureum.domain.projectapply.existsByProjectAndUserId
+import gongback.pureureum.domain.projectapply.existsByProjectIdAndUserId
 import gongback.pureureum.domain.user.UserRepository
 import gongback.pureureum.domain.user.getUserByEmail
 import gongback.pureureum.domain.user.getUserById
@@ -102,11 +102,11 @@ class ProjectService(
     fun applyProject(projectId: Long, userEmail: String) {
         val project = projectRepository.getProjectById(projectId)
         val user = userRepository.getUserByEmail(userEmail)
-        val isExistedApply = projectApplyRepository.existsByProjectAndUserId(project, user.id)
+        val isExistedApply = projectApplyRepository.existsByProjectIdAndUserId(project.id, user.id)
         if (isExistedApply) {
             throw PureureumException(errorCode = ErrorCode.REQUEST_RESOURCE_ALREADY_EXISTS)
         }
-        val projectApply = ProjectApply(user.id, project)
+        val projectApply = ProjectApply(project.id, user.id)
         projectApplyRepository.save(projectApply)
     }
 

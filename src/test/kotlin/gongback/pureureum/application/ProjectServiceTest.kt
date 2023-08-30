@@ -194,12 +194,12 @@ class ProjectServiceTest : BehaviorSpec({
     Given("프로젝트 아이디, 사용자 이메일") {
         val user = createUser()
         val project = createProject()
-        val projectApply = createProjectApply(user, project)
+        val projectApply = createProjectApply(projectId = project.id, userId = user.id)
 
         When("기존에 대상 프로젝트, 사용자에 대한 신청 정보가 존재하지 않는다면") {
             every { projectRepository.getProjectById(any()) } returns project
             every { userRepository.getUserByEmail(any()) } returns user
-            every { projectApplyRepository.findByProjectAndUserId(any(), any()) } returns null
+            every { projectApplyRepository.findByProjectIdAndUserId(any(), any()) } returns null
             every { projectApplyRepository.save(any()) } returns projectApply
 
             Then("프로젝트 신청 정보를 저장한다") {
@@ -210,7 +210,7 @@ class ProjectServiceTest : BehaviorSpec({
         When("기존에 대상 프로젝트, 사용자에 대한 신청 정보가 존재한다면") {
             every { projectRepository.getProjectById(any()) } returns project
             every { userRepository.getUserByEmail(any()) } returns user
-            every { projectApplyRepository.findByProjectAndUserId(any(), any()) } returns projectApply
+            every { projectApplyRepository.findByProjectIdAndUserId(any(), any()) } returns projectApply
 
             Then("예외가 발생한다") {
                 shouldThrow<PureureumException> { projectService.applyProject(project.id, user.email) }

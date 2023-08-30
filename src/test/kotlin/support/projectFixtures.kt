@@ -183,8 +183,8 @@ fun createDifferentCategoryProject(facility: Facility, projectOwner: User): List
 }
 
 fun createProjectApply(
-    user: User = createUser(),
-    project: Project = createProject()
+    projectId: Long = 0L,
+    userId: Long = 0L
 ): ProjectApply {
-    return ProjectApply(user.id, project)
+    return ProjectApply(projectId, userId)
 }

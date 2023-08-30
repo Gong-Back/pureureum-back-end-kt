@@ -1,11 +1,10 @@
 package gongback.pureureum.domain.projectapply
 
-import gongback.pureureum.domain.project.Project
 import org.springframework.data.jpa.repository.JpaRepository
 
-fun ProjectApplyRepository.existsByProjectAndUserId(project: Project, userId: Long): Boolean =
-    findByProjectAndUserId(project, userId) != null
+fun ProjectApplyRepository.existsByProjectIdAndUserId(projectId: Long, userId: Long): Boolean =
+    findByProjectIdAndUserId(projectId, userId) != null
 
 interface ProjectApplyRepository : JpaRepository<ProjectApply, Long> {
-    fun findByProjectAndUserId(project: Project, userId: Long): ProjectApply?
+    fun findByProjectIdAndUserId(projectId: Long, userId: Long): ProjectApply?
 }
