@@ -235,6 +235,23 @@ abstract class ControllerTestHelper {
         return document("{class-name}/$value", pathParametersSnippet, responseFieldsSnippet)
     }
 
+    fun createPathDocument(
+        value: Any,
+        requestHeadersSnippet: RequestHeadersSnippet,
+        pathParametersSnippet: PathParametersSnippet
+    ): RestDocumentationResultHandler {
+        return document("{class-name}/$value", requestHeadersSnippet, pathParametersSnippet)
+    }
+
+    fun createPathDocument(
+        value: Any,
+        requestHeadersSnippet: RequestHeadersSnippet,
+        pathParametersSnippet: PathParametersSnippet,
+        responseFieldsSnippet: ResponseFieldsSnippet
+    ): RestDocumentationResultHandler {
+        return document("{class-name}/$value", requestHeadersSnippet, pathParametersSnippet, responseFieldsSnippet)
+    }
+
     companion object {
         fun field(key: String, value: String): Attribute {
             return Attribute(key, value)
