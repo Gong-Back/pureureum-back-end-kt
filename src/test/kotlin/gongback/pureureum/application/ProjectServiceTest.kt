@@ -43,24 +43,6 @@ class ProjectServiceTest : BehaviorSpec({
         val projectRegisterReq = createProjectRegisterReq()
         val fileKey = "test-key"
 
-        When("프로젝트 제한인원의 값이 -1 미만의 음수라면") {
-            val wrongProjectRegisterReq = createProjectRegisterReq(totalRecruits = -2)
-            val email = user.email
-
-            Then("예외가 발생한다") {
-                shouldThrow<IllegalArgumentException> { projectService.registerProject(email, wrongProjectRegisterReq, null) }
-            }
-        }
-
-        When("프로젝트 제한인원의 값이 0이라면") {
-            val wrongProjectRegisterReq = createProjectRegisterReq(totalRecruits = 0)
-            val email = user.email
-
-            Then("예외가 발생한다") {
-                shouldThrow<IllegalArgumentException> { projectService.registerProject(email, wrongProjectRegisterReq, null) }
-            }
-        }
-
         When("프로젝트 정보가 유효하고, 프로젝트 사진들이 없을 경우") {
             val email = user.email
             val project = projectRegisterReq.toEntityWithInfo(

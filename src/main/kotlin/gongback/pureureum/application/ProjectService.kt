@@ -24,9 +24,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 
-private const val UNLIMITED_RECRUITS = -1
-private const val MIN_RECRUITS = 1
-
 @Service
 @Transactional(readOnly = true)
 class ProjectService(
@@ -38,7 +35,6 @@ class ProjectService(
 
     @Transactional
     fun registerProject(email: String, projectRegisterReq: ProjectRegisterReq, projectFiles: List<MultipartFile>?): Long {
-        validateTotalRecruits(projectRegisterReq.totalRecruits)
         val findUser = userRepository.getUserByEmail(email)
 
         // ProjectFileUpload
@@ -92,12 +88,6 @@ class ProjectService(
             pageable.pageNumber,
             projectPartResList
         )
-    }
-
-    private fun validateTotalRecruits(totalRecruits: Int) {
-        require(totalRecruits == UNLIMITED_RECRUITS || totalRecruits >= MIN_RECRUITS) {
-            "올바른 제한 인원 값을 입력해야 합니다"
-        }
     }
 
     private fun projectToDto(project: Project): ProjectRes {
