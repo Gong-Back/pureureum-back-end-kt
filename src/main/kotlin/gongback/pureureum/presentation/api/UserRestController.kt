@@ -2,12 +2,13 @@ package gongback.pureureum.presentation.api
 
 import gongback.pureureum.application.UserAuthenticationService
 import gongback.pureureum.application.UserService
+import gongback.pureureum.application.dto.AccessTokenRes
 import gongback.pureureum.application.dto.EmailReq
 import gongback.pureureum.application.dto.LoginReq
 import gongback.pureureum.application.dto.RegisterUserReq
 import gongback.pureureum.application.dto.UserInfoReq
 import gongback.pureureum.application.dto.UserInfoRes
-import gongback.pureureum.presentation.api.CookieProvider.Companion.addTokenToSecureCookie
+import gongback.pureureum.presentation.api.CookieProvider.Companion.addRefreshTokenToCookie
 import gongback.pureureum.security.JwtNotExistsException
 import gongback.pureureum.security.LoginEmail
 import jakarta.servlet.http.HttpServletRequest
@@ -34,11 +35,12 @@ class UserRestController(
     fun login(
         @RequestBody @Valid loginReq: LoginReq,
         servletResponse: HttpServletResponse
-    ): ResponseEntity<Unit> {
+    ): ResponseEntity<ApiResponse<AccessTokenRes>> {
         userAuthenticationService.validateAuthentication(loginReq)
         val tokenRes = userAuthenticationService.getTokenRes(loginReq.email)
-        addTokenToSecureCookie(tokenRes, servletResponse)
-        return ResponseEntity.noContent().build()
+        addRefreshTokenToCookie(tokenRes, servletResponse)
+        val accessTokenRes = AccessTokenRes(tokenRes.accessToken)
+        return ResponseEntity.ok(ApiResponse.ok(accessTokenRes))
     }
 
     @PostMapping("/register")
@@ -87,10 +89,11 @@ class UserRestController(
     fun reissueToken(
         servletRequest: HttpServletRequest,
         servletResponse: HttpServletResponse
-    ): ResponseEntity<Unit> {
+    ): ResponseEntity<ApiResponse<AccessTokenRes>> {
         val bearerToken = servletRequest.getHeader(HttpHeaders.AUTHORIZATION) ?: throw JwtNotExistsException()
         val tokenRes = userAuthenticationService.reissueToken(bearerToken)
-        addTokenToSecureCookie(tokenRes, servletResponse)
-        return ResponseEntity.noContent().build()
+        addRefreshTokenToCookie(tokenRes, servletResponse)
+        val accessTokenRes = AccessTokenRes(tokenRes.accessToken)
+        return ResponseEntity.ok(ApiResponse.ok(accessTokenRes))
     }
 }

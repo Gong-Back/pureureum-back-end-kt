@@ -16,6 +16,8 @@ import io.mockk.just
 import io.mockk.runs
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName
+import org.springframework.restdocs.cookies.CookieDocumentation.responseCookies
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
@@ -35,8 +37,6 @@ import support.createRefreshToken
 import support.createUserAccountDto
 import support.test.ControllerTestHelper
 import java.time.LocalDate
-import org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName
-import org.springframework.restdocs.cookies.CookieDocumentation.responseCookies
 
 fun createAuthenticationInfo(
     code: String = "AuthenticationCode",
@@ -87,7 +87,7 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
         mockMvc.post("/api/v1/oauth/login/kakao") {
             jsonContent(createAuthenticationInfo())
         }.andExpect {
-            status { isNoContent() }
+            status { isOk() }
         }.andDo {
             createDocument(
                 "oAuth-login-success",
@@ -95,8 +95,12 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
                     fieldWithPath("code").description("인가 코드"),
                     fieldWithPath("redirectUrl").description("리다이렉트 주소")
                 ),
+                responseFields(
+                    fieldWithPath("code").description("응답 코드"),
+                    fieldWithPath("messages").description("응답 메시지"),
+                    fieldWithPath("data.accessToken").description("액세스 토큰")
+                ),
                 responseCookies(
-                    cookieWithName("accessToken").description("access token"),
                     cookieWithName("refreshToken").description("refresh token")
                 )
             )
@@ -233,8 +237,10 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
                 responseFields(
                     fieldWithPath("code").description("응답 코드"),
                     fieldWithPath("messages").description("응답 메시지"),
-                    fieldWithPath("data.accessToken").description("AccessToken"),
-                    fieldWithPath("data.refreshToken").description("RefreshToken")
+                    fieldWithPath("data.accessToken").description("액세스 토큰")
+                ),
+                responseCookies(
+                    cookieWithName("refreshToken").description("refresh token")
                 )
             )
         }

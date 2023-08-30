@@ -2,14 +2,14 @@ package gongback.pureureum.presentation.api
 
 import gongback.pureureum.application.OAuth2Service
 import gongback.pureureum.application.UserAuthenticationService
+import gongback.pureureum.application.dto.AccessTokenRes
 import gongback.pureureum.application.dto.AuthenticationInfo
 import gongback.pureureum.application.dto.ErrorCode
 import gongback.pureureum.application.dto.OAuthUserInfo
 import gongback.pureureum.application.dto.SocialEmailDto
 import gongback.pureureum.application.dto.SocialRegisterUserReq
 import gongback.pureureum.application.dto.TempSocialAuthDto
-import gongback.pureureum.application.dto.TokenRes
-import gongback.pureureum.presentation.api.CookieProvider.Companion.addTokenToSecureCookie
+import gongback.pureureum.presentation.api.CookieProvider.Companion.addRefreshTokenToCookie
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -65,11 +65,16 @@ class OAuth2RestController(
     @PostMapping("/register")
     fun register(
         @RequestBody @Valid socialRegisterUserReq: SocialRegisterUserReq,
-        response: HttpServletResponse
-    ): ResponseEntity<ApiResponse<TokenRes>> {
+        servletResponse: HttpServletResponse
+    ): ResponseEntity<ApiResponse<AccessTokenRes>> {
         userAuthenticationService.registerBySocialReq(socialRegisterUserReq)
-        return ResponseEntity.status(HttpStatus.CREATED)
-            .body(ApiResponse.ok(userAuthenticationService.getTokenRes(socialRegisterUserReq.email)))
+        val tokenRes = userAuthenticationService.getTokenRes(socialRegisterUserReq.email)
+        addRefreshTokenToCookie(tokenRes, servletResponse)
+        val accessTokenRes = AccessTokenRes(tokenRes.accessToken)
+
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(ApiResponse.ok(accessTokenRes))
     }
 
     private fun login(
@@ -98,8 +103,9 @@ class OAuth2RestController(
 
             else -> {
                 val tokenRes = userAuthenticationService.getTokenRes(oAuthUserInfo.clientEmail)
-                addTokenToSecureCookie(tokenRes, servletResponse)
-                ResponseEntity.noContent().build()
+                addRefreshTokenToCookie(tokenRes, servletResponse)
+                val accessTokenRes = AccessTokenRes(tokenRes.accessToken)
+                return ResponseEntity.ok(ApiResponse.ok(accessTokenRes))
             }
         }
     }

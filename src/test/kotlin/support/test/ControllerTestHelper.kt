@@ -21,7 +21,6 @@ import org.springframework.restdocs.RestDocumentationContextProvider
 import org.springframework.restdocs.RestDocumentationExtension
 import org.springframework.restdocs.cookies.ResponseCookiesSnippet
 import org.springframework.restdocs.headers.RequestHeadersSnippet
-import org.springframework.restdocs.headers.ResponseHeadersSnippet
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler
@@ -44,7 +43,10 @@ import support.ACCESS_TOKEN
 import support.EMAIL
 import support.NOT_VALID_ACCESS_TOKEN
 import support.REFRESH_TOKEN
+import support.TOKEN_TYPE
 import support.test.BaseTests.TestEnvironment
+
+private const val CLASS_NAME_IDENTIFIER = "{class-name}/"
 
 @TestEnvironment
 @AutoConfigureRestDocs
@@ -92,7 +94,7 @@ abstract class ControllerTestHelper {
                     val accessToken =
                         slot.captured.getHeader(HttpHeaders.AUTHORIZATION) ?: throw JwtNotExistsException()
                     val tokenFormat = accessToken.split(" ")
-                    if (tokenFormat[0] != "Bearer" || tokenFormat[1] == NOT_VALID_ACCESS_TOKEN) {
+                    if (tokenFormat[0] != TOKEN_TYPE.trim() || tokenFormat[1] == NOT_VALID_ACCESS_TOKEN) {
                         throw JwtNotValidException()
                     }
 
@@ -115,11 +117,11 @@ abstract class ControllerTestHelper {
     }
 
     fun MockMvcResultHandlersDsl.createDocument(value: Any, responseFieldsSnippet: ResponseFieldsSnippet) {
-        return handle(document("{class-name}/$value", responseFieldsSnippet))
+        return handle(document("$CLASS_NAME_IDENTIFIER$value", responseFieldsSnippet))
     }
 
     fun MockMvcResultHandlersDsl.createDocument(value: Any, requestPartsSnippet: RequestPartsSnippet) {
-        return handle(document("{class-name}/$value", requestPartsSnippet))
+        return handle(document("$CLASS_NAME_IDENTIFIER$value", requestPartsSnippet))
     }
 
     fun MockMvcResultHandlersDsl.createDocument(
@@ -127,38 +129,36 @@ abstract class ControllerTestHelper {
         requestHeadersSnippet: RequestHeadersSnippet,
         requestPartsSnippet: RequestPartsSnippet
     ) {
-        return handle(document("{class-name}/$value", requestHeadersSnippet, requestPartsSnippet))
+        return handle(document("$CLASS_NAME_IDENTIFIER$value", requestHeadersSnippet, requestPartsSnippet))
     }
 
     fun MockMvcResultHandlersDsl.createDocument(
         value: Any
     ) {
-        return handle(document("{class-name}/$value"))
+        return handle(document("$CLASS_NAME_IDENTIFIER$value"))
     }
 
     fun MockMvcResultHandlersDsl.createDocument(
         value: Any,
         requestHeadersSnippet: RequestHeadersSnippet
     ) {
-        return handle(document("{class-name}/$value", requestHeadersSnippet))
+        return handle(document("$CLASS_NAME_IDENTIFIER$value", requestHeadersSnippet))
     }
 
     fun MockMvcResultHandlersDsl.createDocument(value: Any, requestFieldsSnippet: RequestFieldsSnippet) {
-        return handle(document("{class-name}/$value", requestFieldsSnippet))
+        return handle(document("$CLASS_NAME_IDENTIFIER$value", requestFieldsSnippet))
     }
 
     fun MockMvcResultHandlersDsl.createDocument(
         value: Any,
-        requestHeadersSnippet: RequestHeadersSnippet,
-        responseHeadersSnippet: ResponseHeadersSnippet,
-        responseCookieSnippet: ResponseCookiesSnippet,
-        responseFieldsSnippet: ResponseFieldsSnippet
+        requestFieldsSnippet: RequestFieldsSnippet,
+        responseFieldsSnippet: ResponseFieldsSnippet,
+        responseCookieSnippet: ResponseCookiesSnippet
     ) {
         return handle(
             document(
-                "{class-name}/$value",
-                requestHeadersSnippet,
-                responseHeadersSnippet,
+                "$CLASS_NAME_IDENTIFIER$value",
+                requestFieldsSnippet,
                 responseCookieSnippet,
                 responseFieldsSnippet
             )
@@ -170,15 +170,7 @@ abstract class ControllerTestHelper {
         requestFieldsSnippet: RequestFieldsSnippet,
         responseFieldsSnippet: ResponseFieldsSnippet
     ) {
-        return handle(document("{class-name}/$value", requestFieldsSnippet, responseFieldsSnippet))
-    }
-
-    fun MockMvcResultHandlersDsl.createDocument(
-        value: Any,
-        requestFieldsSnippet: RequestFieldsSnippet,
-        responseCookiesSnippet: ResponseCookiesSnippet
-    ) {
-        return handle(document("{class-name}/$value", requestFieldsSnippet, responseCookiesSnippet))
+        return handle(document("$CLASS_NAME_IDENTIFIER$value", requestFieldsSnippet, responseFieldsSnippet))
     }
 
     fun MockMvcResultHandlersDsl.createDocument(
@@ -186,7 +178,7 @@ abstract class ControllerTestHelper {
         queryParametersSnippet: QueryParametersSnippet,
         responseFieldsSnippet: ResponseFieldsSnippet
     ) {
-        return handle(document("{class-name}/$value", queryParametersSnippet, responseFieldsSnippet))
+        return handle(document("$CLASS_NAME_IDENTIFIER$value", queryParametersSnippet, responseFieldsSnippet))
     }
 
     fun MockMvcResultHandlersDsl.createDocument(
@@ -194,14 +186,15 @@ abstract class ControllerTestHelper {
         requestHeadersSnippet: RequestHeadersSnippet,
         responseFieldsSnippet: ResponseFieldsSnippet
     ) {
-        return handle(document("{class-name}/$value", requestHeadersSnippet, responseFieldsSnippet))
+        return handle(document("$CLASS_NAME_IDENTIFIER$value", requestHeadersSnippet, responseFieldsSnippet))
     }
 
     fun MockMvcResultHandlersDsl.createDocument(
         value: Any,
+        responseFieldsSnippet: ResponseFieldsSnippet,
         responseCookiesSnippet: ResponseCookiesSnippet
     ) {
-        return handle(document("{class-name}/$value", responseCookiesSnippet))
+        return handle(document("$CLASS_NAME_IDENTIFIER$value", responseFieldsSnippet, responseCookiesSnippet))
     }
 
     fun createPathDocument(
@@ -209,6 +202,6 @@ abstract class ControllerTestHelper {
         pathParametersSnippet: PathParametersSnippet,
         responseFieldsSnippet: ResponseFieldsSnippet
     ): RestDocumentationResultHandler {
-        return document("{class-name}/$value", pathParametersSnippet, responseFieldsSnippet)
+        return document("$CLASS_NAME_IDENTIFIER$value", pathParametersSnippet, responseFieldsSnippet)
     }
 }

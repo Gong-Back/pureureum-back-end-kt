@@ -96,7 +96,7 @@ class UserRestControllerTest : ControllerTestHelper() {
         mockMvc.post("/api/v1/users/login") {
             jsonContent(createLoginReq())
         }.andExpect {
-            status { isNoContent() }
+            status { isOk() }
         }.andDo {
             createDocument(
                 "user-login-success",
@@ -104,8 +104,12 @@ class UserRestControllerTest : ControllerTestHelper() {
                     fieldWithPath("email").description("아이디").attributes(Attributes.Attribute(LENGTH, "8-15")),
                     fieldWithPath("password").description("비밀번호")
                 ),
+                responseFields(
+                    fieldWithPath("code").description("응답 코드"),
+                    fieldWithPath("messages").description("응답 메시지"),
+                    fieldWithPath("data.accessToken").description("액세스 토큰")
+                ),
                 responseCookies(
-                    cookieWithName("accessToken").description("access token"),
                     cookieWithName("refreshToken").description("refresh token")
                 )
             )
@@ -245,12 +249,16 @@ class UserRestControllerTest : ControllerTestHelper() {
         mockMvc.post("/api/v1/users/reissue-token") {
             header(HttpHeaders.AUTHORIZATION, TOKEN_TYPE + REFRESH_TOKEN)
         }.andExpect {
-            status { isNoContent() }
+            status { isOk() }
         }.andDo {
             createDocument(
                 "token-reissue-success",
+                responseFields(
+                    fieldWithPath("code").description("응답 코드"),
+                    fieldWithPath("messages").description("응답 메시지"),
+                    fieldWithPath("data.accessToken").description("액세스 토큰")
+                ),
                 responseCookies(
-                    cookieWithName("accessToken").description("access token"),
                     cookieWithName("refreshToken").description("refresh token")
                 )
             )
