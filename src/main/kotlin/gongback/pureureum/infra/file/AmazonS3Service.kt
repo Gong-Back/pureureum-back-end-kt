@@ -6,7 +6,7 @@ import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
 import com.amazonaws.services.s3.model.ObjectMetadata
 import gongback.pureureum.application.S3Exception
 import gongback.pureureum.application.StorageService
-import gongback.pureureum.application.dto.FileInfo
+import gongback.pureureum.application.dto.FileDto
 import gongback.pureureum.support.constant.FileType
 import java.util.Date
 import org.springframework.stereotype.Service
@@ -16,7 +16,7 @@ class AmazonS3Service(
     private val s3Client: AmazonS3,
     private val s3Properties: S3Properties
 ) : StorageService {
-    override fun uploadFile(image: FileInfo, fileType: FileType, serverFileName: String): String {
+    override fun uploadFile(image: FileDto, fileType: FileType, serverFileName: String): String {
         val bucketName = s3Properties.bucketName
         val fileKey = getSaveFilePath(fileType) + serverFileName
         val objectMetadata = ObjectMetadata().apply {

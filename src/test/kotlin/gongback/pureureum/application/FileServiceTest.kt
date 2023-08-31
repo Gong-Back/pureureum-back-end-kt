@@ -10,7 +10,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
-import support.createFileInfo
+import support.createFileDto
 import support.createMockCertificationDoc
 
 class FileServiceTest : BehaviorSpec({
@@ -19,7 +19,7 @@ class FileServiceTest : BehaviorSpec({
     val fileService = FileService(storageService, fileNameGenerator)
 
     Given("파일 정보, 파일 타입") {
-        val fileInfo = createFileInfo(createMockCertificationDoc())
+        val fileInfo = createFileDto(createMockCertificationDoc())
         val serverFilePath = "facility/certification/test.png"
 
         When("올바른 파일에 대한 정보라면") {
