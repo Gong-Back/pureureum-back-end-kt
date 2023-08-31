@@ -8,10 +8,10 @@
 operation::facility-rest-controller-test/register-facility-success[snippets='http-request,request-parts,http-response']
 
 === *1-2* 실패 - 형식에 맞지 않는 정보
-operation::facility-rest-controller-test/register-facility-fail[snippets='http-request,http-response']
+operation::facility-rest-controller-test/register-facility-invalid-request-fail[snippets='http-request,http-response']
 
-=== *1-3* 실패 - 원본 파일 이름이 비어있을 경우
-operation::facility-rest-controller-test/register-facility-original-file-name-empty-fail[snippets='http-request,http-response']
+=== *1-3* 실패 - 파일 처리 중 오류가 발생했을 경우
+operation::facility-rest-controller-test/register-facility-file-handling-fail[snippets='http-request,http-response']
 
 [[시설조회-API]]
 == *2. 시설 조회 API*

@@ -1,8 +1,11 @@
+
 package gongback.pureureum.presentation.api
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ninjasquad.springmockk.MockkBean
-import gongback.pureureum.application.FacilityService
+import gongback.pureureum.application.FacilityReadService
+import gongback.pureureum.application.FacilityWriteService
+import gongback.pureureum.application.FileHandlingException
 import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
@@ -18,6 +21,7 @@ import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.multipart
 import support.FACILITY_CATEGORY
 import support.createAccessToken
+import support.createCertificationDocDto
 import support.createFacilityReq
 import support.createFacilityRes
 import support.createFacilityResWithProgress
@@ -29,11 +33,17 @@ import java.nio.charset.StandardCharsets
 @WebMvcTest(FacilityRestController::class)
 class FacilityRestControllerTest : ControllerTestHelper() {
     @MockkBean
-    private lateinit var facilityService: FacilityService
+    private lateinit var facilityReadService: FacilityReadService
+
+    @MockkBean
+    private lateinit var facilityWriteService: FacilityWriteService
 
     @Test
     fun `시설 정보 등록 성공`() {
-        every { facilityService.registerFacility(any(), any(), any()) } just runs
+        val certificationDocDto = createCertificationDocDto()
+        every { facilityWriteService.registerFacility(any(), any()) } returns 1L
+        every { facilityWriteService.uploadCertificationDocs(any()) } returns listOf(certificationDocDto)
+        every { facilityWriteService.saveFacilityFiles(any(), any()) } just runs
 
         val facilityReq = createFacilityReq()
         val facilityReqStr = jacksonObjectMapper().writeValueAsString(facilityReq)
@@ -44,12 +54,12 @@ class FacilityRestControllerTest : ControllerTestHelper() {
                 "application/json",
                 facilityReqStr.toByteArray(StandardCharsets.UTF_8)
             )
-        val certificationDoc = createMockCertificationDoc()
+        val certificationDocs = createMockCertificationDoc()
 
         mockMvc.multipart("/api/v1/facilities/register") {
             token(createAccessToken())
             file(facilityInfo)
-            file(certificationDoc)
+            file(certificationDocs)
         }.andExpect {
             status { isCreated() }
         }.andDo {
@@ -90,7 +100,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
                                     "jibun - 길이 제한 (1~100)"
                             )
                         ),
-                    partWithName("certificationDoc")
+                    partWithName("certificationDocs")
                         .description("인증 서류 (파일 리스트)")
                         .optional()
                 )
@@ -117,17 +127,14 @@ class FacilityRestControllerTest : ControllerTestHelper() {
                 invalidFacilityReqStr.toByteArray(StandardCharsets.UTF_8)
             )
 
-        val certificationDoc = createMockCertificationDoc()
-
         mockMvc.multipart("/api/v1/facilities/register") {
             token(createAccessToken())
             file(invalidFacilityInfo)
-            file(certificationDoc)
         }.andExpect {
             status { isBadRequest() }
         }.andDo {
             createDocument(
-                "register-facility-fail",
+                "register-facility-invalid-request-fail",
                 requestParts(
                     partWithName("facilityReq")
                         .description(
@@ -163,7 +170,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
                                     "jibun - 길이 제한 (1~100)"
                             )
                         ),
-                    partWithName("certificationDoc")
+                    partWithName("certificationDocs")
                         .description("인증 서류 (파일 리스트)")
                         .optional()
                 )
@@ -172,8 +179,10 @@ class FacilityRestControllerTest : ControllerTestHelper() {
     }
 
     @Test
-    fun `시설 정보 등록 실패 - 원본 파일 이름이 비어있을 경우`() {
-        every { facilityService.registerFacility(any(), any(), any()) } throws IllegalArgumentException("원본 파일 이름이 비어있습니다")
+    fun `시설 정보 등록 실패 - 파일 처리 중 오류가 발생했을 경우`() {
+        every { facilityWriteService.registerFacility(any(), any()) } returns 1L
+        every { facilityWriteService.uploadCertificationDocs(any()) } throws FileHandlingException(null)
+        every { facilityWriteService.deleteFacility(any()) } just runs
 
         val facilityReq = createFacilityReq()
         val facilityReqStr = jacksonObjectMapper().writeValueAsString(facilityReq)
@@ -192,10 +201,10 @@ class FacilityRestControllerTest : ControllerTestHelper() {
             file(facilityInfo)
             file(invalidCertificationDoc)
         }.andExpect {
-            status { isBadRequest() }
+            status { is5xxServerError() }
         }.andDo {
             createDocument(
-                "register-facility-original-file-name-empty-fail",
+                "register-facility-file-handling-fail",
                 requestParts(
                     partWithName("facilityReq")
                         .description(
@@ -231,7 +240,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
                                     "jibun - 길이 제한 (1~100)"
                             )
                         ),
-                    partWithName("certificationDoc")
+                    partWithName("certificationDocs")
                         .description("형식에 맞지 않은 인증 서류 (파일 리스트)")
                         .optional()
                 )
@@ -242,7 +251,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
     @Test
     fun `시설 정보 조회 성공 - 카테고리별 조회`() {
         val facilityRes = listOf(createFacilityRes())
-        every { facilityService.getApprovedFacilityByCategory(any(), any()) } returns facilityRes
+        every { facilityReadService.getApprovedFacilityByCategory(any(), any()) } returns facilityRes
 
         mockMvc.get("/api/v1/facilities/me") {
             token(createAccessToken())
@@ -274,7 +283,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
     @Test
     fun `시설 정보 조회 성공 - 진행 정보 포함 조회`() {
         val facilityResWithProgress = listOf(createFacilityResWithProgress())
-        every { facilityService.getAllFacilities(any()) } returns facilityResWithProgress
+        every { facilityReadService.getAllFacilities(any()) } returns facilityResWithProgress
 
         mockMvc.get("/api/v1/facilities/all") {
             token(createAccessToken())

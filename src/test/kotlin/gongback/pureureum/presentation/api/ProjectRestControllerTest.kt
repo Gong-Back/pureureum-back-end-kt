@@ -1,7 +1,9 @@
 package gongback.pureureum.presentation.api
 
 import com.ninjasquad.springmockk.MockkBean
-import gongback.pureureum.application.ProjectService
+import gongback.pureureum.application.FileHandlingException
+import gongback.pureureum.application.ProjectReadService
+import gongback.pureureum.application.ProjectWriteService
 import gongback.pureureum.application.PureureumException
 import gongback.pureureum.application.dto.ErrorCode
 import io.mockk.Runs
@@ -34,6 +36,7 @@ import support.createAccessToken
 import support.createDifferentCategoryProject
 import support.createFacility
 import support.createMockProjectFile
+import support.createProjectFileDto
 import support.createProjectPartPageRes
 import support.createProjectRegisterReq
 import support.createProjectResWithPayment
@@ -47,11 +50,18 @@ import java.nio.charset.StandardCharsets
 @WebMvcTest(ProjectRestController::class)
 class ProjectRestControllerTest : ControllerTestHelper() {
     @MockkBean
-    private lateinit var projectService: ProjectService
+    private lateinit var projectReadService: ProjectReadService
+
+    @MockkBean
+    private lateinit var projectWriteService: ProjectWriteService
 
     @Test
     fun `프로젝트 등록 성공`() {
-        every { projectService.registerProject(any(), any(), any()) } returns 1L
+        val projectFileDto = createProjectFileDto()
+
+        every { projectWriteService.registerProject(any(), any()) } returns 1L
+        every { projectWriteService.uploadProjectFiles(any()) } returns listOf(projectFileDto)
+        every { projectWriteService.saveProjectFiles(any(), any()) } just runs
 
         val projectRegisterReq = createProjectRegisterReq()
         val projectRegisterReqStr = objectToString(projectRegisterReq)
@@ -110,8 +120,151 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                             Attributes.Attribute(
                                 LENGTH,
                                 "title, introduction - 길이 제한 (1~200)\n" +
-                                    "content - 길이 제한 (1~65535)\n " +
-                                    "totalRecruits - 범위 제한 (-1, 혹은 1 이상의 양수)\n "
+                                    "content - 길이 제한 (1~65535)"
+                            )
+                        ),
+                    partWithName("projectFiles")
+                        .description("프로젝트 파일 - 썸네일 이미지의 경우 가장 처음으로 전송 (0번 인덱스로)")
+                        .optional()
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `프로젝트 등록 실패 - 형식에 맞지 않는 정보`() {
+        val projectRegisterReq = createProjectRegisterReq(
+            title = "",
+            introduction = "",
+            content = ""
+        )
+        val projectRegisterReqStr = objectToString(projectRegisterReq)
+        val projectRegisterInfo =
+            MockMultipartFile(
+                "projectRegisterReq",
+                "projectRegisterReq",
+                "application/json",
+                projectRegisterReqStr.toByteArray(StandardCharsets.UTF_8)
+            )
+
+        mockMvc.multipart("/api/v1/projects") {
+            token(createAccessToken())
+            file(projectRegisterInfo)
+        }.andExpect {
+            status { isBadRequest() }
+        }.andDo {
+            createDocument(
+                "register-project-invalid-request-fail",
+                requestHeaders(
+                    headerWithName(HttpHeaders.AUTHORIZATION).description("Valid-Access-token")
+                ),
+                requestParts(
+                    partWithName("projectRegisterReq")
+                        .description(
+                            "프로젝트 정보 (json)\n" +
+                                "title: 프로젝트 제목\n" +
+                                "introduction: 프로젝트 한줄 소개\n" +
+                                "content: 프로젝트 내용\n" +
+                                "projectStartDate: 프로젝트 시작 시간\n" +
+                                "projectEndDate: 프로젝트 종료 시간\n" +
+                                "totalRecruits : 프로젝트 최대 모집 인원 (제한 없는 경우 -1)\n" +
+                                "minAge : 나이 제한(최소) (Optional)\n" +
+                                "maxAge : 나이 제한(최대) (Optional)\n" +
+                                "guide : 찾아오시는 길 안내(Optional)\n" +
+                                "notice : 유의 사항(Optional)\n" +
+                                "paymentType : 지불 유형\n" +
+                                "amount : 총 금액(지불 유형이 NONE이 아닐 경우) (Optional)\n" +
+                                "refundInstruction : 환불 정책(지불 유형이 NONE이 아닐 경우) (Optional)\n" +
+                                "depositInformation : 예금 정보(지불 유형이 NONE이 아닐 경우) (Optional)\n" +
+                                "facilityId : 시설 등록 ID\n"
+                        )
+                        .attributes(
+                            Attributes.Attribute(
+                                EXAMPLE,
+                                "{\"projectStartDate\": \"2023-03-10\"}\n" +
+                                    "{\"projectEndDate\": \"2023-03-12\"}\n" +
+                                    "{\"paymentType\": \"NONE(참가비 없음), DEPOSIT(보증금), ENTRY_FEE(참가비)\"}\n"
+                            )
+                        )
+                        .attributes(
+                            Attributes.Attribute(
+                                LENGTH,
+                                "title, introduction - 길이 제한 (1~200)\n" +
+                                    "content - 길이 제한 (1~65535)"
+                            )
+                        ),
+                    partWithName("projectFiles")
+                        .description("프로젝트 파일 - 썸네일 이미지의 경우 가장 처음으로 전송 (0번 인덱스로)")
+                        .optional()
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `프로젝트 등록 실패 - 파일 처리 중 오류가 발생했을 경우`() {
+        every { projectWriteService.registerProject(any(), any()) } returns 1L
+        every { projectWriteService.uploadProjectFiles(any()) } throws FileHandlingException(null)
+        every { projectWriteService.deleteProject(any()) } just runs
+
+        val projectRegisterReq = createProjectRegisterReq()
+        val projectRegisterReqStr = objectToString(projectRegisterReq)
+        val projectRegisterInfo =
+            MockMultipartFile(
+                "projectRegisterReq",
+                "projectRegisterReq",
+                "application/json",
+                projectRegisterReqStr.toByteArray(StandardCharsets.UTF_8)
+            )
+        val projectFile1 = createMockProjectFile("projectFiles", "test1", "image/png", "sample")
+        val projectFile2 = createMockProjectFile("projectFiles", "test1", "image/png", "sample")
+
+        mockMvc.multipart("/api/v1/projects") {
+            token(createAccessToken())
+            file(projectRegisterInfo)
+            file(projectFile1)
+            file(projectFile2)
+        }.andExpect {
+            status { is5xxServerError() }
+        }.andDo {
+            createDocument(
+                "register-project-file-handling-fail",
+                requestHeaders(
+                    headerWithName(HttpHeaders.AUTHORIZATION).description("Valid-Access-token")
+                ),
+                requestParts(
+                    partWithName("projectRegisterReq")
+                        .description(
+                            "프로젝트 정보 (json)\n" +
+                                "title: 프로젝트 제목\n" +
+                                "introduction: 프로젝트 한줄 소개\n" +
+                                "content: 프로젝트 내용\n" +
+                                "projectStartDate: 프로젝트 시작 시간\n" +
+                                "projectEndDate: 프로젝트 종료 시간\n" +
+                                "totalRecruits : 프로젝트 최대 모집 인원 (제한 없는 경우 -1)\n" +
+                                "minAge : 나이 제한(최소) (Optional)\n" +
+                                "maxAge : 나이 제한(최대) (Optional)\n" +
+                                "guide : 찾아오시는 길 안내(Optional)\n" +
+                                "notice : 유의 사항(Optional)\n" +
+                                "paymentType : 지불 유형\n" +
+                                "amount : 총 금액(지불 유형이 NONE이 아닐 경우) (Optional)\n" +
+                                "refundInstruction : 환불 정책(지불 유형이 NONE이 아닐 경우) (Optional)\n" +
+                                "depositInformation : 예금 정보(지불 유형이 NONE이 아닐 경우) (Optional)\n" +
+                                "facilityId : 시설 등록 ID\n"
+                        )
+                        .attributes(
+                            Attributes.Attribute(
+                                EXAMPLE,
+                                "{\"projectStartDate\": \"2023-03-10\"}\n" +
+                                    "{\"projectEndDate\": \"2023-03-12\"}\n" +
+                                    "{\"paymentType\": \"NONE(참가비 없음), DEPOSIT(보증금), ENTRY_FEE(참가비)\"}\n"
+                            )
+                        )
+                        .attributes(
+                            Attributes.Attribute(
+                                LENGTH,
+                                "title, introduction - 길이 제한 (1~200)\n" +
+                                    "content - 길이 제한 (1~65535)"
                             )
                         ),
                     partWithName("projectFiles")
@@ -125,7 +278,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
     @Test
     fun `프로젝트 정보 조회 성공 - 단일 조회 (참여 금액 정보가 없을 때)`() {
         val projectRes = createProjectResWithoutPayment()
-        every { projectService.getProject(any()) } returns projectRes
+        every { projectReadService.getProject(any()) } returns projectRes
 
         mockMvc.perform(get("/api/v1/projects/{id}", 1L))
             .andExpect(status().isOk)
@@ -157,12 +310,13 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                         fieldWithPath("data.projectInformation.facilityAddress.latitude").description("시설 주소 (위도)"),
                         fieldWithPath("data.projectInformation.guide").description("찾아오시는 길 안내(최소)"),
                         fieldWithPath("data.projectInformation.notice").description("유의 사항"),
+                        fieldWithPath("data.projectInformation.ownerName").description("소유주 이름"),
                         fieldWithPath("data.projectCategory").description("프로젝트 카테고리"),
                         fieldWithPath("data.projectStatus").description("프로젝트 진행 상황"),
                         fieldWithPath("data.paymentType").description("프로젝트 금액 지불 타입"),
+                        fieldWithPath("data.projectPayment").description("프로젝트 금액 정보"),
                         fieldWithPath("data.projectFiles[0].projectFileUrl").description("이미지 접근 주소"),
-                        fieldWithPath("data.projectFiles[0].projectFileType").description("프로젝트 이미지 타입 (THUMBNAIL: 썸네일, COMMON: 일반"),
-                        fieldWithPath("data.projectPayment").description("프로젝트 금액 정보")
+                        fieldWithPath("data.projectFiles[0].projectFileType").description("프로젝트 이미지 타입 (THUMBNAIL: 썸네일, COMMON: 일반")
                     )
                 )
             )
@@ -171,7 +325,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
     @Test
     fun `프로젝트 정보 조회 성공 - 단일 조회 (참여 금액 정보가 있을 때)`() {
         val projectRes = createProjectResWithPayment()
-        every { projectService.getProject(any()) } returns projectRes
+        every { projectReadService.getProject(any()) } returns projectRes
 
         mockMvc.perform(get("/api/v1/projects/{id}", 1L))
             .andExpect(status().isOk)
@@ -203,6 +357,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                         fieldWithPath("data.projectInformation.facilityAddress.latitude").description("시설 주소 (위도)"),
                         fieldWithPath("data.projectInformation.guide").description("찾아오시는 길 안내(최소)"),
                         fieldWithPath("data.projectInformation.notice").description("유의 사항"),
+                        fieldWithPath("data.projectInformation.ownerName").description("소유주 이름"),
                         fieldWithPath("data.projectCategory").description("프로젝트 카테고리"),
                         fieldWithPath("data.projectStatus").description("프로젝트 진행 상황"),
                         fieldWithPath("data.paymentType").description("프로젝트 금액 지불 타입"),
@@ -218,7 +373,8 @@ class ProjectRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `프로젝트 삭제 성공`() {
-        every { projectService.deleteProject(any(), any()) } just runs
+        every { projectWriteService.deleteProject(any(), any()) } returns listOf("fileKey1")
+        every { projectWriteService.deleteProjectFiles(any()) } just runs
 
         mockMvc.perform(
             delete("/api/v1/projects/{id}", 1L)
@@ -240,7 +396,12 @@ class ProjectRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `프로젝트 삭제 실패 - 권한이 없을 때`() {
-        every { projectService.deleteProject(any(), any()) } throws PureureumException(errorCode = ErrorCode.FORBIDDEN)
+        every {
+            projectWriteService.deleteProject(
+                any(),
+                any()
+            )
+        } throws PureureumException(errorCode = ErrorCode.FORBIDDEN)
 
         mockMvc.perform(
             delete("/api/v1/projects/{id}", 1L)
@@ -272,7 +433,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
         val projects = createSameCategoryProject(facility, projectOwner)
         val response = createProjectPartPageRes(projects, projectOwner)
 
-        every { projectService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
+        every { projectReadService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
 
         mockMvc.get("/api/v1/projects") {
             param("searchType", SEARCH_TYPE_POPULAR.name)
@@ -327,7 +488,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
         val projects = createDifferentCategoryProject(facility, projectOwner)
         val response = createProjectPartPageRes(projects, projectOwner)
 
-        every { projectService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
+        every { projectReadService.getRunningProjectPartsByTypeAndCategory(any(), any(), any()) } returns response
 
         mockMvc.get("/api/v1/projects") {
             param("searchType", SEARCH_TYPE_POPULAR.name)
@@ -374,7 +535,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `프로젝트 신청 성공`() {
-        every { projectService.applyProject(any(), any()) } just Runs
+        every { projectWriteService.applyProject(any(), any()) } just Runs
 
         mockMvc.perform(
             post("/api/v1/projects/{id}/apply", 1L)
@@ -397,7 +558,7 @@ class ProjectRestControllerTest : ControllerTestHelper() {
     @Test
     fun `프로젝트 신청 실패 - 기존에 신청 정보가 존재할 경우`() {
         every {
-            projectService.applyProject(
+            projectWriteService.applyProject(
                 any(),
                 any()
             )

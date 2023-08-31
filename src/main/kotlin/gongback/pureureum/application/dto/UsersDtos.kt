@@ -2,6 +2,7 @@ package gongback.pureureum.application.dto
 
 import gongback.pureureum.domain.social.SocialType
 import gongback.pureureum.domain.user.Password
+import gongback.pureureum.domain.user.Profile
 import gongback.pureureum.domain.user.User
 import gongback.pureureum.domain.user.UserGender
 import gongback.pureureum.domain.user.UserRole
@@ -92,3 +93,15 @@ data class UserAccountDto(
     val email: String,
     val socialType: SocialType
 )
+
+data class ProfileDto(
+    val fileKey: String,
+    val contentType: String,
+    val originalFileName: String
+) {
+    fun toEntity(): Profile = Profile(
+        fileKey,
+        contentType,
+        originalFileName
+    )
+}

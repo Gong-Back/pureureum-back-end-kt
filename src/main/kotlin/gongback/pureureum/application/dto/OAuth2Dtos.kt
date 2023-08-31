@@ -12,9 +12,9 @@ import gongback.pureureum.domain.user.UserRole
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.Past
 import jakarta.validation.constraints.Pattern
-import org.hibernate.validator.constraints.Length
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import org.hibernate.validator.constraints.Length
 
 data class AuthenticationInfo(
     @field:NotEmpty

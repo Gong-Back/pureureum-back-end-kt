@@ -72,6 +72,11 @@ class Project(
         foreignKey = ForeignKey(name = "fk_project_payment_project_id_ref_project_id")
     )
     private val _payments: MutableList<ProjectPayment> = payments.toMutableList()
+
+    fun addProjectFiles(projectFiles: List<ProjectFile>) {
+        _projectFiles.addAll(projectFiles)
+    }
+
     val payments: ProjectPayment?
         get() = if (paymentType == ProjectPaymentType.NONE) null else _payments[0]
 

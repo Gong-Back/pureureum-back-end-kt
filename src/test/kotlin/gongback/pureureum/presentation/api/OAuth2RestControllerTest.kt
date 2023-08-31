@@ -14,6 +14,7 @@ import gongback.pureureum.domain.user.UserGender
 import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
+import java.time.LocalDate
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName
@@ -36,7 +37,6 @@ import support.createKakaoUserInfo
 import support.createRefreshToken
 import support.createUserAccountDto
 import support.test.ControllerTestHelper
-import java.time.LocalDate
 
 fun createAuthenticationInfo(
     code: String = "AuthenticationCode",
@@ -168,7 +168,7 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
         every { userAuthenticationService.getTempSocialAuth(any()) } returns tempSocialAuthDto
 
         this.mockMvc.perform(get("/api/v1/oauth/temp/{email}", tempSocialAuthDto.email))
-            .andExpect(status().isOk())
+            .andExpect(status().isOk)
             .andDo(
                 createPathDocument(
                     "temp-user-info-search-success",

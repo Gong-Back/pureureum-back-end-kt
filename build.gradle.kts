@@ -54,6 +54,7 @@ dependencies {
 
     // aws s3
     implementation("com.amazonaws:aws-java-sdk-s3:1.12.431")
+    implementation("javax.xml.bind:jaxb-api:2.3.1")
 
     // DB Dependency
     runtimeOnly("com.h2database:h2")

@@ -5,10 +5,10 @@ import gongback.pureureum.application.dto.ProjectPartPageRes
 import gongback.pureureum.application.dto.ProjectPartRes
 import gongback.pureureum.application.dto.ProjectRegisterReq
 import gongback.pureureum.application.dto.ProjectRes
+import gongback.pureureum.application.dto.ProjectfileDto
 import gongback.pureureum.domain.facility.Facility
 import gongback.pureureum.domain.facility.FacilityAddress
 import gongback.pureureum.domain.project.Project
-import gongback.pureureum.domain.project.ProjectFile
 import gongback.pureureum.domain.project.ProjectFileType
 import gongback.pureureum.domain.project.ProjectInformation
 import gongback.pureureum.domain.project.ProjectPayment
@@ -33,6 +33,12 @@ val PROJECT_CATEGORY = Category.FARMING_HEALING
 val SEARCH_TYPE_POPULAR = SearchType.POPULAR
 const val PROJECT_THUMBNAIL_KEY = "profile/thumbnail-key"
 
+const val PROJECT_FILE_KEY1 = "project/test1.png"
+const val PROJECT_FILE_CONTENT_TYPE = "image/png"
+const val PROJECT_FILE_ORIGINAL_FILE_NAME1 = "test1"
+const val PROJECT_FILE_KEY2 = "project/test2.png"
+const val PROJECT_FILE_ORIGINAL_FILE_NAME2 = "test2"
+
 fun createProject(
     userId: Long = 0L,
     title: String = PROJECT_TITLE,
@@ -54,11 +60,28 @@ fun createProject(
         ProjectPaymentType.NONE,
         category,
         listOf(
-            ProjectFile("project/test1.png", "png", "test1", ProjectFileType.THUMBNAIL),
-            ProjectFile("project/test2.png", "png", "test2", ProjectFileType.COMMON)
+            createProjectFileDto(
+                PROJECT_FILE_KEY1,
+                PROJECT_FILE_CONTENT_TYPE,
+                PROJECT_FILE_ORIGINAL_FILE_NAME1,
+                ProjectFileType.THUMBNAIL
+            ).toEntity(),
+            createProjectFileDto(
+                PROJECT_FILE_KEY2,
+                PROJECT_FILE_CONTENT_TYPE,
+                PROJECT_FILE_ORIGINAL_FILE_NAME2,
+                ProjectFileType.COMMON
+            ).toEntity()
         )
     )
 }
+
+fun createProjectFileDto(
+    fileKey: String = PROJECT_FILE_KEY1,
+    contentType: String = PROJECT_FILE_CONTENT_TYPE,
+    originalFilename: String = PROJECT_FILE_ORIGINAL_FILE_NAME1,
+    fileType: ProjectFileType = ProjectFileType.COMMON
+): ProjectfileDto = ProjectfileDto(fileKey, contentType, originalFilename, fileType)
 
 fun createProjectWithPayment(): Project {
     return Project(
@@ -76,39 +99,59 @@ fun createProjectWithPayment(): Project {
         ProjectPaymentType.DEPOSIT,
         PROJECT_CATEGORY,
         listOf(
-            ProjectFile("project/test1.png", "png", "test1", ProjectFileType.THUMBNAIL),
-            ProjectFile("project/test2.png", "png", "test2", ProjectFileType.COMMON)
+            createProjectFileDto(
+                PROJECT_FILE_KEY1,
+                PROJECT_FILE_CONTENT_TYPE,
+                PROJECT_FILE_ORIGINAL_FILE_NAME1,
+                ProjectFileType.THUMBNAIL
+            ).toEntity(),
+            createProjectFileDto(
+                PROJECT_FILE_KEY2,
+                PROJECT_FILE_CONTENT_TYPE,
+                PROJECT_FILE_ORIGINAL_FILE_NAME2,
+                ProjectFileType.COMMON
+            ).toEntity()
         ),
         listOf(ProjectPayment(100000, "환불 정책", "예금주(계좌번호)"))
     )
 }
 
 fun createProjectRegisterReq(
-    totalRecruits: Int = PROJECT_TOTAL_RECRUITS
+    title: String = PROJECT_TITLE,
+    introduction: String = PROJECT_INTRODUCTION,
+    content: String = PROJECT_CONTENT,
+    startDate: LocalDate = LocalDate.parse(PROJECT_START_DATE),
+    endDate: LocalDate = LocalDate.parse(PROJECT_END_DATE),
+    totalRecruits: Int = PROJECT_TOTAL_RECRUITS,
+    paymentType: ProjectPaymentType = ProjectPaymentType.NONE,
+    facilityId: Long = 1L,
+    category: Category = PROJECT_CATEGORY
 ): ProjectRegisterReq {
     return ProjectRegisterReq(
-        title = PROJECT_TITLE,
-        introduction = PROJECT_INTRODUCTION,
-        content = PROJECT_CONTENT,
-        projectStartDate = LocalDate.parse(PROJECT_START_DATE),
-        projectEndDate = LocalDate.parse(PROJECT_END_DATE),
+        title = title,
+        introduction = introduction,
+        content = content,
+        projectStartDate = startDate,
+        projectEndDate = endDate,
         totalRecruits = totalRecruits,
-        paymentType = ProjectPaymentType.NONE,
-        facilityId = 1L,
-        projectCategory = PROJECT_CATEGORY
+        paymentType = paymentType,
+        facilityId = facilityId,
+        projectCategory = category
     )
 }
 
 fun createProjectResWithoutPayment(
     project: Project = createProject(),
-    facilityAddress: FacilityAddress = createFacility().address
+    facilityAddress: FacilityAddress = createFacility().address,
+    owner: User = createUser()
 ): ProjectRes = ProjectRes(
     project,
     facilityAddress,
     listOf(
         ProjectFileRes("signedUrl", ProjectFileType.THUMBNAIL),
         ProjectFileRes("signedUrl", ProjectFileType.COMMON)
-    )
+    ),
+    owner.information
 )
 
 fun createProjectResWithPayment(): ProjectRes = ProjectRes(
@@ -117,7 +160,8 @@ fun createProjectResWithPayment(): ProjectRes = ProjectRes(
     listOf(
         ProjectFileRes("signedUrl", ProjectFileType.THUMBNAIL),
         ProjectFileRes("signedUrl", ProjectFileType.COMMON)
-    )
+    ),
+    createUser().information
 )
 
 fun createMockProjectFile(
