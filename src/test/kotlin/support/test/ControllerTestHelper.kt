@@ -138,13 +138,6 @@ abstract class ControllerTestHelper {
         return handle(document("$CLASS_NAME_IDENTIFIER$value"))
     }
 
-    fun MockMvcResultHandlersDsl.createDocument(
-        value: Any,
-        requestHeadersSnippet: RequestHeadersSnippet
-    ) {
-        return handle(document("$CLASS_NAME_IDENTIFIER$value", requestHeadersSnippet))
-    }
-
     fun MockMvcResultHandlersDsl.createDocument(value: Any, requestFieldsSnippet: RequestFieldsSnippet) {
         return handle(document("$CLASS_NAME_IDENTIFIER$value", requestFieldsSnippet))
     }
@@ -203,5 +196,22 @@ abstract class ControllerTestHelper {
         responseFieldsSnippet: ResponseFieldsSnippet
     ): RestDocumentationResultHandler {
         return document("$CLASS_NAME_IDENTIFIER$value", pathParametersSnippet, responseFieldsSnippet)
+    }
+
+    fun createPathDocument(
+        value: Any,
+        requestHeadersSnippet: RequestHeadersSnippet,
+        pathParametersSnippet: PathParametersSnippet
+    ): RestDocumentationResultHandler {
+        return document("{class-name}/$value", requestHeadersSnippet, pathParametersSnippet)
+    }
+
+    fun createPathDocument(
+        value: Any,
+        requestHeadersSnippet: RequestHeadersSnippet,
+        pathParametersSnippet: PathParametersSnippet,
+        responseFieldsSnippet: ResponseFieldsSnippet
+    ): RestDocumentationResultHandler {
+        return document("{class-name}/$value", requestHeadersSnippet, pathParametersSnippet, responseFieldsSnippet)
     }
 }

@@ -13,6 +13,9 @@ import gongback.pureureum.domain.project.ProjectFile
 import gongback.pureureum.domain.project.ProjectFileType
 import gongback.pureureum.domain.project.ProjectRepository
 import gongback.pureureum.domain.project.getProjectById
+import gongback.pureureum.domain.projectapply.ProjectApply
+import gongback.pureureum.domain.projectapply.ProjectApplyRepository
+import gongback.pureureum.domain.projectapply.existsByProjectIdAndUserId
 import gongback.pureureum.domain.user.UserRepository
 import gongback.pureureum.domain.user.getUserByEmail
 import gongback.pureureum.domain.user.getUserById
@@ -30,11 +33,16 @@ class ProjectService(
     private val userRepository: UserRepository,
     private val projectRepository: ProjectRepository,
     private val facilityRepository: FacilityRepository,
+    private val projectApplyRepository: ProjectApplyRepository,
     private val fileService: FileService
 ) {
 
     @Transactional
-    fun registerProject(email: String, projectRegisterReq: ProjectRegisterReq, projectFiles: List<MultipartFile>?): Long {
+    fun registerProject(
+        email: String,
+        projectRegisterReq: ProjectRegisterReq,
+        projectFiles: List<MultipartFile>?
+    ): Long {
         val findUser = userRepository.getUserByEmail(email)
 
         // ProjectFileUpload
@@ -88,6 +96,18 @@ class ProjectService(
             pageable.pageNumber,
             projectPartResList
         )
+    }
+
+    @Transactional
+    fun applyProject(projectId: Long, userEmail: String) {
+        val project = projectRepository.getProjectById(projectId)
+        val user = userRepository.getUserByEmail(userEmail)
+        val isExistedApply = projectApplyRepository.existsByProjectIdAndUserId(project.id, user.id)
+        if (isExistedApply) {
+            throw PureureumException(errorCode = ErrorCode.REQUEST_RESOURCE_ALREADY_EXISTS)
+        }
+        val projectApply = ProjectApply(project.id, user.id)
+        projectApplyRepository.save(projectApply)
     }
 
     private fun projectToDto(project: Project): ProjectRes {
