@@ -84,8 +84,12 @@ class ProjectRestController(
             )
         )
 
-    @PostMapping("/apply")
-    fun projectApply() {
-        // TODO: 1:다로 프로젝트 신청 정보 관리해야 할 듯...?
+    @PostMapping("/{id}/apply")
+    fun projectApply(
+        @PathVariable("id") id: Long,
+        @LoginEmail email: String
+    ): ResponseEntity<Unit> {
+        projectWriteService.applyProject(id, email)
+        return ResponseEntity.noContent().build()
     }
 }

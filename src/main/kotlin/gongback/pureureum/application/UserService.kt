@@ -60,8 +60,8 @@ class UserWriteService(
 
     fun uploadProfileImage(email: String, newProfile: MultipartFile): ProfileDto =
         with(newProfile) {
-            val contentType = fileService.validateImageType(newProfile.contentType)
-            val originalFileName = fileService.validateFileName(newProfile.originalFilename)
+            val contentType = fileService.validateImageType(contentType)
+            val originalFileName = fileService.validateFileName(originalFilename)
             val findUser = userRepository.getUserByEmail(email)
             if (findUser.profile.originalFileName != DEFAULT_FILE_NAME) {
                 fileService.deleteFile(findUser.profile.fileKey)

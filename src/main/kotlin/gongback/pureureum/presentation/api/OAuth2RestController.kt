@@ -2,13 +2,14 @@ package gongback.pureureum.presentation.api
 
 import gongback.pureureum.application.OAuth2Service
 import gongback.pureureum.application.UserAuthenticationService
+import gongback.pureureum.application.dto.AccessTokenRes
 import gongback.pureureum.application.dto.AuthenticationInfo
 import gongback.pureureum.application.dto.ErrorCode
 import gongback.pureureum.application.dto.OAuthUserInfo
 import gongback.pureureum.application.dto.SocialEmailDto
 import gongback.pureureum.application.dto.SocialRegisterUserReq
 import gongback.pureureum.application.dto.TempSocialAuthDto
-import gongback.pureureum.application.dto.TokenRes
+import gongback.pureureum.presentation.api.CookieProvider.Companion.addRefreshTokenToCookie
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -29,28 +30,28 @@ class OAuth2RestController(
     @PostMapping("/login/kakao")
     fun kakaoLoginProcess(
         @RequestBody @Valid authenticationInfo: AuthenticationInfo,
-        response: HttpServletResponse
+        servletResponse: HttpServletResponse
     ): ResponseEntity<ApiResponse<Any>> {
         val oAuthUserInfo = oAuth2Service.getKakaoUserInfo(authenticationInfo)
-        return login(oAuthUserInfo)
+        return login(oAuthUserInfo, servletResponse)
     }
 
     @PostMapping("/login/google")
     fun googleLoginProcess(
         @RequestBody @Valid authenticationInfo: AuthenticationInfo,
-        response: HttpServletResponse
+        servletResponse: HttpServletResponse
     ): ResponseEntity<ApiResponse<Any>> {
         val oAuthUserInfo = oAuth2Service.getGoogleUserInfo(authenticationInfo)
-        return login(oAuthUserInfo)
+        return login(oAuthUserInfo, servletResponse)
     }
 
     @PostMapping("/login/naver")
     fun naverLoginProcess(
         @RequestBody @Valid authenticationInfo: AuthenticationInfo,
-        response: HttpServletResponse
+        servletResponse: HttpServletResponse
     ): ResponseEntity<ApiResponse<Any>> {
         val oAuthUserInfo = oAuth2Service.getNaverUserInfo(authenticationInfo)
-        return login(oAuthUserInfo)
+        return login(oAuthUserInfo, servletResponse)
     }
 
     @GetMapping("/temp/{email}")
@@ -64,15 +65,21 @@ class OAuth2RestController(
     @PostMapping("/register")
     fun register(
         @RequestBody @Valid socialRegisterUserReq: SocialRegisterUserReq,
-        response: HttpServletResponse
-    ): ResponseEntity<ApiResponse<TokenRes>> {
+        servletResponse: HttpServletResponse
+    ): ResponseEntity<ApiResponse<AccessTokenRes>> {
         userAuthenticationService.registerBySocialReq(socialRegisterUserReq)
-        return ResponseEntity.status(HttpStatus.CREATED)
-            .body(ApiResponse.ok(userAuthenticationService.getTokenRes(socialRegisterUserReq.email)))
+        val tokenRes = userAuthenticationService.getTokenRes(socialRegisterUserReq.email)
+        addRefreshTokenToCookie(tokenRes, servletResponse)
+        val accessTokenRes = AccessTokenRes(tokenRes.accessToken)
+
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(ApiResponse.ok(accessTokenRes))
     }
 
     private fun login(
-        oAuthUserInfo: OAuthUserInfo
+        oAuthUserInfo: OAuthUserInfo,
+        servletResponse: HttpServletResponse
     ): ResponseEntity<ApiResponse<Any>> {
         return when (val code = userAuthenticationService.socialLogin(oAuthUserInfo)) {
             ErrorCode.REQUEST_RESOURCE_NOT_ENOUGH -> {
@@ -95,8 +102,10 @@ class OAuth2RestController(
             }
 
             else -> {
-                ResponseEntity.ok()
-                    .body(ApiResponse.ok(userAuthenticationService.getTokenRes(oAuthUserInfo.clientEmail)))
+                val tokenRes = userAuthenticationService.getTokenRes(oAuthUserInfo.clientEmail)
+                addRefreshTokenToCookie(tokenRes, servletResponse)
+                val accessTokenRes = AccessTokenRes(tokenRes.accessToken)
+                return ResponseEntity.ok(ApiResponse.ok(accessTokenRes))
             }
         }
     }

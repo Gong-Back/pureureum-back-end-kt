@@ -63,9 +63,7 @@ class FacilityReadService(
         val docIds = facility.certificationDoc.map {
             it.id
         }
-        return facility.run {
-            FacilityWithDocIds.fromFacility(facility, docIds)
-        }
+        return FacilityWithDocIds.fromFacility(facility, docIds)
     }
 }
 

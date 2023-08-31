@@ -14,6 +14,7 @@ import gongback.pureureum.domain.project.ProjectInformation
 import gongback.pureureum.domain.project.ProjectPayment
 import gongback.pureureum.domain.project.ProjectPaymentType
 import gongback.pureureum.domain.project.ProjectStatus
+import gongback.pureureum.domain.projectapply.ProjectApply
 import gongback.pureureum.domain.user.User
 import gongback.pureureum.domain.user.UserInformation
 import gongback.pureureum.support.constant.Category
@@ -225,4 +226,11 @@ fun createDifferentCategoryProject(facility: Facility, projectOwner: User): List
         }
     val project3 = createProject(title = "testTitle3", category = Category.FARMING_EXPERIENCE)
     return listOf(project1, project2, project3)
+}
+
+fun createProjectApply(
+    projectId: Long = 0L,
+    userId: Long = 0L
+): ProjectApply {
+    return ProjectApply(projectId, userId)
 }

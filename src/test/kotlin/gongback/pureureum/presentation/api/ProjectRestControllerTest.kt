@@ -6,6 +6,7 @@ import gongback.pureureum.application.ProjectReadService
 import gongback.pureureum.application.ProjectWriteService
 import gongback.pureureum.application.PureureumException
 import gongback.pureureum.application.dto.ErrorCode
+import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
@@ -15,7 +16,9 @@ import org.springframework.http.HttpHeaders
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.restdocs.headers.HeaderDocumentation.headerWithName
 import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post
 import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
@@ -24,7 +27,6 @@ import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 import org.springframework.restdocs.request.RequestDocumentation.queryParameters
 import org.springframework.restdocs.request.RequestDocumentation.requestParts
 import org.springframework.restdocs.snippet.Attributes
-import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.multipart
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -374,45 +376,58 @@ class ProjectRestControllerTest : ControllerTestHelper() {
         every { projectWriteService.deleteProject(any(), any()) } returns listOf("fileKey1")
         every { projectWriteService.deleteProjectFiles(any()) } just runs
 
-        mockMvc.delete("/api/v1/projects/{id}", 1L) {
-            token(createAccessToken())
-        }.andExpect {
-            status { isNoContent() }
-        }.andDo {
-            createDocument(
-                "delete-project-success",
-                requestHeaders(
-                    headerWithName(HttpHeaders.AUTHORIZATION).description("Valid-Access-token")
+        mockMvc.perform(
+            delete("/api/v1/projects/{id}", 1L)
+                .header(HttpHeaders.AUTHORIZATION, createAccessToken())
+        )
+            .andExpect(status().isNoContent)
+            .andDo(
+                createPathDocument(
+                    "delete-project-success",
+                    requestHeaders(
+                        headerWithName(HttpHeaders.AUTHORIZATION).description("Valid-Access-token")
+                    ),
+                    pathParameters(
+                        parameterWithName("id").description("프로젝트 ID")
+                    )
                 )
             )
-        }
     }
 
     @Test
     fun `프로젝트 삭제 실패 - 권한이 없을 때`() {
-        every { projectWriteService.deleteProject(any(), any()) } throws PureureumException(errorCode = ErrorCode.FORBIDDEN)
+        every {
+            projectWriteService.deleteProject(
+                any(),
+                any()
+            )
+        } throws PureureumException(errorCode = ErrorCode.FORBIDDEN)
 
-        mockMvc.delete("/api/v1/projects/{id}", 1L) {
-            token(createAccessToken())
-        }.andExpect {
-            status { isForbidden() }
-        }.andDo {
-            createDocument(
-                "delete-project-fail-no-match-created-by",
-                requestHeaders(
-                    headerWithName(HttpHeaders.AUTHORIZATION).description("프로젝트 생성자와 다른 ID를 가진 유저의 AccessToken")
-                ),
-                responseFields(
-                    fieldWithPath("code").description("응답 코드"),
-                    fieldWithPath("messages").description("응답 메시지"),
-                    fieldWithPath("data").description("응답 데이터")
+        mockMvc.perform(
+            delete("/api/v1/projects/{id}", 1L)
+                .header(HttpHeaders.AUTHORIZATION, createAccessToken())
+        )
+            .andExpect(status().isForbidden)
+            .andDo(
+                createPathDocument(
+                    "delete-project-fail-no-match-created-by",
+                    requestHeaders(
+                        headerWithName(HttpHeaders.AUTHORIZATION).description("프로젝트 생성자와 다른 ID를 가진 유저의 AccessToken")
+                    ),
+                    pathParameters(
+                        parameterWithName("id").description("프로젝트 ID")
+                    ),
+                    responseFields(
+                        fieldWithPath("code").description("응답 코드"),
+                        fieldWithPath("messages").description("응답 메시지"),
+                        fieldWithPath("data").description("응답 데이터")
+                    )
                 )
             )
-        }
     }
 
     @Test
-    fun `메인 페이지에서 페이지 조건과 검색 조건에 따른 프로젝트 페이지 조회 - 성공`() {
+    fun `메인 페이지에서 페이지 조건과 카테고리 조건, 검색 타입에 따른 프로젝트 페이지 조회 - 성공`() {
         val facility = createFacility()
         val projectOwner = createUser()
         val projects = createSameCategoryProject(facility, projectOwner)
@@ -516,5 +531,54 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                 )
             )
         }
+    }
+
+    @Test
+    fun `프로젝트 신청 성공`() {
+        every { projectWriteService.applyProject(any(), any()) } just Runs
+
+        mockMvc.perform(
+            post("/api/v1/projects/{id}/apply", 1L)
+                .header(HttpHeaders.AUTHORIZATION, createAccessToken())
+        )
+            .andExpect(status().isNoContent)
+            .andDo(
+                createPathDocument(
+                    "project-apply-success",
+                    requestHeaders(
+                        headerWithName(HttpHeaders.AUTHORIZATION).description("Valid-Access-token")
+                    ),
+                    pathParameters(
+                        parameterWithName("id").description("프로젝트 ID")
+                    )
+                )
+            )
+    }
+
+    @Test
+    fun `프로젝트 신청 실패 - 기존에 신청 정보가 존재할 경우`() {
+        every {
+            projectWriteService.applyProject(
+                any(),
+                any()
+            )
+        } throws PureureumException(errorCode = ErrorCode.REQUEST_RESOURCE_ALREADY_EXISTS)
+
+        mockMvc.perform(
+            post("/api/v1/projects/{id}/apply", 1L)
+                .header(HttpHeaders.AUTHORIZATION, createAccessToken())
+        )
+            .andExpect(status().isConflict)
+            .andDo(
+                createPathDocument(
+                    "project-apply-fail",
+                    requestHeaders(
+                        headerWithName(HttpHeaders.AUTHORIZATION).description("Valid-Access-token")
+                    ),
+                    pathParameters(
+                        parameterWithName("id").description("프로젝트 ID")
+                    )
+                )
+            )
     }
 }

@@ -10,6 +10,7 @@ import gongback.pureureum.domain.project.ProjectPaymentType
 import gongback.pureureum.domain.project.ProjectStatus
 import gongback.pureureum.domain.user.UserInformation
 import gongback.pureureum.support.constant.Category
+import gongback.pureureum.support.validator.TotalRecruitSize
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
@@ -36,6 +37,7 @@ data class ProjectRegisterReq(
     val projectEndDate: LocalDate,
 
     @field:NotNull
+    @field:TotalRecruitSize
     val totalRecruits: Int,
 
     val minAge: Int = -1,

@@ -24,10 +24,10 @@ operation::project-rest-controller-test/get-project-detail-with-payment-success[
 == *3. 프로젝트 삭제 API*
 
 === *3-1* 성공
-operation::project-rest-controller-test/delete-project-success[snippets='http-request,request-headers,http-response']
+operation::project-rest-controller-test/delete-project-success[snippets='http-request,request-headers,path-parameters,http-response']
 
 === *3-2* 실패 - 프로젝트 생성자랑 다른 사용자 ID를 가진 유저가 요청할 경우
-operation::project-rest-controller-test/delete-project-fail-no-match-created-by[snippets='http-request,request-headers,http-response']
+operation::project-rest-controller-test/delete-project-fail-no-match-created-by[snippets='http-request,http-response']
 
 == *4. 메인 페이지에서 프로젝트 페이지 조회 API*
 
@@ -36,3 +36,11 @@ operation::project-rest-controller-test/get-page-project-part-success[snippets='
 
 === *4-2* 성공 - 검색 조건으로만 요청했을 경우
 operation::project-rest-controller-test/get-page-project-part-only-search-type-success[snippets='http-request,query-parameters,http-response,response-fields']
+
+== *5. 프로젝트 신청 API*
+
+=== *5-1* 성공
+operation::project-rest-controller-test/project-apply-success[snippets='http-request,request-headers,path-parameters,http-response']
+
+=== *5-2* 실패 - 이미 신청 정보가 존재하는 경우
+operation::project-rest-controller-test/project-apply-fail[snippets='http-request,http-response']
