@@ -1,6 +1,8 @@
 package gongback.pureureum.presentation.api
 
-import gongback.pureureum.application.FacilityService
+import gongback.pureureum.application.FacilityReadService
+import gongback.pureureum.application.FacilityWriteService
+import gongback.pureureum.application.FileHandlingException
 import gongback.pureureum.application.dto.FacilityReq
 import gongback.pureureum.application.dto.FacilityRes
 import gongback.pureureum.application.dto.FacilityResWithProgress
@@ -20,16 +22,27 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @RequestMapping("/api/v1/facilities")
 class FacilityRestController(
-    private val facilityService: FacilityService
+    private val facilityReadService: FacilityReadService,
+    private val facilityWriteService: FacilityWriteService
 ) {
     @PostMapping("/register")
     fun registerFacility(
         @RequestPart @Valid facilityReq: FacilityReq,
-        @RequestPart(required = false) certificationDoc: List<MultipartFile>?,
+        @RequestPart(required = false) certificationDocs: List<MultipartFile>?,
         @LoginEmail userEmail: String
-    ): ResponseEntity<Unit> {
-        facilityService.registerFacility(userEmail, facilityReq, certificationDoc)
-        return ResponseEntity.status(HttpStatus.CREATED).build()
+    ): ResponseEntity<ApiResponse<Unit>> {
+        val savedFacilityId = facilityWriteService.registerFacility(userEmail, facilityReq)
+        return try {
+            certificationDocs?.let {
+                val facilityCertificationDocsDto = facilityWriteService.uploadCertificationDocs(it)
+                facilityWriteService.saveFacilityFiles(savedFacilityId, facilityCertificationDocsDto)
+            }
+            ResponseEntity.status(HttpStatus.CREATED).build()
+        } catch (e: FileHandlingException) {
+            facilityWriteService.deleteFacility(savedFacilityId)
+            ResponseEntity.status(e.errorCode.httpStatus)
+                .body(ApiResponse.error(e.errorCode.code, e.message ?: e.errorCode.message))
+        }
     }
 
     @GetMapping("/me")
@@ -37,7 +50,7 @@ class FacilityRestController(
         @RequestParam("category") category: Category,
         @LoginEmail userEmail: String
     ): ResponseEntity<ApiResponse<List<FacilityRes>>> {
-        val facilityRes = facilityService.getApprovedFacilityByCategory(userEmail, category)
+        val facilityRes = facilityReadService.getApprovedFacilityByCategory(userEmail, category)
         return ResponseEntity.ok().body(ApiResponse.ok(facilityRes))
     }
 
@@ -45,7 +58,7 @@ class FacilityRestController(
     fun getAllFacilities(
         @LoginEmail userEmail: String
     ): ResponseEntity<ApiResponse<List<FacilityResWithProgress>>> {
-        val facilityRes = facilityService.getAllFacilities(userEmail)
+        val facilityRes = facilityReadService.getAllFacilities(userEmail)
         return ResponseEntity.ok().body(ApiResponse.ok(facilityRes))
     }
 }

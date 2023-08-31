@@ -58,6 +58,9 @@
 | `512 S3_UPLOAD_FAILED`
 | S3 Upload error
 
+| `513 FILE_HANDLING_FAILED`
+| Unexpected File Handling Error
+
 |===
 
 == *Search Type*
@@ -65,15 +68,29 @@
 |===
 | status | value
 
-| `POPULAR `
+| `POPULAR`
 | 인기순
 
-| `LATEST `
+| `LATEST`
 | 최신순
 
 |===
 
-[[overview-error-response]]
+== *Project Status*
+
+|===
+| status | value
+
+| `RUNNING`
+| 모집중
+
+| `COMPLETE`
+| 모집완료
+
+
+|===
+
+[[overview-success-response]]
 == *Success Response Data*
 
 |===

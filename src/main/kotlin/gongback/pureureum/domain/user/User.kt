@@ -53,9 +53,6 @@ class User(
     val birthday: LocalDate
         get() = information.birthday
 
-    val userRole: UserRole
-        get() = information.userRole
-
     val nickname: String
         get() = information.nickname
 
@@ -96,6 +93,10 @@ class User(
         if (nickname.isNotBlank()) {
             information.nickname = nickname
         }
+    }
+
+    fun updateProfile(newProfile: Profile) {
+        profile = newProfile
     }
 
     private fun identify(value: Boolean, message: () -> Any = {}) {

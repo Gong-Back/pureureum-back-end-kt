@@ -1,9 +1,11 @@
 package gongback.pureureum.application
 
+import gongback.pureureum.application.dto.FileDto
 import gongback.pureureum.application.util.NameGenerator
 import gongback.pureureum.support.constant.FileType
 import org.springframework.stereotype.Service
-import org.springframework.web.multipart.MultipartFile
+
+private const val FILE_NAME_FORMAT = "%s.%s"
 
 @Service
 class FileService(
@@ -11,40 +13,45 @@ class FileService(
     private val fileNameGenerator: NameGenerator
 ) {
 
-    fun uploadFile(file: MultipartFile, fileType: FileType, originalFileName: String): String {
-        val serverFileName = fileNameGenerator.generate() + "." + getExt(originalFileName)
+    fun uploadFile(file: FileDto, fileType: FileType): String {
+        val serverFileName = generateServerFileName(file.originalFileName)
         return storageService.uploadFile(file, fileType, serverFileName)
     }
 
-    fun getFileUrl(fileKey: String): String {
-        return storageService.getUrl(fileKey)
-    }
+    fun getFileUrl(fileKey: String): String =
+        storageService.getUrl(fileKey)
 
-    fun deleteFile(fileKey: String) {
+    fun deleteFile(fileKey: String) =
         storageService.deleteFile(fileKey)
-    }
 
-    private fun getExt(fileName: String): String {
-        return fileName.substring(fileName.lastIndexOf(".") + 1)
-    }
+    fun validateFileName(fileName: String?): String =
+        fileName.apply {
+            require(!fileName.isNullOrBlank()) {
+                "원본 파일 이름이 비어있습니다"
+            }
+        }!!
 
-    fun validateFileName(file: MultipartFile): String {
-        val originalFileName = (file.originalFilename ?: throw IllegalArgumentException("원본 파일 이름이 존재하지 않습니다"))
-        require(originalFileName.isNotBlank()) { throw IllegalArgumentException("원본 파일 이름이 비어있습니다") }
-        return originalFileName
-    }
+    fun validateImageType(fileContentType: String?): String =
+        fileContentType.apply {
+            require(fileContentType != null) {
+                "파일 형식이 유효하지 않습니다"
+            }
+            validateImageType(fileContentType)
+        }!!
 
-    fun getImageType(file: MultipartFile): String {
-        val contentType = file.contentType ?: throw IllegalArgumentException("파일 형식이 유효하지 않습니다")
-        validateImageType(contentType)
-        return contentType
-    }
+    fun validateAnyContentType(fileContentType: String?): String =
+        fileContentType.apply {
+            require(fileContentType != null) {
+                "파일 형식이 유효하지 않습니다"
+            }
+        }!!
 
-    fun getAnyContentType(file: MultipartFile): String {
-        return file.contentType ?: throw IllegalArgumentException("파일 형식이 유효하지 않습니다")
-    }
+    private fun generateServerFileName(originalFileName: String): String =
+        String.format(FILE_NAME_FORMAT, fileNameGenerator.generate(), getExt(originalFileName))
 
-    private fun validateImageType(contentType: String) {
+    private fun getExt(fileName: String): String =
+        fileName.substring(fileName.lastIndexOf(".") + 1)
+
+    private fun validateImageType(contentType: String) =
         require(contentType.startsWith("image")) { "이미지 형식의 파일만 가능합니다" }
-    }
 }

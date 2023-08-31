@@ -6,9 +6,9 @@ import gongback.pureureum.application.dto.SmsSendResponse
 import gongback.pureureum.domain.sms.SmsLog
 import gongback.pureureum.domain.sms.SmsLogRepository
 import gongback.pureureum.domain.sms.getLastSmsLog
+import java.time.LocalDate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDate
 
 private const val CERTIFICATION_NUMBER_SIZE: Int = 6
 private const val FIRST_DAY_OF_MONTH = 1

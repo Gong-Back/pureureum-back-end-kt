@@ -5,35 +5,42 @@
 == *1. 프로젝트 등록 API*
 
 === *1-1* 성공
-
 operation::project-rest-controller-test/register-project-success[snippets='http-request,request-headers,request-parts,http-response']
+
+=== *1-2* 실패 - 형식에 맞지 않는 정보
+operation::project-rest-controller-test/register-project-invalid-request-fail[snippets='http-request,http-response']
+
+=== *1-3* 실패 - 파일 처리 중 오류가 발생했을 경우
+operation::project-rest-controller-test/register-project-file-handling-fail[snippets='http-request,http-response']
 
 == *2. 프로젝트 조회 API*
 
 === *2-1* 성공 - 금액 정보 없음
-
 operation::project-rest-controller-test/get-project-detail-without-payment-success[snippets='http-request,path-parameters,http-response,response-fields']
 
 === *2-2* 성공 - 금액 정보 있음
-
 operation::project-rest-controller-test/get-project-detail-with-payment-success[snippets='http-request,path-parameters,http-response,response-fields']
 
 == *3. 프로젝트 삭제 API*
 
 === *3-1* 성공
-
-operation::project-rest-controller-test/delete-project-success[snippets='http-request,request-headers,http-response']
+operation::project-rest-controller-test/delete-project-success[snippets='http-request,request-headers,path-parameters,http-response']
 
 === *3-2* 실패 - 프로젝트 생성자랑 다른 사용자 ID를 가진 유저가 요청할 경우
-
-operation::project-rest-controller-test/delete-project-fail-no-match-created-by[snippets='http-request,request-headers,http-response']
+operation::project-rest-controller-test/delete-project-fail-no-match-created-by[snippets='http-request,http-response']
 
 == *4. 메인 페이지에서 프로젝트 페이지 조회 API*
 
 === *4-1* 성공 - 모든 요청 값을 넣었을 경우
-
 operation::project-rest-controller-test/get-page-project-part-success[snippets='http-request,query-parameters,http-response,response-fields']
 
 === *4-2* 성공 - 검색 조건으로만 요청했을 경우
-
 operation::project-rest-controller-test/get-page-project-part-only-search-type-success[snippets='http-request,query-parameters,http-response,response-fields']
+
+== *5. 프로젝트 신청 API*
+
+=== *5-1* 성공
+operation::project-rest-controller-test/project-apply-success[snippets='http-request,request-headers,path-parameters,http-response']
+
+=== *5-2* 실패 - 이미 신청 정보가 존재하는 경우
+operation::project-rest-controller-test/project-apply-fail[snippets='http-request,http-response']
