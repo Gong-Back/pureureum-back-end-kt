@@ -7,7 +7,7 @@ import io.kotest.extensions.spring.SpringTestExtension
 import io.kotest.extensions.spring.SpringTestLifecycleMode
 import io.kotest.matchers.shouldBe
 import support.FACILITY_CATEGORY
-import support.createCertificationDoc
+import support.createCertificationDocDto
 import support.createFacility
 import support.createUser
 import support.test.BaseTests.RepositoryTest
@@ -51,8 +51,8 @@ class FacilityRepositoryTest(
     }
 
     context("인증 서류 아이디에 따른 인증 서류 파일 키 조회") {
-        val certificationDoc = createCertificationDoc()
-        val facility = createFacility(certificationDoc = listOf(createCertificationDoc()).toMutableList())
+        val certificationDoc = createCertificationDocDto().toEntity()
+        val facility = createFacility(certificationDoc = listOf(certificationDoc).toMutableList())
         val docId = 1L
         val savedFacility = facilityRepository.save(facility)
 

@@ -1,3 +1,4 @@
+
 package gongback.pureureum.presentation.api
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -8,7 +9,6 @@ import gongback.pureureum.application.FileHandlingException
 import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
-import java.nio.charset.StandardCharsets
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.mock.web.MockMultipartFile
@@ -21,12 +21,14 @@ import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.multipart
 import support.FACILITY_CATEGORY
 import support.createAccessToken
+import support.createCertificationDocDto
 import support.createFacilityReq
 import support.createFacilityRes
 import support.createFacilityResWithProgress
 import support.createMockCertificationDoc
 import support.test.ControllerTestHelper
 import support.token
+import java.nio.charset.StandardCharsets
 
 @WebMvcTest(FacilityRestController::class)
 class FacilityRestControllerTest : ControllerTestHelper() {
@@ -38,7 +40,9 @@ class FacilityRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `시설 정보 등록 성공`() {
-        every { facilityWriteService.registerFacility(any(), any(), any()) } returns 1L
+        val certificationDocDto = createCertificationDocDto()
+        every { facilityWriteService.registerFacility(any(), any()) } returns 1L
+        every { facilityWriteService.uploadCertificationDocs(any()) } returns listOf(certificationDocDto)
         every { facilityWriteService.saveFacilityFiles(any(), any()) } just runs
 
         val facilityReq = createFacilityReq()
@@ -50,12 +54,12 @@ class FacilityRestControllerTest : ControllerTestHelper() {
                 "application/json",
                 facilityReqStr.toByteArray(StandardCharsets.UTF_8)
             )
-        val certificationDoc = createMockCertificationDoc()
+        val certificationDocs = createMockCertificationDoc()
 
         mockMvc.multipart("/api/v1/facilities/register") {
             token(createAccessToken())
             file(facilityInfo)
-            file(certificationDoc)
+            file(certificationDocs)
         }.andExpect {
             status { isCreated() }
         }.andDo {
@@ -96,7 +100,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
                                     "jibun - 길이 제한 (1~100)"
                             )
                         ),
-                    partWithName("certificationDoc")
+                    partWithName("certificationDocs")
                         .description("인증 서류 (파일 리스트)")
                         .optional()
                 )
@@ -123,12 +127,9 @@ class FacilityRestControllerTest : ControllerTestHelper() {
                 invalidFacilityReqStr.toByteArray(StandardCharsets.UTF_8)
             )
 
-        val certificationDoc = createMockCertificationDoc()
-
         mockMvc.multipart("/api/v1/facilities/register") {
             token(createAccessToken())
             file(invalidFacilityInfo)
-            file(certificationDoc)
         }.andExpect {
             status { isBadRequest() }
         }.andDo {
@@ -169,7 +170,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
                                     "jibun - 길이 제한 (1~100)"
                             )
                         ),
-                    partWithName("certificationDoc")
+                    partWithName("certificationDocs")
                         .description("인증 서류 (파일 리스트)")
                         .optional()
                 )
@@ -179,8 +180,9 @@ class FacilityRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `시설 정보 등록 실패 - 파일 처리 중 오류가 발생했을 경우`() {
-        every { facilityWriteService.registerFacility(any(), any(), any()) } returns 1L
-        every { facilityWriteService.saveFacilityFiles(any(), any()) } throws FileHandlingException(null)
+        every { facilityWriteService.registerFacility(any(), any()) } returns 1L
+        every { facilityWriteService.uploadCertificationDocs(any()) } throws FileHandlingException(null)
+        every { facilityWriteService.deleteFacility(any()) } just runs
 
         val facilityReq = createFacilityReq()
         val facilityReqStr = jacksonObjectMapper().writeValueAsString(facilityReq)
@@ -238,7 +240,7 @@ class FacilityRestControllerTest : ControllerTestHelper() {
                                     "jibun - 길이 제한 (1~100)"
                             )
                         ),
-                    partWithName("certificationDoc")
+                    partWithName("certificationDocs")
                         .description("형식에 맞지 않은 인증 서류 (파일 리스트)")
                         .optional()
                 )

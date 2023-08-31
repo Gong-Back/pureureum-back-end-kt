@@ -2,6 +2,7 @@ package gongback.pureureum.presentation.api
 
 import gongback.pureureum.application.FacilityReadService
 import gongback.pureureum.application.FacilityWriteService
+import gongback.pureureum.application.FileHandlingException
 import gongback.pureureum.application.dto.FacilityReq
 import gongback.pureureum.application.dto.FacilityRes
 import gongback.pureureum.application.dto.FacilityResWithProgress
@@ -27,14 +28,21 @@ class FacilityRestController(
     @PostMapping("/register")
     fun registerFacility(
         @RequestPart @Valid facilityReq: FacilityReq,
-        @RequestPart(required = false) certificationDoc: List<MultipartFile>?,
+        @RequestPart(required = false) certificationDocs: List<MultipartFile>?,
         @LoginEmail userEmail: String
-    ): ResponseEntity<Unit> {
-        val savedFacilityId = facilityWriteService.registerFacility(userEmail, facilityReq, certificationDoc)
-        certificationDoc?.let {
-            facilityWriteService.saveFacilityFiles(savedFacilityId, it)
+    ): ResponseEntity<ApiResponse<Unit>> {
+        val savedFacilityId = facilityWriteService.registerFacility(userEmail, facilityReq)
+        return try {
+            certificationDocs?.let {
+                val facilityCertificationDocsDto = facilityWriteService.uploadCertificationDocs(it)
+                facilityWriteService.saveFacilityFiles(savedFacilityId, facilityCertificationDocsDto)
+            }
+            ResponseEntity.status(HttpStatus.CREATED).build()
+        } catch (e: FileHandlingException) {
+            facilityWriteService.deleteFacility(savedFacilityId)
+            ResponseEntity.status(e.errorCode.httpStatus)
+                .body(ApiResponse.error(e.errorCode.code, e.message ?: e.errorCode.message))
         }
-        return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
     @GetMapping("/me")

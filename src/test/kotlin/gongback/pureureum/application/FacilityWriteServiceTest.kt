@@ -7,16 +7,16 @@ import gongback.pureureum.domain.user.getUserByEmail
 import io.kotest.assertions.throwables.shouldNotThrowAnyUnit
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
-import io.mockk.clearMocks
+import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
-import io.mockk.verify
 import support.CERTIFICATION_DOC_FILE_KEY
-import support.CERTIFICATION_DOC_NAME
+import support.CERTIFICATION_DOC_ORIGINAL_FILE_NAME
 import support.CERTIFICATION_DOC_TYPE
-import support.FACILITY_PROGRESS
+import support.FACILITY_PROGRESS_APPROVED
+import support.createCertificationDocDto
 import support.createFacility
 import support.createFacilityReq
 import support.createMockCertificationDoc
@@ -31,81 +31,97 @@ class FacilityWriteServiceTest : BehaviorSpec({
     Given("사용자 이메일과 시설 정보") {
         val user = createUser()
 
-        When("유효한 파일 정보가 들어왔다면") {
+        When("올바른 사용자 정보와 시설 정보가 들어왔다면") {
             val email = user.email
             val facility = createFacility()
             val facilityReq = createFacilityReq()
-            val certificationDoc = listOf(createMockCertificationDoc())
 
             every { userRepository.getUserByEmail(any()) } returns user
             every { facilityRepository.save(any()) } returns facility
 
-            Then("시설 정보를 등록한다.") {
-                shouldNotThrowAnyUnit { facilityWriteService.registerFacility(email, facilityReq, certificationDoc) }
+            Then("시설 정보를 저장하고, 저장된 시설 아이디를 반환한다") {
+                facilityWriteService.registerFacility(email, facilityReq) shouldBe facility.id
             }
         }
     }
 
-    Given("저장된 시설 아이디, 인증 서류 파일들") {
-        val facility = createFacility()
-        val certificationDoc = listOf(createMockCertificationDoc())
-        val facilityId = facility.id
+    Given("인증 서류 파일들") {
+        val certificationDocFiles = listOf(createMockCertificationDoc())
+
+        val contentType = CERTIFICATION_DOC_TYPE
+        val originalFileName = CERTIFICATION_DOC_ORIGINAL_FILE_NAME
+        val fileKey = CERTIFICATION_DOC_FILE_KEY
+
+        val certificationDocDto = createCertificationDocDto(fileKey, contentType, originalFileName)
 
         When("올바른 인증 서류 정보와 시설 엔티티 정보라면") {
-            every { fileService.validateImageType(any()) } returns CERTIFICATION_DOC_TYPE
-            every { fileService.validateFileName(any()) } returns CERTIFICATION_DOC_NAME
-            every { fileService.uploadFile(any(), any()) } returns CERTIFICATION_DOC_FILE_KEY
-            every { facilityRepository.getFacilityById(any()) } returns facility
+            every { fileService.validateImageType(any()) } returns contentType
+            every { fileService.validateFileName(any()) } returns originalFileName
+            every { fileService.uploadFile(any(), any()) } returns fileKey
 
-            facilityWriteService.saveFacilityFiles(facilityId, certificationDoc)
-
-            Then("시설에 대한 인증 서류 정보를 저장한다") {
-                verify(exactly = 0) { facilityRepository.deleteById(facilityId) }
+            Then("파일을 업로드하고, 시설 정보 엔티티를 반환한다") {
+                facilityWriteService.uploadCertificationDocs(certificationDocFiles) shouldBe listOf(certificationDocDto)
             }
         }
 
         When("인증 서류에 대한 올바르지 않은 컨텐츠 타입이 들어왔을 경우") {
-            clearMocks(fileService, facilityRepository)
-
             every { fileService.validateImageType(any()) } throws IllegalArgumentException("파일 형식이 유효하지 않습니다")
-            every { facilityRepository.deleteById(any()) } just runs
 
-            Then("저장되었던 시설에 대한 정보를 제거하고, 예외가 발생한다") {
+            Then("예외가 발생한다") {
                 shouldThrow<FileHandlingException> {
-                    facilityWriteService.saveFacilityFiles(facilityId, certificationDoc)
+                    facilityWriteService.uploadCertificationDocs(certificationDocFiles)
                 }
-                verify(exactly = 1) { facilityRepository.deleteById(facilityId) }
             }
         }
 
         When("인증 서류에 대한 파일 이름이 올바르지 않을 경우") {
-            clearMocks(fileService, facilityRepository)
-
-            every { fileService.validateImageType(any()) } returns CERTIFICATION_DOC_TYPE
+            every { fileService.validateImageType(any()) } returns contentType
             every { fileService.validateFileName(any()) } throws IllegalArgumentException("원본 파일 이름이 존재하지 않습니다")
-            every { facilityRepository.deleteById(any()) } just runs
 
-            Then("저장되었던 시설에 대한 정보를 제거하고, 예외가 발생한다") {
+            Then("예외가 발생한다") {
                 shouldThrow<FileHandlingException> {
-                    facilityWriteService.saveFacilityFiles(facilityId, certificationDoc)
+                    facilityWriteService.uploadCertificationDocs(certificationDocFiles)
                 }
-                verify(exactly = 1) { facilityRepository.deleteById(facilityId) }
             }
         }
 
         When("파일 업로드 도중 실패했을 경우") {
-            clearMocks(fileService, facilityRepository)
-
-            every { fileService.validateImageType(any()) } returns CERTIFICATION_DOC_TYPE
-            every { fileService.validateFileName(any()) } returns CERTIFICATION_DOC_NAME
+            every { fileService.validateImageType(any()) } returns contentType
+            every { fileService.validateFileName(any()) } returns originalFileName
             every { fileService.uploadFile(any(), any()) } throws S3Exception()
+
+            Then("예외가 발생한다") {
+                shouldThrow<FileHandlingException> {
+                    facilityWriteService.uploadCertificationDocs(certificationDocFiles)
+                }
+            }
+        }
+    }
+
+    Given("시설 아이디와 인증 서류 엔티티 정보") {
+        val facility = createFacility()
+        val facilityCertificationDocDto = createCertificationDocDto()
+        val certificationDocDtos = listOf(facilityCertificationDocDto)
+        val certificationDocs = listOf(facilityCertificationDocDto.toEntity())
+
+        When("올바른 시설 아이디와 인증 서류 엔티티 정보가 들어온다면") {
+            every { facilityRepository.getFacilityById(any()) } returns facility
+
+            Then("인증 서류 정보를 저장한다") {
+                shouldNotThrowAnyUnit { facilityWriteService.saveFacilityFiles(facility.id, certificationDocDtos) }
+                facility.certificationDoc shouldBe certificationDocs
+            }
+        }
+    }
+
+    Given("저장된 시설 아이디") {
+        val facility = createFacility()
+
+        When("올바른 시설 아이디가 들어왔다면") {
             every { facilityRepository.deleteById(any()) } just runs
 
-            Then("저장되었던 시설에 대한 정보를 제거하고, 예외가 발생한다") {
-                shouldThrow<FileHandlingException> {
-                    facilityWriteService.saveFacilityFiles(facilityId, certificationDoc)
-                }
-                verify(exactly = 1) { facilityRepository.deleteById(facilityId) }
+            Then("시설 정보를 삭제한다") {
+                shouldNotThrowAnyUnit { facilityWriteService.deleteFacility(facility.id) }
             }
         }
     }
@@ -116,26 +132,22 @@ class FacilityWriteServiceTest : BehaviorSpec({
         When("올바른 시설 아이디와 진행 상태라면") {
             every { facilityRepository.getFacilityById(any()) } returns facility
 
-            Then("시설 정보가 업데이트된다") {
-                shouldNotThrowAnyUnit { facilityWriteService.updateFacilityProgress(1L, FACILITY_PROGRESS) }
-            }
-        }
-
-        When("올바르지 않은 시설 아이디라면") {
-            every { facilityRepository.getFacilityById(any()) } throws IllegalArgumentException("시설 정보가 존재하지 않습니다")
-
-            Then("예외가 발생한다") {
-                shouldThrow<IllegalArgumentException> { facilityWriteService.updateFacilityProgress(1L, FACILITY_PROGRESS) }
+            Then("시설의 진행 상태가 업데이트된다") {
+                shouldNotThrowAnyUnit { facilityWriteService.updateFacilityProgress(facility.id, FACILITY_PROGRESS_APPROVED) }
+                facility.progress shouldBe FACILITY_PROGRESS_APPROVED
             }
         }
     }
 
     Given("시설 아이디 리스트와 진행 상태") {
+        val facility1 = createFacility()
+        val facility2 = createFacility()
+
         When("올바른 시설 아이디 리스트와 진행 상태라면") {
             every { facilityRepository.updateProgressByIds(any(), any()) } just runs
 
-            Then("시설 정보가 업데이트된다") {
-                shouldNotThrowAnyUnit { facilityWriteService.updateFacilitiesProgress(listOf(1L, 2L), FACILITY_PROGRESS) }
+            Then("여러 시설의 진행 상태가 업데이트된다") {
+                shouldNotThrowAnyUnit { facilityWriteService.updateFacilitiesProgress(listOf(facility1.id, facility2.id), FACILITY_PROGRESS_APPROVED) }
             }
         }
     }
