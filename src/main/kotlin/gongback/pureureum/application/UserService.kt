@@ -1,6 +1,7 @@
 package gongback.pureureum.application
 
-import gongback.pureureum.application.dto.FileInfo
+import gongback.pureureum.application.dto.FileDto
+import gongback.pureureum.application.dto.ProfileDto
 import gongback.pureureum.application.dto.UserInfoReq
 import gongback.pureureum.application.dto.UserInfoRes
 import gongback.pureureum.domain.sms.SmsLogRepository
@@ -57,21 +58,24 @@ class UserWriteService(
         }
     }
 
-    @Transactional
-    fun updatedProfile(email: String, updateProfile: MultipartFile?) {
-        updateProfile?.apply {
-            val originalFileName = fileService.validateFileName(updateProfile.originalFilename)
-            val contentType = fileService.validateImageType(updateProfile.contentType)
-
+    fun uploadProfileImage(email: String, newProfile: MultipartFile): ProfileDto =
+        with(newProfile) {
+            val contentType = fileService.validateImageType(newProfile.contentType)
+            val originalFileName = fileService.validateFileName(newProfile.originalFilename)
             val findUser = userRepository.getUserByEmail(email)
             if (findUser.profile.originalFileName != DEFAULT_FILE_NAME) {
                 fileService.deleteFile(findUser.profile.fileKey)
             }
-            val fileInfo = FileInfo(updateProfile.size, updateProfile.inputStream, contentType, originalFileName)
-            val fileKey = fileService.uploadFile(fileInfo, FileType.PROFILE)
-            findUser.profile.updateProfile(fileKey, contentType, originalFileName)
-            userRepository.save(findUser)
+            val fileDto = FileDto(newProfile.size, newProfile.inputStream, contentType, originalFileName)
+            val fileKey = fileService.uploadFile(fileDto, FileType.PROFILE)
+            ProfileDto(fileKey, contentType, originalFileName)
         }
+
+    @Transactional
+    fun updateProfile(email: String, profileDto: ProfileDto) {
+        val findUser = userRepository.getUserByEmail(email)
+        val newProfile = profileDto.toEntity()
+        findUser.updateProfile(newProfile)
     }
 
     private fun validatePhoneNumber(phoneNumber: String) {

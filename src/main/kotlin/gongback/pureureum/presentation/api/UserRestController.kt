@@ -79,7 +79,10 @@ class UserRestController(
         @RequestPart profile: MultipartFile?,
         @LoginEmail email: String
     ): ResponseEntity<Unit> {
-        userWriteService.updatedProfile(email, profile)
+        profile?.let {
+            val profileDto = userWriteService.uploadProfileImage(email, it)
+            userWriteService.updateProfile(email, profileDto)
+        }
         return ResponseEntity.noContent().build()
     }
 

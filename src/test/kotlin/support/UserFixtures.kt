@@ -2,6 +2,7 @@ package support
 
 import gongback.pureureum.application.dto.KakaoUserInfoRes
 import gongback.pureureum.application.dto.OAuthUserInfo
+import gongback.pureureum.application.dto.ProfileDto
 import gongback.pureureum.application.dto.RegisterUserReq
 import gongback.pureureum.application.dto.UserAccountDto
 import gongback.pureureum.application.dto.UserInfoReq
@@ -23,11 +24,10 @@ val BIRTHDAY: LocalDate = createLocalDate(1998, 12, 28)
 val PASSWORD: Password = Password("passwordTest")
 val SOCIAL_TYPE_PUREUREUM: SocialType = SocialType.PUREUREUM
 
-private const val PROFILE_KEY = "profile/default_profile.png"
+const val PROFILE_KEY = "profile/default_profile.png"
 private const val PROFILE_NAME = "profile"
-private const val PROFILE_ORIGINAL_FILE_NAME = "default_profile.png"
-const val PROFILE_SERVER_FILE_NAME = "server_default_profile.png"
-private const val PROFILE_CONTENT_TYPE = "image/png"
+const val PROFILE_ORIGINAL_FILE_NAME = "default_profile.png"
+const val PROFILE_CONTENT_TYPE = "image/png"
 private const val PROFILE_CONTENT = "sample"
 const val PROFILE_URL = "http://pureureum.com/profile/default_profile.png"
 
@@ -104,6 +104,18 @@ fun createProfile(
     originalFileName: String = PROFILE_ORIGINAL_FILE_NAME
 ): Profile {
     return Profile(
+        fileKey = fileKey,
+        contentType = contentType,
+        originalFileName = originalFileName
+    )
+}
+
+fun createProfileDto(
+    fileKey: String = PROFILE_KEY,
+    contentType: String = PROFILE_CONTENT_TYPE,
+    originalFileName: String = PROFILE_ORIGINAL_FILE_NAME
+): ProfileDto {
+    return ProfileDto(
         fileKey = fileKey,
         contentType = contentType,
         originalFileName = originalFileName

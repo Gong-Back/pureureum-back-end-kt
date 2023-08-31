@@ -11,7 +11,6 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
-import java.time.LocalDate
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.HttpHeaders
@@ -33,11 +32,13 @@ import support.TOKEN_TYPE
 import support.createAccessToken
 import support.createLocalDate
 import support.createMockProfileFile
+import support.createProfileDto
 import support.createRefreshToken
 import support.createUser
 import support.createUserInfoRes
 import support.test.ControllerTestHelper
 import support.token
+import java.time.LocalDate
 
 private const val EMAIL = "test@test.com"
 private const val PASSWORD = "password"
@@ -375,12 +376,15 @@ class UserRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `프로필 이미지 업데이트 성공`() {
-        every { userWriteService.updatedProfile(any(), any()) } just runs
-        val profile = createMockProfileFile()
+        val profileDto = createProfileDto()
+        every { userWriteService.uploadProfileImage(any(), any()) } returns profileDto
+        every { userWriteService.updateProfile(any(), any()) } just runs
+
+        val profileImage = createMockProfileFile()
 
         mockMvc.multipart("/api/v1/users/update/profile") {
             token(createAccessToken())
-            file(profile)
+            file(profileImage)
         }.andExpect {
             status { isNoContent() }
         }.andDo {
@@ -397,7 +401,7 @@ class UserRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `프로필 이미지 업데이트 실패 - 원본 파일 이름이 비어있을 경우`() {
-        every { userWriteService.updatedProfile(any(), any()) } throws IllegalArgumentException("원본 파일 이름이 비어있습니다")
+        every { userWriteService.uploadProfileImage(any(), any()) } throws IllegalArgumentException("원본 파일 이름이 비어있습니다")
         val profile = createMockProfileFile(
             originalFileName = ""
         )
@@ -420,7 +424,7 @@ class UserRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `프로필 이미지 업데이트 실패 - 파일 형식이 이미지가 아닐 경우`() {
-        every { userWriteService.updatedProfile(any(), any()) } throws IllegalArgumentException("이미지 형식의 파일만 가능합니다")
+        every { userWriteService.uploadProfileImage(any(), any()) } throws IllegalArgumentException("이미지 형식의 파일만 가능합니다")
         val profile = createMockProfileFile(
             contentType = "text/html"
         )

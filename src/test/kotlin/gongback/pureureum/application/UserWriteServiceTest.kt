@@ -9,13 +9,20 @@ import gongback.pureureum.domain.user.getUserByEmail
 import io.kotest.assertions.throwables.shouldNotThrowAnyUnit
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.shouldBe
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.verify
 import support.EMAIL
+import support.PROFILE_CONTENT_TYPE
+import support.PROFILE_KEY
+import support.PROFILE_ORIGINAL_FILE_NAME
 import support.createMockProfileFile
 import support.createProfile
+import support.createProfileDto
 import support.createUser
 import support.createUserInfoReq
 
@@ -25,104 +32,107 @@ class UserWriteServiceTest : BehaviorSpec({
     val smsLogRepository = mockk<SmsLogRepository>()
     val userWriteService = UserWriteService(fileService, userRepository, smsLogRepository)
 
-    Given("사용자와 사용자 정보") {
+    Given("사용자 이메일과 사용자 정보") {
         val user = createUser()
         val userInfoReq = createUserInfoReq()
 
         When("이미 존재하는 핸드폰 정보라면") {
             every { userRepository.getUserByEmail(any()) } returns user
-            every {
-                userRepository.existsByPhoneNumber(any())
-            } throws IllegalArgumentException("이미 가입된 전화번호입니다")
+            every { userRepository.existsByPhoneNumber(any()) } throws IllegalArgumentException("이미 가입된 전화번호입니다")
+
             Then("예외가 발생한다") {
                 shouldThrow<IllegalArgumentException> { userWriteService.updateUserInfo(EMAIL, userInfoReq) }
             }
         }
+
         When("인증되지 않은 핸드폰 정보라면") {
             every { userRepository.getUserByEmail(any()) } returns user
-            every {
-                smsLogRepository.getLastSmsLog(any())
-            } throws IllegalArgumentException("본인 인증되지 않은 정보입니다")
+            every { smsLogRepository.getLastSmsLog(any()) } throws IllegalArgumentException("본인 인증되지 않은 정보입니다")
+
             Then("예외가 발생한다") {
                 shouldThrow<IllegalArgumentException> { userWriteService.updateUserInfo(EMAIL, userInfoReq) }
             }
         }
+
         When("이미 존재하는 닉네임이라면") {
             every { userRepository.getUserByEmail(any()) } returns user
             every { userRepository.existsNickname(any()) } returns true
+
             Then("예외가 발생한다") {
                 shouldThrow<IllegalArgumentException> { userWriteService.updateUserInfo(EMAIL, userInfoReq) }
             }
         }
+
         When("존재하지 않으면서 인증된 핸드폰 정보이거나, 올바른 비밀번호이거나, 올바른 닉네임이라면") {
             every { userRepository.existsByPhoneNumber(any()) } returns false
             every { smsLogRepository.getLastSmsLog(any()).isSuccess } returns true
             every { smsLogRepository.deleteByReceiver(any()) } just runs
             every { userRepository.existsNickname(any()) } returns false
             every { userRepository.getUserByEmail(any()) } returns user
+
             Then("사용자 정보를 업데이트한다") {
                 shouldNotThrowAnyUnit { userWriteService.updateUserInfo(EMAIL, userInfoReq) }
             }
         }
     }
 
-    Given("사용자와 프로필 이미지 정보") {
+    Given("사용자 이메일과 프로필 이미지 파일") {
         val user = createUser()
-        val profile = createProfile()
-        val fileKey = profile.fileKey
+        val profileDto = createProfileDto()
+        val profileImage = createMockProfileFile()
 
-        When("원본 파일 이름이 존재하지 않는다면") {
-            val file = createMockProfileFile(originalFileName = null)
-            every { fileService.validateFileName(file.originalFilename) } throws IllegalArgumentException("원본 파일 이름이 존재하지 않습니다")
+        val contentType = PROFILE_CONTENT_TYPE
+        val originalFileName = PROFILE_ORIGINAL_FILE_NAME
+        val profileKey = PROFILE_KEY
 
-            Then("예외가 발생한다.") {
-                shouldThrow<IllegalArgumentException> { userWriteService.updatedProfile(user.email, file) }
-            }
-        }
+        When("기존의 사용자 프로필 이미지가 기본 이미지라면") {
+            clearMocks(fileService)
 
-        When("원본 파일 이름이 비어있다면") {
-            val file = createMockProfileFile(originalFileName = "")
-            every { fileService.validateFileName(file.originalFilename) } throws IllegalArgumentException("원본 파일 이름이 비어있습니다")
-            Then("예외가 발생한다.") {
-                shouldThrow<IllegalArgumentException> { userWriteService.updatedProfile(user.email, file) }
-            }
-        }
-
-        When("파일 형식이 비어있다면") {
-            val file = createMockProfileFile(contentType = null)
-            every { fileService.validateFileName(file.originalFilename) } returns file.name
-            every { fileService.validateImageType(file.contentType) } throws IllegalArgumentException("파일 형식이 유효하지 않습니다")
-            Then("예외가 발생한다.") {
-                shouldThrow<IllegalArgumentException> { userWriteService.updatedProfile(user.email, file) }
-            }
-        }
-
-        When("이미지 형식의 파일이 아니라면") {
-            val file = createMockProfileFile(contentType = "text/html")
-            every { fileService.validateFileName(file.originalFilename) } returns file.name
-            every { fileService.validateImageType(file.contentType) } throws IllegalArgumentException("이미지 형식의 파일만 가능합니다")
-
-            Then("예외가 발생한다.") {
-                shouldThrow<IllegalArgumentException> { userWriteService.updatedProfile(user.email, file) }
-            }
-        }
-
-        When("사용자의 기존 프로필 이미지가 별도로 설정한 파일이라면") {
-            val file = createMockProfileFile()
-            every { fileService.validateFileName(file.originalFilename) } returns fileKey
-            every { fileService.validateImageType(file.contentType) } returns file.contentType!!
+            every { fileService.validateImageType(any()) } returns contentType
+            every { fileService.validateFileName(any()) } returns originalFileName
             every { userRepository.getUserByEmail(any()) } returns user
-            every { fileService.deleteFile(any()) } just runs
-            every { fileService.uploadFile(any(), any()) } returns fileKey
-            every { userRepository.save(any()) } returns user
+            every { fileService.uploadFile(any(), any()) } returns profileKey
 
-            Then("기존의 파일을 제거한 후 정보를 업데이트한다.") {
-                shouldNotThrowAnyUnit { userWriteService.updatedProfile(EMAIL, file) }
+            Then("S3에 저장된 기존 이미지를 제거하지 않고, 이미지 업로드 후 프로필 엔티티를 생성한다") {
+                verify(exactly = 0) {
+                    fileService.deleteFile(any())
+                }
+                userWriteService.uploadProfileImage(user.email, profileImage) shouldBe profileDto
             }
         }
-        When("사용자가 프로필을 설정하지 않았을 경우") {
-            Then("아무 작업도 하지 않는다.") {
-                shouldNotThrowAnyUnit { userWriteService.updatedProfile(EMAIL, null) }
+
+        When("기존의 사용자 프로필 이미지가 기본 이미지가 아니라면") {
+            clearMocks(fileService)
+            val newUser = createUser()
+            val customProfile = createProfile(originalFileName = "new-profile.png")
+            newUser.updateProfile(customProfile)
+
+            every { fileService.validateImageType(any()) } returns contentType
+            every { fileService.validateFileName(any()) } returns originalFileName
+            every { userRepository.getUserByEmail(any()) } returns newUser
+            every { fileService.deleteFile(any()) } just runs
+            every { fileService.uploadFile(any(), any()) } returns profileKey
+
+            Then("S3에 저장된 기존 이미지를 제거하고, 이미지 업로드 후 프로필 엔티티를 생성한다") {
+                userWriteService.uploadProfileImage(user.email, profileImage) shouldBe profileDto
+                verify(exactly = 1) {
+                    fileService.deleteFile(any())
+                }
+            }
+        }
+    }
+
+    Given("사용자 이메일, 프로필 엔티티") {
+        val user = createUser()
+        val profileDto = createProfileDto()
+        val newProfile = profileDto.toEntity()
+
+        When("올바른 사용자 정보와 프로필 엔티티가 들어왔다면") {
+            every { userRepository.getUserByEmail(any()) } returns user
+
+            Then("사용자의 프로필 이미지 정보를 업데이트한다") {
+                shouldNotThrowAnyUnit { userWriteService.updateProfile(user.email, profileDto) }
+                user.profile shouldBe newProfile
             }
         }
     }

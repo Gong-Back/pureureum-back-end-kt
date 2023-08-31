@@ -2,13 +2,14 @@ package gongback.pureureum.application.dto
 
 import gongback.pureureum.domain.social.SocialType
 import gongback.pureureum.domain.user.Password
+import gongback.pureureum.domain.user.Profile
 import gongback.pureureum.domain.user.User
 import gongback.pureureum.domain.user.UserGender
 import gongback.pureureum.domain.user.UserRole
 import jakarta.validation.constraints.Past
 import jakarta.validation.constraints.Pattern
-import java.time.LocalDate
 import org.hibernate.validator.constraints.Length
+import java.time.LocalDate
 
 data class LoginReq(
     @field:Length(min = 8, max = 15)
@@ -92,3 +93,15 @@ data class UserAccountDto(
     val email: String,
     val socialType: SocialType
 )
+
+data class ProfileDto(
+    val fileKey: String,
+    val contentType: String,
+    val originalFileName: String
+) {
+    fun toEntity(): Profile = Profile(
+        fileKey,
+        contentType,
+        originalFileName
+    )
+}
