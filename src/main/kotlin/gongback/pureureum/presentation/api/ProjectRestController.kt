@@ -1,5 +1,6 @@
 package gongback.pureureum.presentation.api
 
+import gongback.pureureum.application.FileHandlingException
 import gongback.pureureum.application.ProjectReadService
 import gongback.pureureum.application.ProjectWriteService
 import gongback.pureureum.application.dto.ProjectPartPageRes
@@ -9,7 +10,6 @@ import gongback.pureureum.security.LoginEmail
 import gongback.pureureum.support.constant.Category
 import gongback.pureureum.support.constant.SearchType
 import jakarta.validation.Valid
-import java.net.URI
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import java.net.URI
 
 private const val BASE_URL = "/api/v1/projects"
 
@@ -38,11 +39,18 @@ class ProjectRestController(
         @RequestPart(required = false) projectFiles: List<MultipartFile>?,
         @LoginEmail email: String
     ): ResponseEntity<ApiResponse<Unit>> {
-        val savedProjectId = projectWriteService.registerProject(email, projectRegisterReq, projectFiles)
-        projectFiles?.let {
-            projectWriteService.saveProjectFiles(savedProjectId, it)
+        val savedProjectId = projectWriteService.registerProject(email, projectRegisterReq)
+        return try {
+            projectFiles?.let {
+                val projectFileDtos = projectWriteService.uploadProjectFiles(it)
+                projectWriteService.saveProjectFiles(savedProjectId, projectFileDtos)
+            }
+            return ResponseEntity.created(URI.create("$BASE_URL/$savedProjectId")).build()
+        } catch (e: FileHandlingException) {
+            projectWriteService.deleteProject(savedProjectId)
+            ResponseEntity.status(e.errorCode.httpStatus)
+                .body(ApiResponse.error(e.errorCode.code, e.message ?: e.errorCode.message))
         }
-        return ResponseEntity.created(URI.create("$BASE_URL/$savedProjectId")).build()
     }
 
     @GetMapping("/{id}")

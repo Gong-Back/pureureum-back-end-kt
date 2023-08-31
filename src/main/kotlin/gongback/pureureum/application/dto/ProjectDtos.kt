@@ -2,6 +2,7 @@ package gongback.pureureum.application.dto
 
 import gongback.pureureum.domain.facility.FacilityAddress
 import gongback.pureureum.domain.project.Project
+import gongback.pureureum.domain.project.ProjectFile
 import gongback.pureureum.domain.project.ProjectFileType
 import gongback.pureureum.domain.project.ProjectInformation
 import gongback.pureureum.domain.project.ProjectPayment
@@ -12,8 +13,8 @@ import gongback.pureureum.support.constant.Category
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
-import java.time.LocalDate
 import org.springframework.data.domain.Page
+import java.time.LocalDate
 
 data class ProjectRegisterReq(
     @field:NotBlank
@@ -239,5 +240,19 @@ data class ProjectPartRes(
         ),
         project.projectCategory,
         thumbnailFileRes
+    )
+}
+
+data class ProjectfileDto(
+    val fileKey: String,
+    val contentType: String,
+    val originalFileName: String,
+    val projectFileType: ProjectFileType
+) {
+    fun toEntity(): ProjectFile = ProjectFile(
+        fileKey,
+        contentType,
+        originalFileName,
+        projectFileType
     )
 }

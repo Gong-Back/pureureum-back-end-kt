@@ -1,16 +1,17 @@
 package gongback.pureureum.application
 
 import gongback.pureureum.application.dto.ErrorCode
-import gongback.pureureum.application.dto.FileInfo
+import gongback.pureureum.application.dto.FileDto
 import gongback.pureureum.application.dto.ProjectFileRes
 import gongback.pureureum.application.dto.ProjectPartPageRes
 import gongback.pureureum.application.dto.ProjectPartRes
 import gongback.pureureum.application.dto.ProjectRegisterReq
 import gongback.pureureum.application.dto.ProjectRes
+import gongback.pureureum.application.dto.ProjectfileDto
+import gongback.pureureum.application.util.FileErrorHandler
 import gongback.pureureum.domain.facility.FacilityRepository
 import gongback.pureureum.domain.facility.getFacilityById
 import gongback.pureureum.domain.project.Project
-import gongback.pureureum.domain.project.ProjectFile
 import gongback.pureureum.domain.project.ProjectFileType
 import gongback.pureureum.domain.project.ProjectRepository
 import gongback.pureureum.domain.project.getProjectById
@@ -89,7 +90,7 @@ class ProjectWriteService(
 ) {
 
     @Transactional
-    fun registerProject(email: String, projectRegisterReq: ProjectRegisterReq, projectFiles: List<MultipartFile>?): Long {
+    fun registerProject(email: String, projectRegisterReq: ProjectRegisterReq): Long {
         val findUser = userRepository.getUserByEmail(email)
 
         val project = projectRegisterReq.toEntityWithInfo(
@@ -100,22 +101,30 @@ class ProjectWriteService(
         return projectRepository.save(project).id
     }
 
-    @Transactional(noRollbackFor = [FileHandlingException::class])
-    fun saveProjectFiles(projectId: Long, projectFileReqs: List<MultipartFile>) {
-        deleteProjectIfError({
-            val projectFiles = projectFileReqs.mapIndexed { index, file ->
+    fun uploadProjectFiles(projectFileReqs: List<MultipartFile>): List<ProjectfileDto> =
+        FileErrorHandler.throwFileHandlingExceptionIfFail {
+            projectFileReqs.mapIndexed { index, file ->
                 val contentType = fileService.validateAnyContentType(file.contentType)
                 val originalFileName = fileService.validateFileName(file.originalFilename)
-                val fileInfo = FileInfo(file.size, file.inputStream, contentType, originalFileName)
-                val fileKey = fileService.uploadFile(fileInfo, FileType.PROJECT)
+                val fileDto = FileDto(file.size, file.inputStream, contentType, originalFileName)
+                val fileKey = fileService.uploadFile(fileDto, FileType.PROJECT)
                 when (index) {
-                    0 -> ProjectFile(fileKey, contentType, originalFileName, ProjectFileType.THUMBNAIL)
-                    else -> ProjectFile(fileKey, contentType, originalFileName)
+                    0 -> ProjectfileDto(fileKey, contentType, originalFileName, ProjectFileType.THUMBNAIL)
+                    else -> ProjectfileDto(fileKey, contentType, originalFileName, ProjectFileType.COMMON)
                 }
             }
-            val project = projectRepository.getProjectById(projectId)
-            project.addProjectFiles(projectFiles)
-        }, projectId)
+        }
+
+    @Transactional
+    fun saveProjectFiles(projectId: Long, projectFileDtos: List<ProjectfileDto>) {
+        val project = projectRepository.getProjectById(projectId)
+        val projectFiles = projectFileDtos.map(ProjectfileDto::toEntity)
+        project.addProjectFiles(projectFiles)
+    }
+
+    @Transactional
+    fun deleteProject(projectId: Long) {
+        projectRepository.deleteById(projectId)
     }
 
     @Transactional
@@ -137,12 +146,4 @@ class ProjectWriteService(
             fileService.deleteFile(it)
         }
     }
-
-    private fun deleteProjectIfError(operation: () -> Unit, projectId: Long) =
-        runCatching {
-            operation()
-        }.onFailure {
-            projectRepository.deleteById(projectId)
-            throw FileHandlingException(it)
-        }
 }

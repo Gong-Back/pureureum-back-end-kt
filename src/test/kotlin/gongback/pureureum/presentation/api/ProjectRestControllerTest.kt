@@ -9,7 +9,6 @@ import gongback.pureureum.application.dto.ErrorCode
 import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
-import java.nio.charset.StandardCharsets
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.HttpHeaders
@@ -35,6 +34,7 @@ import support.createAccessToken
 import support.createDifferentCategoryProject
 import support.createFacility
 import support.createMockProjectFile
+import support.createProjectFileDto
 import support.createProjectPartPageRes
 import support.createProjectRegisterReq
 import support.createProjectResWithPayment
@@ -43,6 +43,7 @@ import support.createSameCategoryProject
 import support.createUser
 import support.test.ControllerTestHelper
 import support.token
+import java.nio.charset.StandardCharsets
 
 @WebMvcTest(ProjectRestController::class)
 class ProjectRestControllerTest : ControllerTestHelper() {
@@ -54,7 +55,10 @@ class ProjectRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `프로젝트 등록 성공`() {
-        every { projectWriteService.registerProject(any(), any(), any()) } returns 1L
+        val projectFileDto = createProjectFileDto()
+
+        every { projectWriteService.registerProject(any(), any()) } returns 1L
+        every { projectWriteService.uploadProjectFiles(any()) } returns listOf(projectFileDto)
         every { projectWriteService.saveProjectFiles(any(), any()) } just runs
 
         val projectRegisterReq = createProjectRegisterReq()
@@ -197,8 +201,9 @@ class ProjectRestControllerTest : ControllerTestHelper() {
 
     @Test
     fun `프로젝트 등록 실패 - 파일 처리 중 오류가 발생했을 경우`() {
-        every { projectWriteService.registerProject(any(), any(), any()) } returns 1L
-        every { projectWriteService.saveProjectFiles(any(), any()) } throws FileHandlingException(null)
+        every { projectWriteService.registerProject(any(), any()) } returns 1L
+        every { projectWriteService.uploadProjectFiles(any()) } throws FileHandlingException(null)
+        every { projectWriteService.deleteProject(any()) } just runs
 
         val projectRegisterReq = createProjectRegisterReq()
         val projectRegisterReqStr = objectToString(projectRegisterReq)

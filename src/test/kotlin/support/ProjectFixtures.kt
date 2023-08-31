@@ -5,10 +5,10 @@ import gongback.pureureum.application.dto.ProjectPartPageRes
 import gongback.pureureum.application.dto.ProjectPartRes
 import gongback.pureureum.application.dto.ProjectRegisterReq
 import gongback.pureureum.application.dto.ProjectRes
+import gongback.pureureum.application.dto.ProjectfileDto
 import gongback.pureureum.domain.facility.Facility
 import gongback.pureureum.domain.facility.FacilityAddress
 import gongback.pureureum.domain.project.Project
-import gongback.pureureum.domain.project.ProjectFile
 import gongback.pureureum.domain.project.ProjectFileType
 import gongback.pureureum.domain.project.ProjectInformation
 import gongback.pureureum.domain.project.ProjectPayment
@@ -18,9 +18,9 @@ import gongback.pureureum.domain.user.User
 import gongback.pureureum.domain.user.UserInformation
 import gongback.pureureum.support.constant.Category
 import gongback.pureureum.support.constant.SearchType
+import org.springframework.mock.web.MockMultipartFile
 import java.time.LocalDate
 import java.util.stream.IntStream
-import org.springframework.mock.web.MockMultipartFile
 
 const val PROJECT_TITLE = "testTitle"
 const val PROJECT_INTRODUCTION = "testIntroduction"
@@ -59,11 +59,28 @@ fun createProject(
         ProjectPaymentType.NONE,
         category,
         listOf(
-            ProjectFile(PROJECT_FILE_KEY1, PROJECT_FILE_CONTENT_TYPE, PROJECT_FILE_ORIGINAL_FILE_NAME1, ProjectFileType.THUMBNAIL),
-            ProjectFile(PROJECT_FILE_KEY2, PROJECT_FILE_CONTENT_TYPE, PROJECT_FILE_ORIGINAL_FILE_NAME2, ProjectFileType.COMMON)
+            createProjectFileDto(
+                PROJECT_FILE_KEY1,
+                PROJECT_FILE_CONTENT_TYPE,
+                PROJECT_FILE_ORIGINAL_FILE_NAME1,
+                ProjectFileType.THUMBNAIL
+            ).toEntity(),
+            createProjectFileDto(
+                PROJECT_FILE_KEY2,
+                PROJECT_FILE_CONTENT_TYPE,
+                PROJECT_FILE_ORIGINAL_FILE_NAME2,
+                ProjectFileType.COMMON
+            ).toEntity()
         )
     )
 }
+
+fun createProjectFileDto(
+    fileKey: String = PROJECT_FILE_KEY1,
+    contentType: String = PROJECT_FILE_CONTENT_TYPE,
+    originalFilename: String = PROJECT_FILE_ORIGINAL_FILE_NAME1,
+    fileType: ProjectFileType = ProjectFileType.COMMON
+): ProjectfileDto = ProjectfileDto(fileKey, contentType, originalFilename, fileType)
 
 fun createProjectWithPayment(): Project {
     return Project(
@@ -81,8 +98,18 @@ fun createProjectWithPayment(): Project {
         ProjectPaymentType.DEPOSIT,
         PROJECT_CATEGORY,
         listOf(
-            ProjectFile(PROJECT_FILE_KEY1, PROJECT_FILE_CONTENT_TYPE, PROJECT_FILE_ORIGINAL_FILE_NAME1, ProjectFileType.THUMBNAIL),
-            ProjectFile(PROJECT_FILE_KEY2, PROJECT_FILE_CONTENT_TYPE, PROJECT_FILE_ORIGINAL_FILE_NAME2, ProjectFileType.COMMON)
+            createProjectFileDto(
+                PROJECT_FILE_KEY1,
+                PROJECT_FILE_CONTENT_TYPE,
+                PROJECT_FILE_ORIGINAL_FILE_NAME1,
+                ProjectFileType.THUMBNAIL
+            ).toEntity(),
+            createProjectFileDto(
+                PROJECT_FILE_KEY2,
+                PROJECT_FILE_CONTENT_TYPE,
+                PROJECT_FILE_ORIGINAL_FILE_NAME2,
+                ProjectFileType.COMMON
+            ).toEntity()
         ),
         listOf(ProjectPayment(100000, "환불 정책", "예금주(계좌번호)"))
     )
