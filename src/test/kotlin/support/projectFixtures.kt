@@ -83,14 +83,16 @@ fun createProjectWithPayment(): Project {
     )
 }
 
-fun createProjectRegisterReq(): ProjectRegisterReq {
+fun createProjectRegisterReq(
+    totalRecruits: Int = PROJECT_TOTAL_RECRUITS
+): ProjectRegisterReq {
     return ProjectRegisterReq(
         title = PROJECT_TITLE,
         introduction = PROJECT_INTRODUCTION,
         content = PROJECT_CONTENT,
         projectStartDate = LocalDate.parse(PROJECT_START_DATE),
         projectEndDate = LocalDate.parse(PROJECT_END_DATE),
-        totalRecruits = PROJECT_TOTAL_RECRUITS,
+        totalRecruits = totalRecruits,
         paymentType = ProjectPaymentType.NONE,
         facilityId = 1L,
         projectCategory = PROJECT_CATEGORY

@@ -10,11 +10,12 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
+import java.time.LocalDate
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.HttpHeaders
-import org.springframework.restdocs.headers.HeaderDocumentation.headerWithName
-import org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders
+import org.springframework.restdocs.cookies.CookieDocumentation.responseCookies
+import org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName
 import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
@@ -36,7 +37,6 @@ import support.createUser
 import support.createUserInfoRes
 import support.test.ControllerTestHelper
 import support.token
-import java.time.LocalDate
 
 private const val EMAIL = "test@test.com"
 private const val PASSWORD = "password"
@@ -107,8 +107,10 @@ class UserRestControllerTest : ControllerTestHelper() {
                 responseFields(
                     fieldWithPath("code").description("응답 코드"),
                     fieldWithPath("messages").description("응답 메시지"),
-                    fieldWithPath("data.accessToken").description("AccessToken"),
-                    fieldWithPath("data.refreshToken").description("RefreshToken")
+                    fieldWithPath("data.accessToken").description("액세스 토큰")
+                ),
+                responseCookies(
+                    cookieWithName("refreshToken").description("refresh token")
                 )
             )
         }
@@ -251,14 +253,13 @@ class UserRestControllerTest : ControllerTestHelper() {
         }.andDo {
             createDocument(
                 "token-reissue-success",
-                requestHeaders(
-                    headerWithName(HttpHeaders.AUTHORIZATION).description("RefreshToken")
-                ),
                 responseFields(
                     fieldWithPath("code").description("응답 코드"),
                     fieldWithPath("messages").description("응답 메시지"),
-                    fieldWithPath("data.accessToken").description("재발급된 AccessToken"),
-                    fieldWithPath("data.refreshToken").description("재발급된 RefreshToken")
+                    fieldWithPath("data.accessToken").description("액세스 토큰")
+                ),
+                responseCookies(
+                    cookieWithName("refreshToken").description("refresh token")
                 )
             )
         }

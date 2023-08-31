@@ -16,6 +16,8 @@ import io.mockk.just
 import io.mockk.runs
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName
+import org.springframework.restdocs.cookies.CookieDocumentation.responseCookies
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
@@ -96,8 +98,10 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
                 responseFields(
                     fieldWithPath("code").description("응답 코드"),
                     fieldWithPath("messages").description("응답 메시지"),
-                    fieldWithPath("data.accessToken").description("AccessToken"),
-                    fieldWithPath("data.refreshToken").description("RefreshToken")
+                    fieldWithPath("data.accessToken").description("액세스 토큰")
+                ),
+                responseCookies(
+                    cookieWithName("refreshToken").description("refresh token")
                 )
             )
         }
@@ -233,8 +237,10 @@ class OAuth2RestControllerTest : ControllerTestHelper() {
                 responseFields(
                     fieldWithPath("code").description("응답 코드"),
                     fieldWithPath("messages").description("응답 메시지"),
-                    fieldWithPath("data.accessToken").description("AccessToken"),
-                    fieldWithPath("data.refreshToken").description("RefreshToken")
+                    fieldWithPath("data.accessToken").description("액세스 토큰")
+                ),
+                responseCookies(
+                    cookieWithName("refreshToken").description("refresh token")
                 )
             )
         }
