@@ -28,5 +28,6 @@ class CorsConfig : WebMvcConfigurer {
             .allowedOrigins("*")
             .allowedMethods(*permitHttpMethods.map(HttpMethod::name).toTypedArray())
             .allowedHeaders("*")
+            .allowCredentials(true)
     }
 }
