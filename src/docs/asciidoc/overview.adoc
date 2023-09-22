@@ -65,15 +65,18 @@
 |===
 | status | value
 
-| `POPULAR `
+| `POPULAR`
 | 인기순
 
-| `LATEST `
+| `LATEST`
 | 최신순
+
+| `START_IMMINENT`
+| 시작임박순
 
 |===
 
-[[overview-error-response]]
+[[overview-success-response]]
 == *Success Response Data*
 
 |===
