@@ -1,6 +1,7 @@
 package gongback.pureureum.presentation.api.admin
 
-import gongback.pureureum.application.FacilityService
+import gongback.pureureum.application.FacilityReadService
+import gongback.pureureum.application.FacilityWriteService
 import gongback.pureureum.application.dto.FacilityRes
 import gongback.pureureum.application.dto.FacilityWithDocIds
 import gongback.pureureum.domain.facility.FacilityProgress
@@ -19,7 +20,8 @@ import org.springframework.web.servlet.view.RedirectView
 @RestController
 @RequestMapping("/admin/facility")
 class AdminFacilityController(
-    private val facilityService: FacilityService
+    private val facilityReadService: FacilityReadService,
+    private val facilityWriteService: FacilityWriteService
 ) {
 
     @GetMapping("/download/{id}/{docId}")
@@ -27,7 +29,7 @@ class AdminFacilityController(
         @PathVariable("id") id: Long,
         @PathVariable("docId") docId: Long
     ): ModelAndView {
-        val downloadPath = facilityService.getCertificationDocDownloadPath(id, docId)
+        val downloadPath = facilityReadService.getCertificationDocDownloadPath(id, docId)
         return ModelAndView(RedirectView(downloadPath))
     }
 
@@ -35,7 +37,7 @@ class AdminFacilityController(
     fun getNotApprovedFacility(
         @RequestParam("category") category: Category
     ): ResponseEntity<ApiResponse<List<FacilityRes>>> {
-        val facilityRes = facilityService.getNotApprovedFacilitiesByCategory(category)
+        val facilityRes = facilityReadService.getNotApprovedFacilitiesByCategory(category)
         return ResponseEntity.ok(ApiResponse.ok(facilityRes))
     }
 
@@ -43,7 +45,7 @@ class AdminFacilityController(
     fun getFacility(
         @PathVariable("id") id: Long
     ): ResponseEntity<ApiResponse<FacilityWithDocIds>> {
-        val facilityRes = facilityService.getFacilityById(id)
+        val facilityRes = facilityReadService.getFacilityById(id)
         return ResponseEntity.ok(ApiResponse.ok(facilityRes))
     }
 
@@ -52,7 +54,7 @@ class AdminFacilityController(
         @PathVariable("id") id: Long,
         @RequestParam("progress") progress: FacilityProgress
     ): ResponseEntity<Unit> {
-        facilityService.updateFacilityProgress(id, progress)
+        facilityWriteService.updateFacilityProgress(id, progress)
         return ResponseEntity.noContent().build()
     }
 
@@ -61,7 +63,7 @@ class AdminFacilityController(
         @RequestParam("ids") ids: List<Long>,
         @RequestParam("progress") progress: FacilityProgress
     ): ResponseEntity<Unit> {
-        facilityService.updateFacilitiesProgress(ids, progress)
+        facilityWriteService.updateFacilitiesProgress(ids, progress)
         return ResponseEntity.noContent().build()
     }
 }

@@ -58,6 +58,9 @@
 | `512 S3_UPLOAD_FAILED`
 | S3 Upload error
 
+| `513 FILE_HANDLING_FAILED`
+| Unexpected File Handling Error
+
 |===
 
 == *Search Type*
@@ -73,6 +76,20 @@
 
 | `START_IMMINENT`
 | 시작임박순
+
+|===
+
+== *Project Status*
+
+|===
+| status | value
+
+| `RUNNING`
+| 모집중
+
+| `COMPLETE`
+| 모집완료
+
 
 |===
 

@@ -1,5 +1,7 @@
 package gongback.pureureum.application
 
+import gongback.pureureum.application.dto.FileDto
+import gongback.pureureum.application.dto.ProfileDto
 import gongback.pureureum.application.dto.UserInfoReq
 import gongback.pureureum.application.dto.UserInfoRes
 import gongback.pureureum.domain.sms.SmsLogRepository
@@ -14,14 +16,30 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 
+private const val DEFAULT_FILE_NAME = "default_profile.png"
+
 @Service
 @Transactional(readOnly = true)
-class UserService(
+class UserReadService(
+    private val fileService: FileService,
+    private val userRepository: UserRepository
+) {
+    fun getUserByEmail(email: String): User = userRepository.getUserByEmail(email)
+
+    fun getUserInfoWithProfileUrl(email: String): UserInfoRes {
+        val user = userRepository.getUserByEmail(email)
+        val profileUrl = fileService.getFileUrl(user.profile.fileKey)
+        return UserInfoRes.toUserWithProfileUrl(user, profileUrl)
+    }
+}
+
+@Service
+@Transactional(readOnly = true)
+class UserWriteService(
     private val fileService: FileService,
     private val userRepository: UserRepository,
     private val smsLogRepository: SmsLogRepository
 ) {
-    fun getUserByEmail(email: String): User = userRepository.getUserByEmail(email)
 
     @Transactional
     fun updateUserInfo(email: String, userInfo: UserInfoReq) {
@@ -40,27 +58,24 @@ class UserService(
         }
     }
 
-    @Transactional
-    fun updatedProfile(email: String, updateProfile: MultipartFile?) {
-        updateProfile?.apply {
-            val originalFileName = fileService.validateFileName(updateProfile)
-            val contentType = fileService.getImageType(updateProfile)
-
+    fun uploadProfileImage(email: String, newProfile: MultipartFile): ProfileDto =
+        with(newProfile) {
+            val contentType = fileService.validateImageType(contentType)
+            val originalFileName = fileService.validateFileName(originalFilename)
             val findUser = userRepository.getUserByEmail(email)
-            if (findUser.profile.originalFileName != "default_profile.png") {
+            if (findUser.profile.originalFileName != DEFAULT_FILE_NAME) {
                 fileService.deleteFile(findUser.profile.fileKey)
             }
-            val fileKey = fileService.uploadFile(updateProfile, FileType.PROFILE, originalFileName)
-
-            findUser.profile.updateProfile(fileKey, contentType, originalFileName)
-            userRepository.save(findUser)
+            val fileDto = FileDto(newProfile.size, newProfile.inputStream, contentType, originalFileName)
+            val fileKey = fileService.uploadFile(fileDto, FileType.PROFILE)
+            ProfileDto(fileKey, contentType, originalFileName)
         }
-    }
 
-    fun getUserInfoWithProfileUrl(email: String): UserInfoRes {
-        val user = userRepository.getUserByEmail(email)
-        val profileUrl = fileService.getFileUrl(user.profile.fileKey)
-        return UserInfoRes.toUserWithProfileUrl(user, profileUrl)
+    @Transactional
+    fun updateProfile(email: String, profileDto: ProfileDto) {
+        val findUser = userRepository.getUserByEmail(email)
+        val newProfile = profileDto.toEntity()
+        findUser.updateProfile(newProfile)
     }
 
     private fun validatePhoneNumber(phoneNumber: String) {

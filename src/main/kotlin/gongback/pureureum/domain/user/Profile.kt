@@ -34,9 +34,9 @@ class Profile(
         }
     }
 
-    fun updateProfile(fileKey: String, contentType: String, originalFileName: String) {
-        this.fileKey = fileKey
-        this.contentType = contentType
-        this.originalFileName = originalFileName
+    fun updateProfile(profile: Profile) {
+        this.fileKey = profile.fileKey
+        this.contentType = profile.contentType
+        this.originalFileName = profile.originalFileName
     }
 }

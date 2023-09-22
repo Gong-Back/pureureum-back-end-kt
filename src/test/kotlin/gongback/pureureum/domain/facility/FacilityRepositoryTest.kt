@@ -7,11 +7,10 @@ import io.kotest.extensions.spring.SpringTestExtension
 import io.kotest.extensions.spring.SpringTestLifecycleMode
 import io.kotest.matchers.shouldBe
 import support.FACILITY_CATEGORY
-import support.createCertificationDoc
+import support.createCertificationDocDto
 import support.createFacility
 import support.createUser
 import support.test.BaseTests.RepositoryTest
-import java.util.*
 
 @RepositoryTest
 class FacilityRepositoryTest(
@@ -31,13 +30,13 @@ class FacilityRepositoryTest(
 
         expect("시설이 존재하지 않는다") {
             val result = facilityRepository.getApprovedByCategoryAndUserId(Category.FARMING_HEALING, user.id)
-            result shouldBe Collections.emptyList()
+            result shouldBe emptyList()
         }
     }
 
     context("사용자별 시설 조회") {
         val user = createUser()
-        val facility = createFacility(user = user, certificationDoc = Collections.emptyList())
+        val facility = createFacility(user = user, certificationDoc = emptyList())
         facilityRepository.save(facility)
 
         expect("시설이 존재한다") {
@@ -47,13 +46,13 @@ class FacilityRepositoryTest(
 
         expect("시설이 존재하지 않는다") {
             val result = facilityRepository.getByUserId(2L)
-            result shouldBe Collections.emptyList()
+            result shouldBe emptyList()
         }
     }
 
     context("인증 서류 아이디에 따른 인증 서류 파일 키 조회") {
-        val certificationDoc = createCertificationDoc()
-        val facility = createFacility(certificationDoc = listOf(createCertificationDoc()).toMutableList())
+        val certificationDoc = createCertificationDocDto().toEntity()
+        val facility = createFacility(certificationDoc = listOf(certificationDoc).toMutableList())
         val docId = 1L
         val savedFacility = facilityRepository.save(facility)
 

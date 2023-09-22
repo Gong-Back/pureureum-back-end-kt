@@ -1,6 +1,8 @@
 package gongback.pureureum.presentation.api
 
-import gongback.pureureum.application.ProjectService
+import gongback.pureureum.application.FileHandlingException
+import gongback.pureureum.application.ProjectReadService
+import gongback.pureureum.application.ProjectWriteService
 import gongback.pureureum.application.dto.ProjectPartPageRes
 import gongback.pureureum.application.dto.ProjectRegisterReq
 import gongback.pureureum.application.dto.ProjectRes
@@ -27,7 +29,8 @@ private const val BASE_URL = "/api/v1/projects"
 @RestController
 @RequestMapping(BASE_URL)
 class ProjectRestController(
-    private val projectService: ProjectService
+    private val projectReadService: ProjectReadService,
+    private val projectWriteService: ProjectWriteService
 ) {
 
     @PostMapping
@@ -36,21 +39,32 @@ class ProjectRestController(
         @RequestPart(required = false) projectFiles: List<MultipartFile>?,
         @LoginEmail email: String
     ): ResponseEntity<ApiResponse<Unit>> {
-        val savedProjectId = projectService.registerProject(email, projectRegisterReq, projectFiles)
-        return ResponseEntity.created(URI.create("$BASE_URL/$savedProjectId")).build()
+        val savedProjectId = projectWriteService.registerProject(email, projectRegisterReq)
+        return try {
+            projectFiles?.let {
+                val projectFileDtos = projectWriteService.uploadProjectFiles(it)
+                projectWriteService.saveProjectFiles(savedProjectId, projectFileDtos)
+            }
+            return ResponseEntity.created(URI.create("$BASE_URL/$savedProjectId")).build()
+        } catch (e: FileHandlingException) {
+            projectWriteService.deleteProject(savedProjectId)
+            ResponseEntity.status(e.errorCode.httpStatus)
+                .body(ApiResponse.error(e.errorCode.code, e.message ?: e.errorCode.message))
+        }
     }
 
     @GetMapping("/{id}")
     fun getProjectDetail(
         @PathVariable("id") id: Long
-    ): ResponseEntity<ApiResponse<ProjectRes>> = ResponseEntity.ok().body(ApiResponse.ok(projectService.getProject(id)))
+    ): ResponseEntity<ApiResponse<ProjectRes>> = ResponseEntity.ok().body(ApiResponse.ok(projectReadService.getProject(id)))
 
     @DeleteMapping("/{id}")
     fun deleteProject(
         @PathVariable("id") id: Long,
         @LoginEmail email: String
     ): ResponseEntity<Unit> {
-        projectService.deleteProject(id, email)
+        val targetFileKeys = projectWriteService.deleteProject(id, email)
+        projectWriteService.deleteProjectFiles(targetFileKeys)
         return ResponseEntity.noContent().build()
     }
 
@@ -62,7 +76,7 @@ class ProjectRestController(
     ): ResponseEntity<ApiResponse<ProjectPartPageRes>> =
         ResponseEntity.ok(
             ApiResponse.ok(
-                projectService.getRunningProjectPartsByTypeAndCategory(
+                projectReadService.getRunningProjectPartsByTypeAndCategory(
                     searchType,
                     category,
                     pageable
@@ -70,8 +84,12 @@ class ProjectRestController(
             )
         )
 
-    @PostMapping("/apply")
-    fun projectApply() {
-        // TODO: 1:다로 프로젝트 신청 정보 관리해야 할 듯...?
+    @PostMapping("/{id}/apply")
+    fun projectApply(
+        @PathVariable("id") id: Long,
+        @LoginEmail email: String
+    ): ResponseEntity<Unit> {
+        projectWriteService.applyProject(id, email)
+        return ResponseEntity.noContent().build()
     }
 }

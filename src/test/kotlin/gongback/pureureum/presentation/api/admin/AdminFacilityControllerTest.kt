@@ -1,7 +1,8 @@
 package gongback.pureureum.presentation.api.admin
 
 import com.ninjasquad.springmockk.MockkBean
-import gongback.pureureum.application.FacilityService
+import gongback.pureureum.application.FacilityReadService
+import gongback.pureureum.application.FacilityWriteService
 import gongback.pureureum.domain.facility.FacilityProgress
 import gongback.pureureum.presentation.api.ApiResponse
 import io.mockk.every
@@ -20,12 +21,15 @@ import support.test.ControllerTestHelper
 @WebMvcTest(AdminFacilityController::class)
 class AdminFacilityControllerTest : ControllerTestHelper() {
     @MockkBean
-    private lateinit var facilityService: FacilityService
+    private lateinit var facilityReadService: FacilityReadService
+
+    @MockkBean
+    private lateinit var facilityWriteService: FacilityWriteService
 
     @Test
     fun `카테고리별 승인되지 않은 시설 조회 성공`() {
         val facilityRes = listOf(createFacilityRes())
-        every { facilityService.getNotApprovedFacilitiesByCategory(any()) } returns facilityRes
+        every { facilityReadService.getNotApprovedFacilitiesByCategory(any()) } returns facilityRes
 
         mockMvc.get("/admin/facility/all") {
             param("category", "YOUTH_FARMING")
@@ -56,7 +60,7 @@ class AdminFacilityControllerTest : ControllerTestHelper() {
     @Test
     fun `시설 정보 단건 조회 성공`() {
         val facilityWithDocIds = createFacilityWithDocIds(fileIds = listOf(1L, 2L))
-        every { facilityService.getFacilityById(any()) } returns facilityWithDocIds
+        every { facilityReadService.getFacilityById(any()) } returns facilityWithDocIds
 
         mockMvc.get("/admin/facility/{id}", 1L) {
         }.andExpect {
@@ -86,7 +90,7 @@ class AdminFacilityControllerTest : ControllerTestHelper() {
 
     @Test
     fun `시설 진행 상태 업데이트 - 단건`() {
-        every { facilityService.updateFacilityProgress(any(), any()) } just runs
+        every { facilityWriteService.updateFacilityProgress(any(), any()) } just runs
 
         mockMvc.post("/admin/facility/update/{id}", 1L) {
             param("progress", FacilityProgress.REJECTED.name)
@@ -101,7 +105,7 @@ class AdminFacilityControllerTest : ControllerTestHelper() {
 
     @Test
     fun `시설 진행 상태 업데이트 - 다건`() {
-        every { facilityService.updateFacilitiesProgress(any(), any()) } just runs
+        every { facilityWriteService.updateFacilitiesProgress(any(), any()) } just runs
 
         mockMvc.post("/admin/facility/update") {
             param("ids", "1,2,3")

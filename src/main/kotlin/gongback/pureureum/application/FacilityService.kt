@@ -1,10 +1,12 @@
 package gongback.pureureum.application
 
+import gongback.pureureum.application.dto.FacilityCertificationDocDto
 import gongback.pureureum.application.dto.FacilityReq
 import gongback.pureureum.application.dto.FacilityRes
 import gongback.pureureum.application.dto.FacilityResWithProgress
 import gongback.pureureum.application.dto.FacilityWithDocIds
-import gongback.pureureum.domain.facility.FacilityCertificationDoc
+import gongback.pureureum.application.dto.FileDto
+import gongback.pureureum.application.util.FileErrorHandler
 import gongback.pureureum.domain.facility.FacilityProgress
 import gongback.pureureum.domain.facility.FacilityRepository
 import gongback.pureureum.domain.facility.getAllNotApprovedByCategory
@@ -22,28 +24,11 @@ import org.springframework.web.multipart.MultipartFile
 
 @Service
 @Transactional(readOnly = true)
-class FacilityService(
-    private val facilityRepository: FacilityRepository,
+class FacilityReadService(
+    private val fileService: FileService,
     private val userRepository: UserRepository,
-    private val fileService: FileService
+    private val facilityRepository: FacilityRepository
 ) {
-
-    @Transactional
-    fun registerFacility(userEmail: String, facilityReq: FacilityReq, certificationDoc: List<MultipartFile>?) {
-        val user = userRepository.getUserByEmail(userEmail)
-        val facility = facilityReq.toFacility(user.id)
-
-        certificationDoc?.let {
-            it.forEach { file ->
-                val originalFileName = fileService.validateFileName(file)
-                val contentType = fileService.getImageType(file)
-                val fileKey = fileService.uploadFile(file, FileType.FACILITY_CERTIFICATION, originalFileName)
-                val facilityCertificationDoc = FacilityCertificationDoc(fileKey, contentType, originalFileName)
-                facility.addCertificationDoc(facilityCertificationDoc)
-            }
-        }
-        facilityRepository.save(facility)
-    }
 
     fun getApprovedFacilityByCategory(userEmail: String, category: Category): List<FacilityRes> {
         val user = userRepository.getUserByEmail(userEmail)
@@ -78,9 +63,48 @@ class FacilityService(
         val docIds = facility.certificationDoc.map {
             it.id
         }
-        return facility.let {
-            FacilityWithDocIds.fromFacility(it, docIds)
+        return FacilityWithDocIds.fromFacility(facility, docIds)
+    }
+}
+
+@Service
+class FacilityWriteService(
+    private val userRepository: UserRepository,
+    private val facilityRepository: FacilityRepository,
+    private val fileService: FileService
+) {
+
+    @Transactional
+    fun registerFacility(
+        userEmail: String,
+        facilityReq: FacilityReq
+    ): Long {
+        val user = userRepository.getUserByEmail(userEmail)
+        val facility = facilityReq.toFacility(user.id)
+        return facilityRepository.save(facility).id
+    }
+
+    fun uploadCertificationDocs(certificationDocReqs: List<MultipartFile>): List<FacilityCertificationDocDto> =
+        FileErrorHandler.throwFileHandlingExceptionIfFail {
+            certificationDocReqs.map { file ->
+                val contentType = fileService.validateImageType(file.contentType)
+                val originalFileName = fileService.validateFileName(file.originalFilename)
+                val fileDto = FileDto(file.size, file.inputStream, contentType, originalFileName)
+                val fileKey = fileService.uploadFile(fileDto, FileType.FACILITY_CERTIFICATION)
+                FacilityCertificationDocDto(fileKey, contentType, originalFileName)
+            }
         }
+
+    @Transactional
+    fun saveFacilityFiles(facilityId: Long, certificationDocDtos: List<FacilityCertificationDocDto>) {
+        val facility = facilityRepository.getFacilityById(facilityId)
+        val certificationDocs = certificationDocDtos.map(FacilityCertificationDocDto::toEntity)
+        facility.addCertificationDocs(certificationDocs)
+    }
+
+    @Transactional
+    fun deleteFacility(facilityId: Long) {
+        facilityRepository.deleteById(facilityId)
     }
 
     @Transactional

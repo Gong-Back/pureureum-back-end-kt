@@ -2,6 +2,7 @@ package gongback.pureureum.application.dto
 
 import gongback.pureureum.domain.facility.Facility
 import gongback.pureureum.domain.facility.FacilityAddress
+import gongback.pureureum.domain.facility.FacilityCertificationDoc
 import gongback.pureureum.domain.facility.FacilityProgress
 import gongback.pureureum.support.constant.Category
 import jakarta.validation.constraints.NotBlank
@@ -98,21 +99,19 @@ data class FacilityResWithProgress(
     val progress: FacilityProgress
 ) {
     companion object {
-        fun fromFacility(facility: Facility): FacilityResWithProgress {
-            return FacilityResWithProgress(
-                facility.id,
-                facility.facilityCategory,
-                facility.name,
-                facility.address.city,
-                facility.address.county,
-                facility.address.district,
-                facility.address.jibun,
-                facility.address.detail,
-                facility.address.longitude,
-                facility.address.latitude,
-                facility.progress
-            )
-        }
+        fun fromFacility(facility: Facility): FacilityResWithProgress = FacilityResWithProgress(
+            facility.id,
+            facility.facilityCategory,
+            facility.name,
+            facility.address.city,
+            facility.address.county,
+            facility.address.district,
+            facility.address.jibun,
+            facility.address.detail,
+            facility.address.longitude,
+            facility.address.latitude,
+            facility.progress
+        )
     }
 }
 
@@ -130,20 +129,30 @@ data class FacilityWithDocIds(
     val fileIds: List<Long>
 ) {
     companion object {
-        fun fromFacility(facility: Facility, docIds: List<Long>): FacilityWithDocIds {
-            return FacilityWithDocIds(
-                facility.id,
-                facility.facilityCategory,
-                facility.name,
-                facility.address.city,
-                facility.address.county,
-                facility.address.district,
-                facility.address.jibun,
-                facility.address.detail,
-                facility.address.longitude,
-                facility.address.latitude,
-                docIds
-            )
-        }
+        fun fromFacility(facility: Facility, docIds: List<Long>): FacilityWithDocIds = FacilityWithDocIds(
+            facility.id,
+            facility.facilityCategory,
+            facility.name,
+            facility.address.city,
+            facility.address.county,
+            facility.address.district,
+            facility.address.jibun,
+            facility.address.detail,
+            facility.address.longitude,
+            facility.address.latitude,
+            docIds
+        )
     }
+}
+
+data class FacilityCertificationDocDto(
+    val fileKey: String,
+    val contentType: String,
+    val originalFileName: String
+) {
+    fun toEntity(): FacilityCertificationDoc = FacilityCertificationDoc(
+        fileKey,
+        contentType,
+        originalFileName
+    )
 }
