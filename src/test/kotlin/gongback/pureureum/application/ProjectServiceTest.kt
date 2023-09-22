@@ -30,6 +30,7 @@ import support.createProjectRegisterReq
 import support.createProjectResWithoutPayment
 import support.createSameCategoryProject
 import support.createUser
+import java.time.LocalDate
 
 class ProjectServiceTest : BehaviorSpec({
     val projectRepository = mockk<ProjectRepository>()
@@ -149,7 +150,8 @@ class ProjectServiceTest : BehaviorSpec({
                 projectRepository.getRunningProjectsByCategoryOrderedSearchType(
                     searchType,
                     category,
-                    pageable
+                    pageable,
+                    LocalDate.now()
                 )
             } returns PageImpl(projects, pageable, projects.size.toLong())
 
@@ -171,7 +173,12 @@ class ProjectServiceTest : BehaviorSpec({
             val projects = createSameCategoryProject(facility, projectOwner)
 
             every {
-                projectRepository.getRunningProjectsByCategoryOrderedSearchType(searchType, category, pageable)
+                projectRepository.getRunningProjectsByCategoryOrderedSearchType(
+                    searchType,
+                    category,
+                    pageable,
+                    LocalDate.now()
+                )
             } returns PageImpl(projects, pageable, projects.size.toLong())
 
             every { facilityRepository.getFacilityById(any()) } returns facility

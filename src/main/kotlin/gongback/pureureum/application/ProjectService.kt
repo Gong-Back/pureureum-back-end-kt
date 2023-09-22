@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDate
 
 @Service
 @Transactional(readOnly = true)
@@ -80,8 +81,9 @@ class ProjectService(
         category: Category?,
         pageable: Pageable
     ): ProjectPartPageRes {
+        val currentDate = LocalDate.now()
         val projectPartResList =
-            projectRepository.getRunningProjectsByCategoryOrderedSearchType(type, category, pageable)
+            projectRepository.getRunningProjectsByCategoryOrderedSearchType(type, category, pageable, currentDate)
                 .map { project -> convertProjectToPartRes(project) }
 
         return ProjectPartPageRes(

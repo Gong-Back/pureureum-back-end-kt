@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
+import java.time.LocalDate
 
 fun ProjectRepository.getProjectById(id: Long): Project =
     findProjectById(id) ?: throw NoSuchElementException("요청하신 프로젝트 정보를 찾을 수 없습니다")
@@ -27,7 +28,8 @@ interface CustomProjectRepository {
     fun getRunningProjectsByCategoryOrderedSearchType(
         type: SearchType,
         category: Category?,
-        pageable: Pageable
+        pageable: Pageable,
+        currentDate: LocalDate
     ): Page<Project>
 }
 
@@ -36,12 +38,13 @@ internal class ProjectRepositoryImpl(private val queryFactory: QueryFactory) : C
     override fun getRunningProjectsByCategoryOrderedSearchType(
         type: SearchType,
         category: Category?,
-        pageable: Pageable
+        pageable: Pageable,
+        currentDate: LocalDate
     ): Page<Project> {
         val projects = queryFactory.listQuery {
             select(entity(Project::class))
             from(entity(Project::class))
-            where(dynamicAndProjectStatus(ProjectStatus.RUNNING).and(dynamicAndCategory(category)))
+            where(dynamicAndProjectStatus(ProjectStatus.RUNNING).and(dynamicAndCategory(category)).and(dynamicAndEndDate(currentDate)))
             offset(pageable.offset.toInt())
             limit(pageable.pageSize)
             orderBy(dynamicOrderSearchType(type))
@@ -50,7 +53,7 @@ internal class ProjectRepositoryImpl(private val queryFactory: QueryFactory) : C
         val total = queryFactory.singleQuery {
             select(count(column(Project::id)))
             from(entity(Project::class))
-            where(dynamicAndProjectStatus(ProjectStatus.RUNNING).and(dynamicAndCategory(category)))
+            where(dynamicAndProjectStatus(ProjectStatus.RUNNING).and(dynamicAndCategory(category)).and(dynamicAndEndDate(currentDate)))
         }
 
         return PageImpl(projects, pageable, total)
@@ -60,8 +63,8 @@ internal class ProjectRepositoryImpl(private val queryFactory: QueryFactory) : C
         when (type) {
             SearchType.POPULAR -> listOf(column(Project::likeCount).desc(), column(Project::id).desc())
             SearchType.LATEST -> listOf(column(Project::id).desc())
-            SearchType.DEADLINE -> listOf(
-                column(Project::projectInformation).nested(ProjectInformation::projectEndDate).asc(),
+            SearchType.START_IMMINENT -> listOf(
+                column(Project::projectInformation).nested(ProjectInformation::projectStartDate).asc(),
                 column(Project::id).desc()
             )
         }
@@ -71,4 +74,7 @@ internal class ProjectRepositoryImpl(private val queryFactory: QueryFactory) : C
 
     private fun <T> CriteriaQueryDsl<T>.dynamicAndCategory(category: Category?): PredicateSpec =
         and(category?.run { column(Project::projectCategory).equal(this) })
+
+    private fun <T> CriteriaQueryDsl<T>.dynamicAndEndDate(currentDate: LocalDate): PredicateSpec =
+        and(column(Project::projectInformation).nested(ProjectInformation::projectEndDate).greaterThanOrEqualTo(currentDate))
 }
