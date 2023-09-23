@@ -571,7 +571,34 @@ class ProjectRestControllerTest : ControllerTestHelper() {
             .andExpect(status().isConflict)
             .andDo(
                 createPathDocument(
-                    "project-apply-fail",
+                    "project-apply-fail-already-exists",
+                    requestHeaders(
+                        headerWithName(HttpHeaders.AUTHORIZATION).description("Valid-Access-token")
+                    ),
+                    pathParameters(
+                        parameterWithName("id").description("프로젝트 ID")
+                    )
+                )
+            )
+    }
+
+    @Test
+    fun `프로젝트 신청 실패 - 모집 인원이 가득 찼을 경우`() {
+        every {
+            projectWriteService.applyProject(
+                any(),
+                any()
+            )
+        } throws PureureumException(errorCode = ErrorCode.PROJECT_TOTAL_RECRUITS_FULL)
+
+        mockMvc.perform(
+            post("/api/v1/projects/{id}/apply", 1L)
+                .header(HttpHeaders.AUTHORIZATION, createAccessToken())
+        )
+            .andExpect(status().isBadRequest)
+            .andDo(
+                createPathDocument(
+                    "project-apply-fail-total-recruits-full",
                     requestHeaders(
                         headerWithName(HttpHeaders.AUTHORIZATION).description("Valid-Access-token")
                     ),
