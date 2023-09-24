@@ -47,3 +47,8 @@ operation::project-rest-controller-test/project-apply-fail-already-exists[snippe
 
 === *5-3* 실패 - 모집 인원이 가득 찼을 경우
 operation::project-rest-controller-test/project-apply-fail-total-recruits-full[snippets='http-request,http-response']
+
+== *6. 프로젝트 좋아요 API*
+- 이미 좋아요 이력이 존재하는 경우 좋아요 삭제 처리
+
+operation::project-rest-controller-test/project-like-success[snippets='http-request,request-headers,path-parameters,http-response,response-fields']
