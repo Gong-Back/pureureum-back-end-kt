@@ -43,4 +43,7 @@ operation::project-rest-controller-test/get-page-project-part-only-search-type-s
 operation::project-rest-controller-test/project-apply-success[snippets='http-request,request-headers,path-parameters,http-response']
 
 === *5-2* 실패 - 이미 신청 정보가 존재하는 경우
-operation::project-rest-controller-test/project-apply-fail[snippets='http-request,http-response']
+operation::project-rest-controller-test/project-apply-fail-already-exists[snippets='http-request,http-response']
+
+=== *5-3* 실패 - 모집 인원이 가득 찼을 경우
+operation::project-rest-controller-test/project-apply-fail-total-recruits-full[snippets='http-request,http-response']

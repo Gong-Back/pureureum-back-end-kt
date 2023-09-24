@@ -10,6 +10,8 @@ import io.kotest.matchers.shouldBe
 import org.springframework.data.domain.Pageable
 import support.createProject
 import support.test.BaseTests.RepositoryTest
+import java.time.LocalDate
+import java.util.stream.IntStream
 
 @RepositoryTest
 class ProjectRepositoryTest(
@@ -32,26 +34,152 @@ class ProjectRepositoryTest(
     }
 
     context("카테고리에 따른 프로젝트 조회") {
+        val currentDate = LocalDate.of(2023, 3, 10)
+
         val project1 = createProject()
         val project2 = createProject()
         val project3 = createProject()
         val project4 = createProject(category = Category.ETC)
-        projectRepository.saveAll(listOf(project1, project2, project3, project4))
+
+        val savedProject1 = projectRepository.save(project1)
+        val savedProject2 = projectRepository.save(project2)
+        val savedProject3 = projectRepository.save(project3)
+        val savedProject4 = projectRepository.save(project4)
 
         expect("카테고리가 null일 경우 모든 프로젝트가 조회된다.") {
             val category = null
-            val searchType = SearchType.POPULAR
+            val searchType = SearchType.LATEST
             val pageable = Pageable.ofSize(10)
-            val result = projectRepository.getRunningProjectsByCategoryOrderedSearchType(searchType, category, pageable)
+            val result = projectRepository.getRunningProjectsByCategoryOrderedSearchType(
+                searchType,
+                category,
+                pageable,
+                currentDate
+            )
             result.content.size shouldBe 4
+            result.content.map {
+                it.id
+            } shouldBe listOf(savedProject4.id, savedProject3.id, savedProject2.id, savedProject1.id)
         }
 
         expect("카테고리가 null이 아닐 경우 해당 프로젝트가 조회된다.") {
             val category = Category.ETC
+            val searchType = SearchType.LATEST
+            val pageable = Pageable.ofSize(10)
+            val result = projectRepository.getRunningProjectsByCategoryOrderedSearchType(
+                searchType,
+                category,
+                pageable,
+                currentDate
+            )
+            result.content.size shouldBe 1
+            result.content.map {
+                it.id
+            } shouldBe listOf(savedProject4.id)
+        }
+    }
+
+    context("검색 조건에 따른 프로젝트 조회") {
+        val currentDate = LocalDate.of(2023, 3, 10)
+
+        val project1 = createProject(
+            projectStartDate = "2023-03-18"
+        ).apply { IntStream.rangeClosed(0, 5).forEach { _ -> this.addLikeCount() } }
+
+        val project2 = createProject(
+            projectStartDate = "2023-03-12"
+        )
+
+        val project3 = createProject(
+            projectStartDate = "2023-03-15"
+        ).apply { IntStream.rangeClosed(0, 10).forEach { _ -> this.addLikeCount() } }
+
+        val savedProject1 = projectRepository.save(project1)
+        val savedProject2 = projectRepository.save(project2)
+        val savedProject3 = projectRepository.save(project3)
+
+        expect("검색 조건이 LATEST라면 최신순으로 조회된다") {
+            val category = null
+            val searchType = SearchType.LATEST
+            val pageable = Pageable.ofSize(10)
+            val result = projectRepository.getRunningProjectsByCategoryOrderedSearchType(
+                searchType,
+                category,
+                pageable,
+                currentDate
+            )
+            result.content.size shouldBe 3
+            result.content.map {
+                it.id
+            } shouldBe listOf(savedProject3.id, savedProject2.id, savedProject1.id)
+        }
+
+        expect("검색 조건이 POPULAR라면 인기순으로 조회된다") {
+            val category = null
             val searchType = SearchType.POPULAR
             val pageable = Pageable.ofSize(10)
-            val result = projectRepository.getRunningProjectsByCategoryOrderedSearchType(searchType, category, pageable)
-            result.content.size shouldBe 1
+            val result = projectRepository.getRunningProjectsByCategoryOrderedSearchType(
+                searchType,
+                category,
+                pageable,
+                currentDate
+            )
+            result.content.size shouldBe 3
+            result.content.map {
+                it.id
+            } shouldBe listOf(savedProject3.id, savedProject1.id, savedProject2.id)
+        }
+
+        expect("검색 조건이 START_IMMINENT라면 시작 임박순으로 조회된다") {
+            val category = null
+            val searchType = SearchType.START_IMMINENT
+            val pageable = Pageable.ofSize(10)
+            val result = projectRepository.getRunningProjectsByCategoryOrderedSearchType(
+                searchType,
+                category,
+                pageable,
+                currentDate
+            )
+            result.content.size shouldBe 3
+            result.content.map {
+                it.id
+            } shouldBe listOf(savedProject2.id, savedProject3.id, savedProject1.id)
+        }
+    }
+
+    context("종료 날짜에 따른 조회") {
+        val currentDate = LocalDate.of(2023, 3, 15)
+
+        val project1 = createProject(
+            projectEndDate = "2023-03-18"
+        ).apply { IntStream.rangeClosed(0, 5).forEach { _ -> this.addLikeCount() } }
+
+        val project2 = createProject(
+            projectEndDate = "2023-03-12"
+        )
+
+        val project3 = createProject(
+            projectEndDate = "2023-03-15"
+        ).apply { IntStream.rangeClosed(0, 10).forEach { _ -> this.addLikeCount() } }
+
+        val savedProject1 = projectRepository.save(project1)
+        projectRepository.save(project2)
+        val savedProject3 = projectRepository.save(project3)
+
+        expect("종료 날짜가 현재 날짜보다 크거나 같은 프로젝트만 조회된다") {
+            val category = null
+            val searchType = SearchType.LATEST
+            val pageable = Pageable.ofSize(10)
+            val result = projectRepository.getRunningProjectsByCategoryOrderedSearchType(
+                searchType,
+                category,
+                pageable,
+                currentDate
+            )
+            result.content.size shouldBe 2
+            result.content.map {
+                it.id
+            } shouldBe listOf(savedProject3.id, savedProject1.id)
         }
     }
 })

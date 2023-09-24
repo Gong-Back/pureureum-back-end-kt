@@ -21,6 +21,7 @@ import support.createProject
 import support.createProjectResWithoutPayment
 import support.createSameCategoryProject
 import support.createUser
+import java.time.LocalDate
 
 class ProjectReadServiceTest : BehaviorSpec({
     val fileService = mockk<FileService>()
@@ -63,7 +64,8 @@ class ProjectReadServiceTest : BehaviorSpec({
                 projectRepository.getRunningProjectsByCategoryOrderedSearchType(
                     searchType,
                     category,
-                    pageable
+                    pageable,
+                    LocalDate.now()
                 )
             } returns PageImpl(projects, pageable, projects.size.toLong())
 
@@ -74,7 +76,11 @@ class ProjectReadServiceTest : BehaviorSpec({
             every { fileService.getFileUrl(any()) } returns PROJECT_THUMBNAIL_KEY
 
             Then("모든 카테고리의 프로젝트 Page 조회 성공") {
-                projectReadService.getRunningProjectPartsByTypeAndCategory(searchType, category, pageable).size shouldBe 3
+                projectReadService.getRunningProjectPartsByTypeAndCategory(
+                    searchType,
+                    category,
+                    pageable
+                ).size shouldBe 3
             }
         }
 
@@ -85,7 +91,12 @@ class ProjectReadServiceTest : BehaviorSpec({
             val projects = createSameCategoryProject(facility, projectOwner)
 
             every {
-                projectRepository.getRunningProjectsByCategoryOrderedSearchType(searchType, category, pageable)
+                projectRepository.getRunningProjectsByCategoryOrderedSearchType(
+                    searchType,
+                    category,
+                    pageable,
+                    LocalDate.now()
+                )
             } returns PageImpl(projects, pageable, projects.size.toLong())
 
             every { facilityRepository.getFacilityById(any()) } returns facility

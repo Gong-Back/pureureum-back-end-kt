@@ -43,6 +43,8 @@ fun createProject(
     userId: Long = 0L,
     title: String = PROJECT_TITLE,
     category: Category = PROJECT_CATEGORY,
+    projectStartDate: String = PROJECT_START_DATE,
+    projectEndDate: String = PROJECT_END_DATE,
     facilityId: Long = 0L
 ): Project {
     return Project(
@@ -50,8 +52,8 @@ fun createProject(
             title = title,
             introduction = PROJECT_INTRODUCTION,
             content = PROJECT_CONTENT,
-            projectStartDate = LocalDate.parse(PROJECT_START_DATE),
-            projectEndDate = LocalDate.parse(PROJECT_END_DATE),
+            projectStartDate = LocalDate.parse(projectStartDate),
+            projectEndDate = LocalDate.parse(projectEndDate),
             totalRecruits = PROJECT_TOTAL_RECRUITS
         ),
         ProjectStatus.RUNNING,

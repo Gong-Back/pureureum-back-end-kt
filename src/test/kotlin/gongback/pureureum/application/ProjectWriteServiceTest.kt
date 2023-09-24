@@ -4,6 +4,7 @@ import gongback.pureureum.domain.project.ProjectFileType
 import gongback.pureureum.domain.project.ProjectRepository
 import gongback.pureureum.domain.project.getProjectById
 import gongback.pureureum.domain.projectapply.ProjectApplyRepository
+import gongback.pureureum.domain.projectapply.countByProjectId
 import gongback.pureureum.domain.user.UserRepository
 import gongback.pureureum.domain.user.getUserByEmail
 import gongback.pureureum.support.constant.Category
@@ -44,6 +45,7 @@ class ProjectWriteServiceTest : BehaviorSpec({
 
             every { userRepository.getUserByEmail(any()) } returns user
             every { projectRepository.save(any()) } returns project
+            every { projectApplyRepository.save(any()) } returns createProjectApply(project.id, user.id)
 
             Then("정상적으로 저장된다.") {
                 projectWriteService.registerProject(email, createProjectRegisterReq()) shouldBe project.id
@@ -186,6 +188,7 @@ class ProjectWriteServiceTest : BehaviorSpec({
             every { projectRepository.getProjectById(any()) } returns project
             every { userRepository.getUserByEmail(any()) } returns user
             every { projectApplyRepository.findByProjectIdAndUserId(any(), any()) } returns null
+            every { projectApplyRepository.countByProjectId(any()) } returns 5
             every { projectApplyRepository.save(any()) } returns projectApply
 
             Then("프로젝트 신청 정보를 저장한다") {
@@ -199,6 +202,17 @@ class ProjectWriteServiceTest : BehaviorSpec({
             every { projectRepository.getProjectById(any()) } returns project
             every { userRepository.getUserByEmail(any()) } returns user
             every { projectApplyRepository.findByProjectIdAndUserId(any(), any()) } returns projectApply
+
+            Then("예외가 발생한다") {
+                shouldThrow<PureureumException> { projectWriteService.applyProject(project.id, user.email) }
+            }
+        }
+
+        When("프로젝트의 총 모집 인원이 가득찼다면") {
+            every { projectRepository.getProjectById(any()) } returns project
+            every { userRepository.getUserByEmail(any()) } returns user
+            every { projectApplyRepository.findByProjectIdAndUserId(any(), any()) } returns null
+            every { projectApplyRepository.countByProjectId(any()) } returns 10
 
             Then("예외가 발생한다") {
                 shouldThrow<PureureumException> { projectWriteService.applyProject(project.id, user.email) }

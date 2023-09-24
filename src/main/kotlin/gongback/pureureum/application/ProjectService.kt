@@ -17,6 +17,7 @@ import gongback.pureureum.domain.project.ProjectRepository
 import gongback.pureureum.domain.project.getProjectById
 import gongback.pureureum.domain.projectapply.ProjectApply
 import gongback.pureureum.domain.projectapply.ProjectApplyRepository
+import gongback.pureureum.domain.projectapply.countByProjectId
 import gongback.pureureum.domain.projectapply.existsByProjectIdAndUserId
 import gongback.pureureum.domain.user.UserRepository
 import gongback.pureureum.domain.user.getUserByEmail
@@ -28,6 +29,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDate
 
 @Service
 @Transactional(readOnly = true)
@@ -48,8 +50,9 @@ class ProjectReadService(
         category: Category?,
         pageable: Pageable
     ): ProjectPartPageRes {
+        val currentDate = LocalDate.now()
         val projectPartResList =
-            projectRepository.getRunningProjectsByCategoryOrderedSearchType(type, category, pageable)
+            projectRepository.getRunningProjectsByCategoryOrderedSearchType(type, category, pageable, currentDate)
                 .map { project -> convertProjectToPartRes(project) }
 
         return ProjectPartPageRes(
@@ -102,7 +105,10 @@ class ProjectWriteService(
             projectRegisterReq.projectCategory,
             findUser.id
         )
-        return projectRepository.save(project).id
+        val savedProjectId = projectRepository.save(project).id
+        val projectApply = ProjectApply(savedProjectId, findUser.id)
+        projectApplyRepository.save(projectApply)
+        return savedProjectId
     }
 
     fun uploadProjectFiles(projectFileReqs: List<MultipartFile>): List<ProjectfileDto> =
@@ -158,6 +164,10 @@ class ProjectWriteService(
         val isExistedApply = projectApplyRepository.existsByProjectIdAndUserId(project.id, user.id)
         if (isExistedApply) {
             throw PureureumException(errorCode = ErrorCode.REQUEST_RESOURCE_ALREADY_EXISTS)
+        }
+        val applyCount = projectApplyRepository.countByProjectId(projectId)
+        if (project.totalRecruits <= applyCount) {
+            throw PureureumException(errorCode = ErrorCode.PROJECT_TOTAL_RECRUITS_FULL)
         }
         val projectApply = ProjectApply(project.id, user.id)
         projectApplyRepository.save(projectApply)
