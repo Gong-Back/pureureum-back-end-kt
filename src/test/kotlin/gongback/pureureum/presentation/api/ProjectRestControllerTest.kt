@@ -6,6 +6,7 @@ import gongback.pureureum.application.ProjectReadService
 import gongback.pureureum.application.ProjectWriteService
 import gongback.pureureum.application.PureureumException
 import gongback.pureureum.application.dto.ErrorCode
+import gongback.pureureum.application.dto.ProjectLikeRes
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -604,6 +605,33 @@ class ProjectRestControllerTest : ControllerTestHelper() {
                     ),
                     pathParameters(
                         parameterWithName("id").description("프로젝트 ID")
+                    )
+                )
+            )
+    }
+
+    @Test
+    fun `프로젝트 좋아요 성공`() {
+        every { projectWriteService.likeProject(any(), any()) } returns ProjectLikeRes(true)
+
+        mockMvc.perform(
+            post("/api/v1/projects/{id}/like", 1L)
+                .header(HttpHeaders.AUTHORIZATION, createAccessToken())
+        )
+            .andExpect(status().isOk)
+            .andDo(
+                createPathDocument(
+                    "project-like-success",
+                    requestHeaders(
+                        headerWithName(HttpHeaders.AUTHORIZATION).description("Valid-Access-token")
+                    ),
+                    pathParameters(
+                        parameterWithName("id").description("프로젝트 ID")
+                    ),
+                    responseFields(
+                        fieldWithPath("code").description("응답 코드"),
+                        fieldWithPath("messages").description("응답 메시지"),
+                        fieldWithPath("data.isLiked").description("좋아요 추가 여부 (true: 좋아요 추가, false: 좋아요 취소)")
                     )
                 )
             )

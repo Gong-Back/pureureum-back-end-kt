@@ -11,6 +11,7 @@ import gongback.pureureum.domain.facility.FacilityAddress
 import gongback.pureureum.domain.project.Project
 import gongback.pureureum.domain.project.ProjectFileType
 import gongback.pureureum.domain.project.ProjectInformation
+import gongback.pureureum.domain.project.ProjectLike
 import gongback.pureureum.domain.project.ProjectPayment
 import gongback.pureureum.domain.project.ProjectPaymentType
 import gongback.pureureum.domain.project.ProjectStatus
@@ -233,6 +234,11 @@ fun createDifferentCategoryProject(facility: Facility, projectOwner: User): List
 fun createProjectApply(
     projectId: Long = 0L,
     userId: Long = 0L
-): ProjectApply {
-    return ProjectApply(projectId, userId)
-}
+): ProjectApply =
+    ProjectApply(projectId, userId)
+
+fun createProjectLike(
+    project: Project,
+    userId: Long = 0L
+): ProjectLike =
+    ProjectLike(userId, project)

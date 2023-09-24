@@ -116,4 +116,8 @@ class Project(
     fun addLikeCount() {
         this.likeCount = this.likeCount + 1
     }
+
+    fun subtractLikeCount() {
+        this.likeCount = this.likeCount - 1
+    }
 }

@@ -258,3 +258,7 @@ data class ProjectfileDto(
         projectFileType
     )
 }
+
+data class ProjectLikeRes(
+    val isLiked: Boolean
+)

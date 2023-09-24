@@ -1,6 +1,8 @@
 package gongback.pureureum.application
 
+import gongback.pureureum.application.dto.ProjectLikeRes
 import gongback.pureureum.domain.project.ProjectFileType
+import gongback.pureureum.domain.project.ProjectLikeRepository
 import gongback.pureureum.domain.project.ProjectRepository
 import gongback.pureureum.domain.project.getProjectById
 import gongback.pureureum.domain.projectapply.ProjectApplyRepository
@@ -12,6 +14,7 @@ import io.kotest.assertions.throwables.shouldNotThrowAnyUnit
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -22,6 +25,7 @@ import support.PROJECT_FILE_ORIGINAL_FILE_NAME1
 import support.createMockProjectFile
 import support.createProjectApply
 import support.createProjectFileDto
+import support.createProjectLike
 import support.createProjectRegisterReq
 import support.createUser
 
@@ -30,7 +34,8 @@ class ProjectWriteServiceTest : BehaviorSpec({
     val userRepository = mockk<UserRepository>()
     val projectRepository = mockk<ProjectRepository>()
     val projectApplyRepository = mockk<ProjectApplyRepository>()
-    val projectWriteService = ProjectWriteService(fileService, userRepository, projectRepository, projectApplyRepository)
+    val projectLikeRepository = mockk<ProjectLikeRepository>()
+    val projectWriteService = ProjectWriteService(fileService, userRepository, projectRepository, projectLikeRepository, projectApplyRepository)
 
     Given("사용자 이메일과 프로젝트 정보") {
         val user = createUser()
@@ -216,6 +221,32 @@ class ProjectWriteServiceTest : BehaviorSpec({
 
             Then("예외가 발생한다") {
                 shouldThrow<PureureumException> { projectWriteService.applyProject(project.id, user.email) }
+            }
+        }
+
+        When("기존에 해당 프로젝트에 대한 좋아요 이력이 존재하지 않는다면") {
+            clearMocks(projectLikeRepository)
+
+            every { projectRepository.getProjectById(any()) } returns project
+            every { userRepository.getUserByEmail(any()) } returns user
+            every { projectLikeRepository.findByProjectAndUserId(any(), any()) } returns null
+            every { projectLikeRepository.save(any()) } returns createProjectLike(project, user.id)
+
+            Then("프로젝트에 대한 좋아요를 1 추가한다") {
+                projectWriteService.likeProject(project.id, user.email) shouldBe ProjectLikeRes(true)
+            }
+        }
+
+        When("기존에 해당 프로젝트에 대한 좋아요 이력이 존재한다면") {
+            clearMocks(projectLikeRepository)
+
+            every { projectRepository.getProjectById(any()) } returns project
+            every { userRepository.getUserByEmail(any()) } returns user
+            every { projectLikeRepository.findByProjectAndUserId(any(), any()) } returns createProjectLike(project, user.id)
+            every { projectLikeRepository.deleteByProjectAndUserId(any(), any()) } just runs
+
+            Then("해당 프로젝트에 대한 좋아요를 1 감소한다") {
+                projectWriteService.likeProject(project.id, user.email) shouldBe ProjectLikeRes(false)
             }
         }
     }

@@ -9,18 +9,28 @@ import com.linecorp.kotlinjdsl.querydsl.expression.column
 import com.linecorp.kotlinjdsl.singleQuery
 import gongback.pureureum.support.constant.Category
 import gongback.pureureum.support.constant.SearchType
+import jakarta.persistence.LockModeType
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Lock
+import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
 
 fun ProjectRepository.getProjectById(id: Long): Project =
     findProjectById(id) ?: throw NoSuchElementException("요청하신 프로젝트 정보를 찾을 수 없습니다")
 
+fun ProjectRepository.getProjectByIdWithLock(id: Long): Project =
+    findProjectByIdWithLock(id) ?: throw NoSuchElementException("요청하신 프로젝트 정보를 찾을 수 없습니다")
+
 interface ProjectRepository : JpaRepository<Project, Long>, CustomProjectRepository {
     fun findProjectById(id: Long): Project?
+
+    @Lock(value = LockModeType.PESSIMISTIC_WRITE)
+    @Query("select p from Project p where p.id = :id")
+    fun findProjectByIdWithLock(id: Long): Project?
 }
 
 interface CustomProjectRepository {
@@ -44,7 +54,10 @@ internal class ProjectRepositoryImpl(private val queryFactory: QueryFactory) : C
         val projects = queryFactory.listQuery {
             select(entity(Project::class))
             from(entity(Project::class))
-            where(dynamicAndProjectStatus(ProjectStatus.RUNNING).and(dynamicAndCategory(category)).and(dynamicAndEndDate(currentDate)))
+            where(
+                dynamicAndProjectStatus(ProjectStatus.RUNNING).and(dynamicAndCategory(category))
+                    .and(dynamicAndEndDate(currentDate))
+            )
             offset(pageable.offset.toInt())
             limit(pageable.pageSize)
             orderBy(dynamicOrderSearchType(type))
@@ -53,7 +66,10 @@ internal class ProjectRepositoryImpl(private val queryFactory: QueryFactory) : C
         val total = queryFactory.singleQuery {
             select(count(column(Project::id)))
             from(entity(Project::class))
-            where(dynamicAndProjectStatus(ProjectStatus.RUNNING).and(dynamicAndCategory(category)).and(dynamicAndEndDate(currentDate)))
+            where(
+                dynamicAndProjectStatus(ProjectStatus.RUNNING).and(dynamicAndCategory(category))
+                    .and(dynamicAndEndDate(currentDate))
+            )
         }
 
         return PageImpl(projects, pageable, total)
@@ -76,5 +92,8 @@ internal class ProjectRepositoryImpl(private val queryFactory: QueryFactory) : C
         and(category?.run { column(Project::projectCategory).equal(this) })
 
     private fun <T> CriteriaQueryDsl<T>.dynamicAndEndDate(currentDate: LocalDate): PredicateSpec =
-        and(column(Project::projectInformation).nested(ProjectInformation::projectEndDate).greaterThanOrEqualTo(currentDate))
+        and(
+            column(Project::projectInformation).nested(ProjectInformation::projectEndDate)
+                .greaterThanOrEqualTo(currentDate)
+        )
 }

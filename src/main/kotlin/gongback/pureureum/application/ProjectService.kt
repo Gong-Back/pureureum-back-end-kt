@@ -3,6 +3,7 @@ package gongback.pureureum.application
 import gongback.pureureum.application.dto.ErrorCode
 import gongback.pureureum.application.dto.FileDto
 import gongback.pureureum.application.dto.ProjectFileRes
+import gongback.pureureum.application.dto.ProjectLikeRes
 import gongback.pureureum.application.dto.ProjectPartPageRes
 import gongback.pureureum.application.dto.ProjectPartRes
 import gongback.pureureum.application.dto.ProjectRegisterReq
@@ -13,7 +14,10 @@ import gongback.pureureum.domain.facility.FacilityRepository
 import gongback.pureureum.domain.facility.getFacilityById
 import gongback.pureureum.domain.project.Project
 import gongback.pureureum.domain.project.ProjectFileType
+import gongback.pureureum.domain.project.ProjectLike
+import gongback.pureureum.domain.project.ProjectLikeRepository
 import gongback.pureureum.domain.project.ProjectRepository
+import gongback.pureureum.domain.project.existsByProjectAndUserId
 import gongback.pureureum.domain.project.getProjectById
 import gongback.pureureum.domain.projectapply.ProjectApply
 import gongback.pureureum.domain.projectapply.ProjectApplyRepository
@@ -93,6 +97,7 @@ class ProjectWriteService(
     private val fileService: FileService,
     private val userRepository: UserRepository,
     private val projectRepository: ProjectRepository,
+    private val projectLikeRepository: ProjectLikeRepository,
     private val projectApplyRepository: ProjectApplyRepository
 ) {
 
@@ -171,5 +176,20 @@ class ProjectWriteService(
         }
         val projectApply = ProjectApply(project.id, user.id)
         projectApplyRepository.save(projectApply)
+    }
+
+    @Transactional
+    fun likeProject(projectId: Long, userEmail: String): ProjectLikeRes {
+        val project = projectRepository.getProjectById(projectId)
+        val user = userRepository.getUserByEmail(userEmail)
+        val isExistedLike = projectLikeRepository.existsByProjectAndUserId(project, user.id)
+        if (isExistedLike) {
+            projectLikeRepository.deleteByProjectAndUserId(project, user.id)
+            project.subtractLikeCount()
+            return ProjectLikeRes(false)
+        }
+        projectLikeRepository.save(ProjectLike(user.id, project))
+        project.addLikeCount()
+        return ProjectLikeRes(true)
     }
 }

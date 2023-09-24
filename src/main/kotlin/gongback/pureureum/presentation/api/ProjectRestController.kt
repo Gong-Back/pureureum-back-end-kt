@@ -3,6 +3,7 @@ package gongback.pureureum.presentation.api
 import gongback.pureureum.application.FileHandlingException
 import gongback.pureureum.application.ProjectReadService
 import gongback.pureureum.application.ProjectWriteService
+import gongback.pureureum.application.dto.ProjectLikeRes
 import gongback.pureureum.application.dto.ProjectPartPageRes
 import gongback.pureureum.application.dto.ProjectRegisterReq
 import gongback.pureureum.application.dto.ProjectRes
@@ -91,5 +92,14 @@ class ProjectRestController(
     ): ResponseEntity<Unit> {
         projectWriteService.applyProject(id, email)
         return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/{id}/like")
+    fun likeProject(
+        @PathVariable("id") id: Long,
+        @LoginEmail email: String
+    ): ResponseEntity<ApiResponse<ProjectLikeRes>> {
+        val projectLikeRes = projectWriteService.likeProject(id, email)
+        return ResponseEntity.ok().body(ApiResponse.ok(projectLikeRes))
     }
 }

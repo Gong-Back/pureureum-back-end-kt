@@ -182,4 +182,18 @@ class ProjectRepositoryTest(
             } shouldBe listOf(savedProject3.id, savedProject1.id)
         }
     }
+
+    context("비관적 락을 활용한 프로젝트 ID에 따른 조회") {
+        val project = createProject()
+        projectRepository.save(project)
+
+        expect("프로젝트가 존재한다") {
+            val result = projectRepository.getProjectByIdWithLock(project.id)
+            result shouldBe project
+        }
+
+        expect("프로젝트가 존재하지 않는다") {
+            shouldThrow<NoSuchElementException> { projectRepository.getProjectByIdWithLock(100L) }
+        }
+    }
 })
