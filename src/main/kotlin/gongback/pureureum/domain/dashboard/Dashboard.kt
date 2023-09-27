@@ -21,7 +21,7 @@ class Dashboard(
     val projectId: Long,
 
     @Column(nullable = false, length = 1)
-    val isDeleted: Boolean,
+    val isDeleted: Boolean = false,
 
     members: List<DashboardMember> = emptyList(),
 
