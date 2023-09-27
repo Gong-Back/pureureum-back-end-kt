@@ -1,0 +1,11 @@
+[[Dashbaord-API]]
+= *Dashboard API*
+
+[[대시보드-API]]
+== *1. 대시보드 사용자 조회 API*
+
+=== *1-1* 성공
+operation::dashboard-rest-controller-test/get-dashboard-members-success[snippets='http-request,request-headers,http-response,response-body']
+
+=== *1-2* 실패 - 대시보드에 존재하지 않는 사용자인 경우
+operation::dashboard-rest-controller-test/get-dashboard-members-fail-forbidden[snippets='http-request,http-response']
